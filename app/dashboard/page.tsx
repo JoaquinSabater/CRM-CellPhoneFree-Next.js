@@ -5,11 +5,14 @@ import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from 'react';
 import { RevenueChartSkeleton } from '@/app/ui/skeletons';
 import { LatestInvoicesSkeleton } from '@/app/ui/skeletons';
+import Image from 'next/image';
 import {
     //fetchRevenue,
     //fetchLatestInvoices,
     fetchCardData,
   } from '@/app/lib/data';
+import CellPhoneFreeLogo from '../ui/cellphonefree-logo';
+import Sellerpic from '../ui/sellerpic';
    
   export default async function Page() {
     //const revenue = await fetchRevenue();
@@ -23,7 +26,9 @@ import {
    
     return (
       <main>
-        {/*<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <Sellerpic />
+          {/*
           <Card title="Collected" value={totalPaidInvoices} type="collected" />
           <Card title="Pending" value={totalPendingInvoices} type="pending" />
           <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
@@ -31,17 +36,16 @@ import {
             title="Total Customers"
             value={numberOfCustomers}
             type="customers"
-          />
+          />*/}
         </div>
-        */}
         <div className="mt-6 flex justify-center">
             {/*<Suspense fallback={<RevenueChartSkeleton />}>
                 <RevenueChart />
             </Suspense>
             */}
-            <Suspense fallback={<LatestInvoicesSkeleton />}>
-                <LatestInvoices />
-            </Suspense>
+            {/*<Suspense fallback={<LatestInvoicesSkeleton />}>
+                <LatestInvoices /> 
+              </Suspense>*/}
         </div>
       </main>
     );
