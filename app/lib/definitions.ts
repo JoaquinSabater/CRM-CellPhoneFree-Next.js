@@ -2,6 +2,7 @@
 // It describes the shape of the data, and what data type each property should accept.
 // For simplicity of teaching, we're manually defining these types.
 // However, these types are generated automatically if you're using an ORM such as Prisma.
+
 export type User = {
   id: string;
   name: string;
@@ -9,11 +10,16 @@ export type User = {
   password: string;
 };
 
+export type PaymentMode = 'Deposito' | 'Efectivo' | 'Transferencia' | 'Tarjeta de Crédito' | 'Cheque' | 'e-Check';
+export type CustomerType = 'Grande' | 'Chico' | 'Mediano';
+
 export type Customer = {
   id: string;
   name: string;
   email: string;
   image_url: string;
+  limits_check: number;
+  customer_type: CustomerType;
 };
 
 export type Invoice = {
@@ -53,6 +59,8 @@ export type InvoicesTable = {
   date: string;
   amount: number;
   status: 'pending' | 'paid';
+  limits_check: number;
+  customer_type: string;
 };
 
 export type CustomersTableType = {
