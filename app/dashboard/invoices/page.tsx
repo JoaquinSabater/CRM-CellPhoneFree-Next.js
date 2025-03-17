@@ -7,6 +7,7 @@ import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { Suspense } from 'react';
 import { fetchInvoicesPages } from '@/app/lib/data';
 import CustomerTypeFilter from '@/app/ui/customer-type-filter';
+import CustomerLimitFilter from '@/app/ui/customer-limit-filter';
 
  
 export default async function Page(props: {
@@ -29,8 +30,9 @@ export default async function Page(props: {
         <Search placeholder="Search invoices..." />
         {/*<CreateInvoice /> */}
       </div>
-      <div className="mt-4 flex items-center justify-between gap-2 md:mt-6">
+      <div className="mt-4 flex items-center justify-start gap-2 md:mt-6">
         <CustomerTypeFilter />
+        <CustomerLimitFilter />
       </div>
       {/* <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}> */}
         <Table query={query} currentPage={currentPage} />
