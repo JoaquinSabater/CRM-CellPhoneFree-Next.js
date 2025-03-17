@@ -124,20 +124,21 @@ export async function fetchFilteredInvoices(query: string, type: string, limit: 
   }
 }
 
-export async function fetchInvoicesPages(query: string) {
+export async function fetchInvoicesPages(query: string, type: string, limit: string) {
   try {
     const data = await sql`
       SELECT COUNT(*)
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
       WHERE
-        customers.name ILIKE ${`%${query}%`} OR
+        (customers.name ILIKE ${`%${query}%`} OR
         customers.email ILIKE ${`%${query}%`} OR
         invoices.amount::text ILIKE ${`%${query}%`} OR
         invoices.date::text ILIKE ${`%${query}%`} OR
         invoices.status ILIKE ${`%${query}%`} OR
-        customers.customer_type ILIKE ${`%${query}%`} OR
-        customers.limits_check::text ILIKE ${`%${query}%`}
+        customers.limits_check::text ILIKE ${`%${query}%`})
+        AND (customers.customer_type ILIKE ${`%${type}%`})
+        AND (customers.limits_check::text ILIKE ${`%${limit}%`})
     `;
 
     const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
