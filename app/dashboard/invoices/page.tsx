@@ -6,6 +6,8 @@ import { lusitana } from '@/app/ui/fonts';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { Suspense } from 'react';
 import { fetchInvoicesPages } from '@/app/lib/data';
+import CustomerTypeFilter from '@/app/ui/customer-type-filter';
+
  
 export default async function Page(props: {
     searchParams?: Promise<{
@@ -26,6 +28,9 @@ export default async function Page(props: {
       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
         <Search placeholder="Search invoices..." />
         {/*<CreateInvoice /> */}
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-2 md:mt-6">
+        <CustomerTypeFilter />
       </div>
       {/* <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}> */}
         <Table query={query} currentPage={currentPage} />
