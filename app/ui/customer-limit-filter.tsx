@@ -26,7 +26,7 @@ export default function CustomerLimitFilter() {
       value={selectedLimit}
       onChange={handleFilterChange}
       className="rounded-md border border-gray-300 text-xs hover:bg-grey-400 focus:outline-none focus:ring-2 focus:ring-grey-400"
-    >
+      >
       <option value="">Customer Limit</option>
       <option value="3000">3000</option>
       <option value="5000">5000</option>
