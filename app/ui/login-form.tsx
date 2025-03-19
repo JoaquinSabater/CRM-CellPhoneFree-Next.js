@@ -1,3 +1,5 @@
+"use client";
+
 import { lusitana } from '@/app/ui/fonts';
 import {
   AtSymbolIcon,
@@ -6,8 +8,13 @@ import {
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
+import { useState } from 'react';
+
 
 export default function LoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
   return (
     <form className="space-y-3">
       <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
@@ -30,6 +37,8 @@ export default function LoginForm() {
                 name="email"
                 placeholder="Enter your seller ID"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
               <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
@@ -50,12 +59,14 @@ export default function LoginForm() {
                 placeholder="Enter password"
                 required
                 minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
               <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
             </div>
           </div>
         </div>
-        <Button className="mt-4 w-full">
+        <Button className="mt-4 w-full" type="submit">
           Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
         </Button>
         <div className="flex h-8 items-end space-x-1">
