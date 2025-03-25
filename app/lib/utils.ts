@@ -1,5 +1,7 @@
 import { Revenue } from './definitions';
 
+
+//sirve para formatear de una manera legible en dolares
 export const formatCurrency = (amount: number) => {
   return (amount / 100).toLocaleString('en-US', {
     style: 'currency',
@@ -7,6 +9,7 @@ export const formatCurrency = (amount: number) => {
   });
 };
 
+//Esta la vamos a usar en la tabla de costumers para formatear la fecha
 export const formatDateToLocal = (
   dateStr: string,
   locale: string = 'en-US',
@@ -21,9 +24,8 @@ export const formatDateToLocal = (
   return formatter.format(date);
 };
 
+//Esto se utiliza en revenue chart que es algo que NO LO VOY A USAR
 export const generateYAxis = (revenue: Revenue[]) => {
-  // Calculate what labels we need to display on the y-axis
-  // based on highest record and in 1000s
   const yAxisLabels = [];
   const highestRecord = Math.max(...revenue.map((month) => month.revenue));
   const topLabel = Math.ceil(highestRecord / 1000) * 1000;

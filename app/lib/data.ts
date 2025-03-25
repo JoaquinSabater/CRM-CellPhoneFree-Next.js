@@ -11,6 +11,7 @@ import { formatCurrency } from './utils';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
+//NO SE USA
 export async function fetchRevenue() {
   try {
     // Artificially delay a response for demo purposes.
@@ -31,6 +32,7 @@ export async function fetchRevenue() {
   }
 }
 
+//NO SE USA
 export async function fetchLatestInvoices() {
   try {
     const data = await sql<LatestInvoiceRaw[]>`
@@ -51,6 +53,7 @@ export async function fetchLatestInvoices() {
   }
 }
 
+//NO SE USA
 export async function fetchCardData() {
   try {
     // You can probably combine these into a single SQL query
@@ -191,6 +194,7 @@ export async function fetchCustomers() {
   }
 }
 
+//NO SE USA
 export async function fetchFilteredCustomers(query: string) {
   try {
     const data = await sql<CustomersTableType[]>`
