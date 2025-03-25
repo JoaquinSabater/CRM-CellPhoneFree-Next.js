@@ -127,6 +127,46 @@ export async function fetchFilteredInvoices(query: string, type: string, limit: 
   }
 }
 
+export async function fetchFilteredClientes(query: string) {
+  return await sql`
+    SELECT 
+      c.razon_social,
+      c.modalidad_de_pago,
+      c.contactar,
+      c.tipo_de_cliente,
+      c.cantidad_de_dias,
+      c.cuenta_corriente,
+      c.monto,
+      p.nombre AS provincia_nombre,
+      l.nombre AS localidad_nombre
+    FROM clientes c
+    LEFT JOIN localidad l ON c.localidad_id = l.id
+    LEFT JOIN provincia p ON l.provincia_id = p.id
+    WHERE 
+      c.razon_social ILIKE ${'%' + query + '%'} OR
+      c.modalidad_de_pago ILIKE ${'%' + query + '%'} OR
+      c.tipo_de_cliente ILIKE ${'%' + query + '%'} OR
+      p.nombre ILIKE ${'%' + query + '%'} OR
+      l.nombre ILIKE ${'%' + query + '%'}
+  `;
+}
+
+export async function fetchClientesPages(query: string) {
+  const totalItems = await sql`
+    SELECT COUNT(*)
+    FROM clientes c
+    LEFT JOIN localidad l ON c.localidad_id = l.id
+    LEFT JOIN provincia p ON l.provincia_id = p.id
+    WHERE 
+      c.razon_social ILIKE ${'%' + query + '%'} OR
+      c.modalidad_de_pago ILIKE ${'%' + query + '%'} OR
+      c.tipo_de_cliente ILIKE ${'%' + query + '%'}
+  `;
+
+  const totalCount = Number(totalItems[0]?.count || 0);
+  return Math.ceil(totalCount / ITEMS_PER_PAGE); // Calcular el número total de páginas
+}
+
 export async function fetchInvoicesPages(query: string, type: string, limit: string) {
   try {
     const data = await sql`

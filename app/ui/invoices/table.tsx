@@ -2,123 +2,41 @@ import Image from 'next/image';
 import { UpdateInvoice } from '@/app/ui/invoices/buttons';
 import InvoiceStatus from '@/app/ui/invoices/status';
 import { formatDateToLocal, formatCurrency } from '@/app/lib/utils';
-import { fetchFilteredInvoices } from '@/app/lib/data';
+import { fetchFilteredClientes } from '@/app/lib/data';
 
-export default async function Table({ query, type, limit, currentPage }: { query: string; type: string; limit: string; currentPage: number }) {
-  const invoices = await fetchFilteredInvoices(query, type, limit, currentPage);
+export default async function Table({ query }: { query: string }) {
+  const clientes = await fetchFilteredClientes(query);
 
   return (
     <div className="mt-6 flow-root">
       <div className="inline-block min-w-full align-middle">
         <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
-          <div className="md:hidden">
-            {invoices?.map((invoice) => (
-              <div
-                key={invoice.id}
-                className="mb-2 w-full rounded-md bg-white p-4"
-              >
-                <div className="flex items-center justify-between border-b pb-4">
-                  <div>
-                    <div className="mb-2 flex items-center">
-                      <Image
-                        src={invoice.image_url}
-                        className="mr-2 rounded-full"
-                        width={28}
-                        height={28}
-                        alt={`${invoice.name}'s profile picture`}
-                      />
-                      <p>{invoice.name}</p>
-                    </div>
-                    <p className="text-sm text-gray-500">{invoice.email}</p>
-                  </div>
-                  <InvoiceStatus status={invoice.status} />
-                </div>
-                <div className="flex w-full items-center justify-between pt-4">
-                  <div>
-                    <p className="text-xl font-medium">
-                      {formatCurrency(invoice.amount)}
-                    </p>
-                    <p>{formatDateToLocal(invoice.date)}</p>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <UpdateInvoice id={invoice.id} />
-                    {/*<DeleteInvoice id={invoice.id} />*/}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <table className="hidden min-w-full text-gray-900 md:table">
+          <table className="min-w-full text-gray-900">
             <thead className="rounded-lg text-left text-sm font-normal">
               <tr>
-                <th scope="col" className="px-2 py-5 font-medium sm:pl-4">
-                  Customer
-                </th>
-                <th scope="col" className="px-2 py-5 font-medium">
-                  Email
-                </th>
-                <th scope="col" className="px-2 py-5 font-medium">
-                  Amount
-                </th>
-                <th scope="col" className="px-2 py-5 font-medium">
-                  Date
-                </th>
-                <th scope="col" className="px-2 py-5 font-medium">
-                  Status
-                </th>
-                <th scope="col" className="px-2 py-5 font-medium">
-                  Limit
-                </th>
-                <th scope="col" className="px-2 py-5 font-medium">
-                  Customer Type
-                </th>
-                <th scope="col" className="relative py-3 pl-4 pr-2">
-                  <span className="sr-only">Edit</span>
-                </th>
+                <th scope="col" className="px-2 py-5 font-medium">Razón Social</th>
+                <th scope="col" className="px-2 py-5 font-medium">Modalidad de Pago</th>
+                <th scope="col" className="px-2 py-5 font-medium">Contactar</th>
+                <th scope="col" className="px-2 py-5 font-medium">Tipo de Cliente</th>
+                <th scope="col" className="px-2 py-5 font-medium">Cantidad de Días</th>
+                <th scope="col" className="px-2 py-5 font-medium">Cuenta Corriente</th>
+                <th scope="col" className="px-2 py-5 font-medium">Monto</th>
+                <th scope="col" className="px-2 py-5 font-medium">Provincia</th>
+                <th scope="col" className="px-2 py-5 font-medium">Localidad</th>
               </tr>
             </thead>
             <tbody className="bg-white">
-              {invoices?.map((invoice) => (
-                <tr
-                  key={invoice.id}
-                  className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
-                >
-                  <td className="whitespace-nowrap py-3 pl-4 pr-2">
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src={invoice.image_url}
-                        className="rounded-full"
-                        width={28}
-                        height={28}
-                        alt={`${invoice.name}'s profile picture`}
-                      />
-                      <p>{invoice.name}</p>
-                    </div>
-                  </td>
-                  <td className="whitespace-nowrap px-2 py-3">
-                    {invoice.email}
-                  </td>
-                  <td className="whitespace-nowrap px-2 py-3">
-                    {formatCurrency(invoice.amount)}
-                  </td>
-                  <td className="whitespace-nowrap px-2 py-3">
-                    {formatDateToLocal(invoice.date)}
-                  </td>
-                  <td className="whitespace-nowrap px-2 py-3">
-                    <InvoiceStatus status={invoice.status} />
-                  </td>
-                  <td className="whitespace-nowrap px-2 py-3">
-                    {invoice.limits_check}
-                  </td>
-                  <td className="whitespace-nowrap px-2 py-3">
-                    {invoice.customer_type}
-                  </td>
-                  <td className="relative whitespace-nowrap py-3 pl-4 pr-2">
-                    <div className="flex justify-end gap-3">
-                      <UpdateInvoice id={invoice.id} />
-                      {/*<DeleteInvoice id={invoice.id} />*/}
-                    </div>
-                  </td>
+              {clientes?.map((cliente) => (
+                <tr key={cliente.razon_social} className="border-b py-3 text-sm last-of-type:border-none">
+                  <td className="whitespace-nowrap px-2 py-3">{cliente.razon_social}</td>
+                  <td className="whitespace-nowrap px-2 py-3">{cliente.modalidad_de_pago}</td>
+                  <td className="whitespace-nowrap px-2 py-3">{cliente.contactar ? 'Sí' : 'No'}</td>
+                  <td className="whitespace-nowrap px-2 py-3">{cliente.tipo_de_cliente}</td>
+                  <td className="whitespace-nowrap px-2 py-3">{cliente.cantidad_de_dias}</td>
+                  <td className="whitespace-nowrap px-2 py-3">{cliente.cuenta_corriente ? 'Sí' : 'No'}</td>
+                  <td className="whitespace-nowrap px-2 py-3">{cliente.monto}</td>
+                  <td className="whitespace-nowrap px-2 py-3">{cliente.provincia_nombre}</td>
+                  <td className="whitespace-nowrap px-2 py-3">{cliente.localidad_nombre}</td>
                 </tr>
               ))}
             </tbody>
