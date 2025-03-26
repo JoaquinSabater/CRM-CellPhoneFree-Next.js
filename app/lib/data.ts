@@ -6,6 +6,7 @@ import {
   InvoicesTable,
   LatestInvoiceRaw,
   Revenue,
+  clienteForm,
 } from './definitions';
 import { formatCurrency } from './utils';
 
@@ -130,6 +131,7 @@ export async function fetchFilteredInvoices(query: string, type: string, limit: 
 export async function fetchFilteredClientes(query: string) {
   return await sql`
     SELECT 
+      c.id,
       c.razon_social,
       c.modalidad_de_pago,
       c.contactar,
@@ -160,7 +162,9 @@ export async function fetchClientesPages(query: string) {
     WHERE 
       c.razon_social ILIKE ${'%' + query + '%'} OR
       c.modalidad_de_pago ILIKE ${'%' + query + '%'} OR
-      c.tipo_de_cliente ILIKE ${'%' + query + '%'}
+      c.tipo_de_cliente ILIKE ${'%' + query + '%'} OR
+      p.nombre ILIKE ${'%' + query + '%'} OR
+      l.nombre ILIKE ${'%' + query + '%'}
   `;
 
   const totalCount = Number(totalItems[0]?.count || 0);
@@ -214,6 +218,27 @@ export async function fetchInvoiceById(id: string) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoice.');
+  }
+}
+
+export async function fetchClienteById(id: string) {
+  console.log('fetchClienteById - ID recibido:', id); // Depurar el valor del ID
+
+  try {
+    const data = await sql<clienteForm[]>`
+      SELECT id, razon_social, modalidad_de_pago, contactar
+      FROM clientes
+      WHERE id = ${id};
+    `;
+
+    const cliente = data.map((cliente) => ({
+      ...cliente,
+    }));
+
+    return cliente[0];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch cliente.');
   }
 }
 

@@ -161,6 +161,13 @@ export type cliente = {
   moroso: boolean;
 };
 
+export type clienteForm = {
+  id: number;
+  razon_social: string;
+  modo_de_pago: string;
+  contactar: boolean;
+}
+
 export type pedido = {
   id: number;
   vendedor_id: number;

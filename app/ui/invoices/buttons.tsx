@@ -14,7 +14,8 @@ export function CreateInvoice() {
   );
 }
 
-export function UpdateInvoice({ id }: { id: string }) {
+export function UpdateCliente({ id }: { id: string }) {
+  console.log('UpdateCliente - ID recibido:', id); // Depurar el valor del ID
   return (
     <Link
       href={`/dashboard/invoices/${id}/edit`}     
