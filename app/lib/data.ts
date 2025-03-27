@@ -129,7 +129,7 @@ export async function fetchFilteredInvoices(query: string, type: string, limit: 
   }
 }
 
-export async function fetchFilteredClientes(query: string) {
+export async function fetchFilteredClientes(query: string, vendedorId: number) {
   return await sql`
     SELECT 
       c.id,
@@ -145,12 +145,14 @@ export async function fetchFilteredClientes(query: string) {
     FROM clientes c
     LEFT JOIN localidad l ON c.localidad_id = l.id
     LEFT JOIN provincia p ON l.provincia_id = p.id
-    WHERE 
-      c.razon_social ILIKE ${'%' + query + '%'} OR
-      c.modalidad_de_pago ILIKE ${'%' + query + '%'} OR
-      c.tipo_de_cliente ILIKE ${'%' + query + '%'} OR
-      p.nombre ILIKE ${'%' + query + '%'} OR
-      l.nombre ILIKE ${'%' + query + '%'}
+    WHERE c.vendedor_id = ${vendedorId}
+      AND (
+        c.razon_social ILIKE ${'%' + query + '%'} OR
+        c.modalidad_de_pago ILIKE ${'%' + query + '%'} OR
+        c.tipo_de_cliente ILIKE ${'%' + query + '%'} OR
+        p.nombre ILIKE ${'%' + query + '%'} OR
+        l.nombre ILIKE ${'%' + query + '%'}
+      );
   `;
 }
 

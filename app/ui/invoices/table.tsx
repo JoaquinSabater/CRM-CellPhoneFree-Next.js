@@ -1,9 +1,17 @@
 import Image from 'next/image';
+import { auth } from '@/app/lib/auth';
 import { UpdateCliente } from '@/app/ui/invoices/buttons';
 import { fetchFilteredClientes } from '@/app/lib/data';
 
 export default async function Table({ query }: { query: string }) {
-  const clientes = await fetchFilteredClientes(query);
+  const session = await auth();
+  const vendedorId = session?.user?.vendedor_id;
+
+  if (!vendedorId) {
+    return <div className="text-red-500 p-4">No se pudo obtener el vendedor actual.</div>;
+  }
+
+  const clientes = await fetchFilteredClientes(query, vendedorId);
 
   return (
     <div className="mt-6 flow-root">

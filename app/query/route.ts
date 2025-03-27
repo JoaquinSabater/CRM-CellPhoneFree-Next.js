@@ -4,7 +4,7 @@ const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 async function listInvoices() {
 const data = await sql`
-    SELECT * FROM usuarios;
+    SELECT * FROM clientes;
       `;
  	return data;
  }
