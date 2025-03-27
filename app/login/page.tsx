@@ -1,4 +1,3 @@
-import AcmeLogo from '@/app/ui/acme-logo';
 import LoginForm from '@/app/ui/login-form';
 import { Suspense } from 'react';
 import CellPhoneFreeLogo from '../ui/cellphonefree-logo';

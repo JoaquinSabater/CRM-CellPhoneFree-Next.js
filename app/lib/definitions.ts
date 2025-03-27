@@ -121,6 +121,7 @@ export type vendedor = {
   excluir_informes: boolean;
   url_imagen: string;
   contraseña: string;
+  email: string;
 };
 
 export type usuario = {

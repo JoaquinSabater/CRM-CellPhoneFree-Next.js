@@ -2,43 +2,48 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from './auth.config';
 import { z } from 'zod';
-import type { User } from '@/app/lib/definitions';
+import type { usuario } from '@/app/lib/definitions';
 import bcrypt from 'bcryptjs';
 import postgres from 'postgres';
-import { AuthError } from 'next-auth';
- 
+
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
- 
-async function getUser(email: string): Promise<User | undefined> {
+
+async function getUsuario(id: string): Promise<usuario | null> {
   try {
-    const user = await sql<User[]>`SELECT * FROM users WHERE email=${email}`;
-    return user[0];
+    const usuario = await sql<usuario[]>`
+      SELECT * FROM usuarios WHERE id = ${id};
+    `;
+    return usuario[0] ?? null;
   } catch (error) {
-    console.error('Failed to fetch user:', error);
-    throw new Error('Failed to fetch user.');
+    console.error('[getUsuario] Error al obtener usuario:', error);
+    return null;
   }
 }
- 
+
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
   providers: [
     Credentials({
       async authorize(credentials) {
         const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string().min(6) })
+          .object({ id: z.string(), password: z.string() })
           .safeParse(credentials);
- 
-        if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data;
-          const user = await getUser(email);
-          if (!user) return null;
-          const passwordsMatch = await bcrypt.compare(password, user.password);
- 
-          if (passwordsMatch) return user;
+
+        if (!parsedCredentials.success) {
+          console.log('[authorize] Credenciales inválidas');
+          return null;
         }
 
-        console.log('Invalid credentials');
-        return null;
+        const { id, password } = parsedCredentials.data;
+        const usuario = await getUsuario(id);
+        console.log('[authorize] Usuario desde DB:', usuario);
+
+        if (!usuario) return null;
+
+        const passwordsMatch = await bcrypt.compare(password, usuario.password);
+        if (!passwordsMatch) return null;
+
+        return usuario as any;
       },
     }),
   ],

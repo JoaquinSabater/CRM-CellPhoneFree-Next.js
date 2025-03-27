@@ -9,6 +9,7 @@ import {
   clienteForm,
 } from './definitions';
 import { formatCurrency } from './utils';
+import { vendedor } from '@/app/lib/definitions'; // adaptá si tu ruta es distinta
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
@@ -239,6 +240,33 @@ export async function fetchClienteById(id: string) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch cliente.');
+  }
+}
+
+
+export async function getVendedorById(id: number | string): Promise<(vendedor & { rol: string }) | null> {
+  console.log('[getVendedorById] ID recibido:', id);
+
+  try {
+    const data = await sql<vendedor[]>`
+      SELECT *
+      FROM vendedores
+      WHERE id = ${id};
+    `;
+
+    console.log('[getVendedorById] Resultado DB:', data);
+
+    const vendedorExtendido = data.map((v) => ({
+      ...v,
+      rol: 'Vendedor',
+    }));
+
+    console.log('[getVendedorById] Vendedor formateado:', vendedorExtendido[0]);
+
+    return vendedorExtendido[0] ?? null;
+  } catch (error) {
+    console.error('[getVendedorById] Error:', error);
+    return null;
   }
 }
 
