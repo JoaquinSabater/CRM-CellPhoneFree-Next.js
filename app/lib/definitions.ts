@@ -165,9 +165,32 @@ export type cliente = {
 export type clienteForm = {
   id: number;
   razon_social: string;
-  modo_de_pago: string;
+  email: string;
+  nombre: string;
+  apellido: string;
+  contacto: string;
+  telefono: string;
+  domicilio: string;
+  cuit_dni: string;
+  vendedor_id: number;
+  localidad_id: number;
+  condicion_iva_id: number;
+  condicion_iibb_id: number;
+  observaciones: string | null;
+  facebook: string | null;
+  instagram: string | null;
+  fecha_creacion: string;
+  modalidad_de_pago: string;
   contactar: boolean;
-}
+  tipo_de_cliente: string;
+  cumpleaños: string | null;
+  cantidad_de_dias: number;
+  cuenta_corriente: boolean;
+  monto: number;
+  localidad_nombre: string;     // LEFT JOIN
+  provincia_nombre: string;     // LEFT JOIN
+};
+
 
 export type pedido = {
   id: number;

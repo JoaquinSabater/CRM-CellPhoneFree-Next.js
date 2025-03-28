@@ -3,18 +3,14 @@ import Search from '@/app/ui/search';
 import { Suspense } from 'react';
 import Table from '@/app/ui/invoices/table';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
-import { fetchClientesPages } from '@/app/lib/data'; // Nueva función para calcular las páginas
+import { fetchClientesPages } from '@/app/lib/data';
 
-export default async function Page(props: {
-  searchParams?: Promise<{
-    query?: string;
-    page?: string;
-  }>;
-}) {
-  const searchParams = await props.searchParams;
-  const query = searchParams?.query || '';
-  const currentPage = Number(searchParams?.page) || 1;
-  const totalPages = await fetchClientesPages(query); // Nueva función para calcular las páginas
+export default async function Page(props: { searchParams: Promise<{ query?: string; page?: string }> }) {
+  const searchParams = await props.searchParams; // Resuelve la promesa
+
+  const query = searchParams?.query ?? '';
+  const currentPage = Number(searchParams?.page ?? '1');
+  const totalPages = await fetchClientesPages(query);
 
   return (
     <div className="w-full">
@@ -22,7 +18,7 @@ export default async function Page(props: {
         <Search placeholder="Buscar Clientes..." />
       </div>
       <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
-        <Table query={query}  />
+        <Table query={query} />
       </Suspense>
       <div className="mt-5 flex w-full justify-center">
         <Pagination totalPages={totalPages} />

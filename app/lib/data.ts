@@ -10,6 +10,8 @@ import {
 } from './definitions';
 import { formatCurrency } from './utils';
 import { vendedor } from '@/app/lib/definitions'; // adaptá si tu ruta es distinta
+import { pedido } from './definitions'; // Asegurate de importar tu tipo
+
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
@@ -225,25 +227,39 @@ export async function fetchInvoiceById(id: string) {
 }
 
 export async function fetchClienteById(id: string) {
-  console.log('fetchClienteById - ID recibido:', id); // Depurar el valor del ID
-
   try {
     const data = await sql<clienteForm[]>`
-      SELECT id, razon_social, modalidad_de_pago, contactar
-      FROM clientes
-      WHERE id = ${id};
+      SELECT 
+        c.*,
+        l.nombre AS localidad_nombre,
+        p.nombre AS provincia_nombre
+      FROM clientes c
+      LEFT JOIN localidad l ON c.localidad_id = l.id
+      LEFT JOIN provincia p ON l.provincia_id = p.id
+      WHERE c.id = ${id};
     `;
 
-    const cliente = data.map((cliente) => ({
-      ...cliente,
-    }));
-
-    return cliente[0];
+    return data[0];
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch cliente.');
   }
 }
+
+export async function getPedidosByCliente(clienteId: string): Promise<pedido[]> {
+  return await sql<pedido[]>`
+    SELECT 
+      id,
+      vendedor_id,
+      cliente_id,
+      fecha_creacion,
+      estado
+    FROM pedidos
+    WHERE cliente_id = ${clienteId}
+    ORDER BY fecha_creacion DESC;
+  `;
+}
+
 
 
 export async function getVendedorById(id: number | string): Promise<(vendedor & { rol: string }) | null> {
