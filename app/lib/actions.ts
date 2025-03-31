@@ -37,43 +37,57 @@ export async function createEtiquetaOnServer(nombre: string, vendedorId: number)
 }
 
 export async function updateCliente(id: string, formData: FormData) {
-  const cliente = await sql`
-    SELECT id FROM clientes WHERE id = ${id}
-  `;
-
-  if (!cliente.length) {
-    throw new Error('Cliente no encontrado');
-  }
-
-  const updatedCliente = {
-    modalidad_de_pago: formData.get('modalidad_de_pago') as string | null,
-    tipo_de_cliente: formData.get('tipo_de_cliente') as string | null,
-    cantidad_de_dias: Number(formData.get('cantidad_de_dias')),
-    monto: Number(formData.get('monto')),
-    contactar: formData.get('contactar') === 'on',
-    cuenta_corriente: formData.get('cuenta_corriente') === 'on',
-  };
-
-  if (!updatedCliente.modalidad_de_pago || !updatedCliente.tipo_de_cliente) {
-    throw new Error('Faltan campos obligatorios');
-  }
+  const observaciones = formData.get('observaciones') as string | null;
 
   await sql`
     UPDATE clientes
-    SET 
-      modalidad_de_pago = ${updatedCliente.modalidad_de_pago},
-      tipo_de_cliente = ${updatedCliente.tipo_de_cliente},
-      cantidad_de_dias = ${updatedCliente.cantidad_de_dias},
-      monto = ${updatedCliente.monto},
-      contactar = ${updatedCliente.contactar},
-      cuenta_corriente = ${updatedCliente.cuenta_corriente}
-    WHERE id = ${id}
+    SET observaciones = ${observaciones}
+    WHERE id = ${id};
   `;
 
+  // 2. Procesar los filtros dinámicos
+  const keys = Array.from(formData.keys());
+  const filtroKeys = keys.filter((key) => key.startsWith('filtro-'));
+
+  for (const key of filtroKeys) {
+    const filtroId = key.replace('filtro-', '');
+    const value = formData.get(key) as string;
+
+    // Validación opcional: si querés evitar insertar valores vacíos
+    if (!value) continue;
+
+    await sql`
+      INSERT INTO filtros_clientes (cliente_id, filtro_id, valor)
+      VALUES (${id}, ${filtroId}, ${value})
+      ON CONFLICT (cliente_id, filtro_id)
+      DO UPDATE SET valor = EXCLUDED.valor;
+    `;
+  }
+
+  // Redirección y revalidación
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
 }
 
+
+export async function createEtiqueta(formData: FormData) {
+  const nombre = formData.get('nombre')?.toString().trim();
+
+  if (!nombre) {
+    throw new Error('El nombre de la etiqueta es requerido.');
+  }
+
+  try {
+    await sql`
+      INSERT INTO filtros (nombre)
+      VALUES (${nombre})
+    `;
+    revalidatePath('/dashboard/invoices'); // o donde quieras refrescar los datos
+  } catch (error) {
+    console.error('Error creando la etiqueta:', error);
+    throw new Error('No se pudo crear la etiqueta.');
+  }
+}
 
   export async function authenticate(
     prevState: string | undefined,

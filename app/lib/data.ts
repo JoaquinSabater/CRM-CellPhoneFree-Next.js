@@ -246,6 +246,13 @@ export async function fetchClienteById(id: string) {
   }
 }
 
+export async function getEtiquetasGlobales() {
+  const result = await sql`
+    SELECT id, nombre FROM filtros ORDER BY nombre;
+  `;
+  return result;
+}
+
 export async function getPedidosByCliente(clienteId: string): Promise<pedido[]> {
   return await sql<pedido[]>`
     SELECT 
@@ -258,6 +265,21 @@ export async function getPedidosByCliente(clienteId: string): Promise<pedido[]> 
     WHERE cliente_id = ${clienteId}
     ORDER BY fecha_creacion DESC;
   `;
+}
+
+export async function getFiltrosDelCliente(clienteId: string) {
+  const id = Number(clienteId);
+  try {
+    const result = await sql`
+      SELECT filtro_id, valor
+      FROM filtros_clientes
+      WHERE cliente_id = ${clienteId};
+    `;
+    return result;
+  } catch (error) {
+    console.error('Error al obtener filtros del cliente:', error);
+    throw new Error('No se pudieron cargar los filtros del cliente.');
+  }
 }
 
 

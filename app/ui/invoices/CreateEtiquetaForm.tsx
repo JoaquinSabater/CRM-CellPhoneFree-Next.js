@@ -1,17 +1,28 @@
-// 📁 app/ui/invoices/create-etiqueta-form.tsx
-
 'use client';
 
 import { useState } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
+import { createEtiqueta } from '@/app/lib/actions'; // Asegurate de importar bien
 
 export default function CreateEtiquetaForm() {
   const [nombre, setNombre] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Etiqueta a crear:', nombre);
-    // En el futuro: enviar a la base de datos con una action
+    setSuccess(false);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('nombre', nombre);
+      await createEtiqueta(formData);
+      setSuccess(true);
+      setNombre('');
+    } catch (err) {
+      setError('Error al crear la etiqueta.');
+    }
   };
 
   return (
@@ -39,6 +50,9 @@ export default function CreateEtiquetaForm() {
       >
         Guardar
       </button>
+
+      {success && <p className="text-green-600 text-sm">Etiqueta creada correctamente.</p>}
+      {error && <p className="text-red-600 text-sm">{error}</p>}
     </form>
   );
 }

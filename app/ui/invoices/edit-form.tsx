@@ -5,7 +5,7 @@ import { Button } from '@/app/ui/button';
 import { updateCliente } from '@/app/lib/actions';
 import PedidosDelCliente from '@/app/ui/invoices/PedidosDelCliente';
 
-export default function EditClienteForm({ cliente, pedidos }: { cliente: any; pedidos: any[] }) {
+export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente }: any) {
   const updateClienteWithId = updateCliente.bind(null, cliente.id);
 
   const inputBase = 'peer block w-full rounded-md border py-2 pl-3 text-sm outline-2 placeholder:text-gray-500';
@@ -50,34 +50,6 @@ export default function EditClienteForm({ cliente, pedidos }: { cliente: any; pe
             <input id="cuit_dni" type="text" defaultValue={cliente.cuit_dni} readOnly className={`${inputBase} ${readOnlyStyle}`} />
           </div>
 
-          {/* Campos editables */}
-          <div>
-            <label htmlFor="modalidad_de_pago" className="block text-sm font-medium mb-1">Modalidad de Pago</label>
-            <input id="modalidad_de_pago" name="modalidad_de_pago" type="text" defaultValue={cliente.modalidad_de_pago} className={inputBase} />
-          </div>
-          <div>
-            <label htmlFor="tipo_de_cliente" className="block text-sm font-medium mb-1">Tipo de Cliente</label>
-            <input id="tipo_de_cliente" name="tipo_de_cliente" type="text" defaultValue={cliente.tipo_de_cliente} className={inputBase} />
-          </div>
-          <div>
-            <label htmlFor="cantidad_de_dias" className="block text-sm font-medium mb-1">Cantidad de Días</label>
-            <input id="cantidad_de_dias" name="cantidad_de_dias" type="number" defaultValue={cliente.cantidad_de_dias} className={inputBase} />
-          </div>
-          <div>
-            <label htmlFor="monto" className="block text-sm font-medium mb-1">Monto</label>
-            <input id="monto" name="monto" type="number" defaultValue={cliente.monto} className={inputBase} />
-          </div>
-
-          {/* Checkboxes */}
-          <div className="flex items-center gap-2 mt-2">
-            <input id="contactar" name="contactar" type="checkbox" defaultChecked={cliente.contactar} />
-            <label htmlFor="contactar" className="text-sm">Contactar</label>
-          </div>
-          <div className="flex items-center gap-2 mt-2">
-            <input id="cuenta_corriente" name="cuenta_corriente" type="checkbox" defaultChecked={cliente.cuenta_corriente} />
-            <label htmlFor="cuenta_corriente" className="text-sm">Cuenta Corriente</label>
-          </div>
-
           {/* Más campos de solo lectura */}
           <div>
             <label htmlFor="provincia" className="block text-sm font-medium mb-1">Provincia</label>
@@ -87,6 +59,51 @@ export default function EditClienteForm({ cliente, pedidos }: { cliente: any; pe
             <label htmlFor="localidad" className="block text-sm font-medium mb-1">Localidad</label>
             <input id="localidad" type="text" defaultValue={cliente.localidad_nombre} readOnly className={`${inputBase} ${readOnlyStyle}`} />
           </div>
+        </div>
+
+        {/* Observaciones - Único campo editable del cliente */}
+        <div className="md:col-span-2">
+          <label htmlFor="observaciones" className="block text-sm font-medium mb-1">
+            Observaciones
+          </label>
+          <textarea
+            id="observaciones"
+            name="observaciones"
+            defaultValue={cliente.observaciones || ''}
+            className="w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
+            rows={3}
+            placeholder="Observaciones generales del cliente..."
+          />
+        </div>
+
+
+        {/* Filtros dinámicos */}
+        <div className="mt-8">
+          <h3 className="text-md font-semibold text-gray-800 mb-4">Filtros / Etiquetas</h3>
+          {filtrosDisponibles.length === 0 ? (
+            <p className="text-sm italic text-gray-500">No hay filtros disponibles.</p>
+          ) : (
+            <div className="space-y-3">
+              {filtrosDisponibles.map((filtro: any) => {
+                const valorAsignado = filtrosCliente.find((f: any) => f.filtro_id === filtro.id)?.valor || '';
+                return (
+                  <div key={filtro.id} className="flex items-center gap-2">
+                    <label htmlFor={`filtro-${filtro.id}`} className="w-1/4 font-medium text-sm text-gray-700">
+                      {filtro.nombre}
+                    </label>
+                    <input
+                      type="text"
+                      id={`filtro-${filtro.id}`}
+                      name={`filtro-${filtro.id}`}
+                      defaultValue={valorAsignado}
+                      placeholder={`Ingrese un valor para ${filtro.nombre}`}
+                      className="w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Pedidos */}

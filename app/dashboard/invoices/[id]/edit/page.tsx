@@ -1,13 +1,14 @@
 import EditClienteForm from '@/app/ui/invoices/edit-form';
-import { fetchClienteById, getPedidosByCliente } from '@/app/lib/data';
+import { fetchClienteById, getPedidosByCliente, getEtiquetasGlobales, getFiltrosDelCliente } from '@/app/lib/data';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
-  const params = await props.params; // Resuelve la promesa
-  const id = params.id;
+  const { id } = await props.params;
 
-  const [cliente, pedidos] = await Promise.all([
+  const [cliente, pedidos, filtrosDisponibles, filtrosCliente] = await Promise.all([
     fetchClienteById(id),
     getPedidosByCliente(id),
+    getEtiquetasGlobales(),
+    getFiltrosDelCliente(id),
   ]);
 
   if (!cliente) {
@@ -16,7 +17,12 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   return (
     <main>
-      <EditClienteForm cliente={cliente} pedidos={pedidos} />
+      <EditClienteForm
+        cliente={cliente}
+        pedidos={pedidos}
+        filtrosDisponibles={filtrosDisponibles}
+        filtrosCliente={filtrosCliente}
+      />
     </main>
   );
 }
