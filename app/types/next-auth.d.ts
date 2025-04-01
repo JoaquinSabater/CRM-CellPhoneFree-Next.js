@@ -17,6 +17,19 @@ declare module "next-auth" {
     password: string;
     vendedor_id: number;
   }
+
+  interface Cliente {
+    id: number;
+    razon_social: string;
+    provincia_nombre: string;
+    localidad_nombre: string;
+  }
+  
+  interface FiltroCliente {
+    cliente_id: number;
+    nombre: string;
+    valor: string;
+  }
 }
 
 declare module "next-auth/jwt" {

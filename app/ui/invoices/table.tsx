@@ -1,7 +1,6 @@
-import Image from 'next/image';
+import Link from 'next/link';
 import { auth } from '@/app/lib/auth';
-import { UpdateCliente } from '@/app/ui/invoices/buttons';
-import { fetchFilteredClientes } from '@/app/lib/data';
+import { fetchFilteredClientes, fetchFiltrosPorVendedor } from '@/app/lib/data';
 
 export default async function Table({ query }: { query: string }) {
   const session = await auth();
@@ -12,77 +11,61 @@ export default async function Table({ query }: { query: string }) {
   }
 
   const clientes = await fetchFilteredClientes(query, vendedorId);
+  const filtrosCliente = await fetchFiltrosPorVendedor(vendedorId);
+
+  const filtrosUnicos = Array.from(new Set(filtrosCliente.map((f) => f.nombre)));
+
+  const filtroMap = new Map<number, Map<string, string>>();
+  filtrosCliente.forEach(({ cliente_id, nombre, valor }) => {
+    if (!filtroMap.has(cliente_id)) {
+      filtroMap.set(cliente_id, new Map());
+    }
+    filtroMap.get(cliente_id)!.set(nombre, valor);
+  });
 
   return (
-    <div className="mt-6 flow-root">
-      <div className="inline-block min-w-full align-middle">
-        <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
-          <div className="md:hidden">
-            {clientes?.map((cliente) => {
-              console.log('Cliente ID:', cliente.id); // Depurar el valor de cliente.id
-              return (
-                <div
-                  key={cliente.id}
-                  className="mb-2 w-full rounded-md bg-white p-4"
-                >
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <p className="text-lg font-medium">{cliente.razon_social}</p>
-                      <p className="text-sm text-gray-500">{cliente.modalidad_de_pago}</p>
-                    </div>
-                    <p>{cliente.contactar ? 'Sí' : 'No'}</p>
-                  </div>
-                  <div className="flex w-full items-center justify-between pt-4">
-                    <div>
-                      <p className="text-sm">Provincia: {cliente.provincia_nombre}</p>
-                      <p className="text-sm">Localidad: {cliente.localidad_nombre}</p>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <UpdateCliente id={cliente.id} />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <table className="hidden min-w-full text-gray-900 md:table">
-            <thead className="rounded-lg text-left text-sm font-normal">
-              <tr>
-                <th scope="col" className="px-2 py-5 font-medium">Razón Social</th>
-                <th scope="col" className="px-2 py-5 font-medium">Modalidad de Pago</th>
-                <th scope="col" className="px-2 py-5 font-medium">Contactar</th>
-                <th scope="col" className="px-2 py-5 font-medium">Provincia</th>
-                <th scope="col" className="px-2 py-5 font-medium">Localidad</th>
-                <th scope="col" className="relative py-3 pl-4 pr-2">
-                  <span className="sr-only">Editar</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white">
-              {clientes?.map((cliente) => {
-                console.log('Cliente ID (tabla):', cliente.id); // Depurar el valor de cliente.id en la tabla
-                return (
-                  <tr
-                    key={cliente.id}
-                    className="w-full border-b py-3 text-sm last-of-type:border-none"
-                  >
-                    <td className="whitespace-nowrap px-2 py-3">{cliente.razon_social}</td>
-                    <td className="whitespace-nowrap px-2 py-3">{cliente.modalidad_de_pago}</td>
-                    <td className="whitespace-nowrap px-2 py-3">{cliente.contactar ? 'Sí' : 'No'}</td>
-                    <td className="whitespace-nowrap px-2 py-3">{cliente.provincia_nombre}</td>
-                    <td className="whitespace-nowrap px-2 py-3">{cliente.localidad_nombre}</td>
-                    <td className="relative whitespace-nowrap py-3 pl-4 pr-2">
-                      <div className="flex justify-end gap-3">
-                        <UpdateCliente id={cliente.id} />
-                      </div>
+    <div className="mt-6 w-full overflow-x-auto">
+      <table className="min-w-full text-sm text-gray-900 border rounded-lg overflow-hidden">
+        <thead className="bg-gray-100 text-left font-medium">
+          <tr>
+            <th className="px-2 py-5 font-medium">Razón Social</th>
+            <th className="px-2 py-5 font-medium">Provincia</th>
+            <th className="px-2 py-5 font-medium">Localidad</th>
+            {filtrosUnicos.map((nombre) => (
+              <th key={nombre} className="px-2 py-5 font-medium whitespace-nowrap">{nombre}</th>
+            ))}
+            <th className="py-5 pr-4 text-right"></th>
+          </tr>
+        </thead>
+        <tbody className="bg-white">
+          {clientes.map((cliente) => {
+            const filtrosDelCliente = filtroMap.get(cliente.id) || new Map();
+
+            return (
+              <Link
+                key={cliente.id}
+                href={`/dashboard/invoices/${cliente.id}/edit`}
+                className="contents"
+              >
+                <tr className="hover:bg-gray-50 transition cursor-pointer">
+                  <td className="whitespace-nowrap px-2 py-3">{cliente.razon_social}</td>
+                  <td className="whitespace-nowrap px-2 py-3">{cliente.provincia_nombre}</td>
+                  <td className="whitespace-nowrap px-2 py-3">{cliente.localidad_nombre}</td>
+                  {filtrosUnicos.map((nombre) => (
+                    <td key={nombre} className="whitespace-nowrap px-2 py-3">
+                      {filtrosDelCliente.get(nombre) ?? '—'}
                     </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                  ))}
+                </tr>
+              </Link>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
+
+
+
+

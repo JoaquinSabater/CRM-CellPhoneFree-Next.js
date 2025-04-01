@@ -136,44 +136,56 @@ export async function fetchFilteredClientes(query: string, vendedorId: number) {
     SELECT 
       c.id,
       c.razon_social,
-      c.modalidad_de_pago,
-      c.contactar,
-      c.tipo_de_cliente,
-      c.cantidad_de_dias,
-      c.cuenta_corriente,
-      c.monto,
       p.nombre AS provincia_nombre,
       l.nombre AS localidad_nombre
     FROM clientes c
     LEFT JOIN localidad l ON c.localidad_id = l.id
     LEFT JOIN provincia p ON l.provincia_id = p.id
+    LEFT JOIN filtros_clientes fc ON c.id = fc.cliente_id
+    LEFT JOIN filtros f ON fc.filtro_id = f.id
     WHERE c.vendedor_id = ${vendedorId}
       AND (
         c.razon_social ILIKE ${'%' + query + '%'} OR
-        c.modalidad_de_pago ILIKE ${'%' + query + '%'} OR
-        c.tipo_de_cliente ILIKE ${'%' + query + '%'} OR
         p.nombre ILIKE ${'%' + query + '%'} OR
-        l.nombre ILIKE ${'%' + query + '%'}
-      );
+        l.nombre ILIKE ${'%' + query + '%'} OR
+        fc.valor ILIKE ${'%' + query + '%'}
+      )
+    GROUP BY c.id, p.nombre, l.nombre
+    ORDER BY c.razon_social ASC;
   `;
 }
 
-export async function fetchClientesPages(query: string) {
+export async function fetchClientesPages(query: string, vendedorId: number) {
   const totalItems = await sql`
-    SELECT COUNT(*)
+    SELECT COUNT(DISTINCT c.id) AS count
     FROM clientes c
     LEFT JOIN localidad l ON c.localidad_id = l.id
     LEFT JOIN provincia p ON l.provincia_id = p.id
-    WHERE 
-      c.razon_social ILIKE ${'%' + query + '%'} OR
-      c.modalidad_de_pago ILIKE ${'%' + query + '%'} OR
-      c.tipo_de_cliente ILIKE ${'%' + query + '%'} OR
-      p.nombre ILIKE ${'%' + query + '%'} OR
-      l.nombre ILIKE ${'%' + query + '%'}
+    LEFT JOIN filtros_clientes fc ON c.id = fc.cliente_id
+    WHERE c.vendedor_id = ${vendedorId}
+      AND (
+        c.razon_social ILIKE ${'%' + query + '%'} OR
+        p.nombre ILIKE ${'%' + query + '%'} OR
+        l.nombre ILIKE ${'%' + query + '%'} OR
+        fc.valor ILIKE ${'%' + query + '%'}
+      );
   `;
 
   const totalCount = Number(totalItems[0]?.count || 0);
-  return Math.ceil(totalCount / ITEMS_PER_PAGE); // Calcular el número total de páginas
+  return Math.ceil(totalCount / ITEMS_PER_PAGE);
+}
+
+export async function fetchFiltrosPorVendedor(vendedorId: number) {
+  return await sql`
+    SELECT 
+      fc.cliente_id,
+      f.nombre,
+      fc.valor
+    FROM filtros_clientes fc
+    JOIN filtros f ON fc.filtro_id = f.id
+    JOIN clientes c ON c.id = fc.cliente_id
+    WHERE c.vendedor_id = ${vendedorId};
+  `;
 }
 
 export async function fetchInvoicesPages(query: string, type: string, limit: string) {
