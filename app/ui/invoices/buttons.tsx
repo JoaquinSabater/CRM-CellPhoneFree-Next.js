@@ -14,29 +14,4 @@ export function CrearEtiqueta() {
   );
 }
 
-export function UpdateCliente({ id }: { id: string }) {
-  console.log('UpdateCliente - ID recibido:', id); // Depurar el valor del ID
-  return (
-    <Link
-      href={`/dashboard/invoices/${id}/edit`}     
-      className="rounded-md border p-2 hover:bg-gray-100"
-    >
-      <DocumentDuplicateIcon className="w-5" />
-    </Link>
-  );
-}
-
-{/*}
-export function DeleteInvoice({ id }: { id: string }) {
-  const deleteInvoiceWithId = deleteInvoice.bind(null, id);
-  return (
-    <form action={deleteInvoiceWithId}>
-      <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
-        <span className="sr-only">Delete</span>
-        <TrashIcon className="w-4" />
-      </button>
-    </form>
-  );
-}
-*/} 
 

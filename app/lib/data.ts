@@ -131,6 +131,29 @@ export async function fetchFilteredInvoices(query: string, type: string, limit: 
   }
 }
 
+export async function getCantidadClientesPorVendedor(vendedorId: number) {
+  const result = await sql`
+    SELECT COUNT(*) AS count
+    FROM clientes
+    WHERE vendedor_id = ${vendedorId};
+  `;
+  return Number(result[0]?.count ?? 0);
+}
+
+export async function getCantidadPedidosDelMes(vendedorId: number) {
+  const now = new Date();
+  const primerDiaDelMes = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const result = await sql`
+    SELECT COUNT(*) AS count
+    FROM pedidos
+    WHERE vendedor_id = ${vendedorId}
+    AND fecha_creacion >= ${primerDiaDelMes};
+  `;
+  return Number(result[0]?.count ?? 0);
+}
+
+
 export async function fetchFilteredClientes(query: string, vendedorId: number) {
   return await sql`
     SELECT 
