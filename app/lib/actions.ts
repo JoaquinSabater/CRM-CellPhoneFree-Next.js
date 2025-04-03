@@ -36,6 +36,15 @@ export async function createEtiquetaOnServer(nombre: string, vendedorId: number)
   revalidatePath('/dashboard/etiquetas');
 }
 
+export async function deleteFiltroById(id: number) {
+  try {
+    await sql`DELETE FROM filtros WHERE id = ${id};`;
+  } catch (error) {
+    console.error('Error al eliminar el filtro:', error);
+    throw error;
+  }
+}
+
 export async function updateCliente(id: string, formData: FormData) {
   const observaciones = formData.get('observaciones') as string | null;
 
