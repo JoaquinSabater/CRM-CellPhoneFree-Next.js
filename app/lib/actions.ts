@@ -68,8 +68,6 @@ export async function updateCliente(id: string, formData: FormData) {
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
 }
-
-
 export async function createEtiqueta(formData: FormData) {
   const nombre = formData.get('nombre')?.toString().trim();
 

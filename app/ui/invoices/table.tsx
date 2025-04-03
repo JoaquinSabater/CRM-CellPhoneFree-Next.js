@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { auth } from '@/app/lib/auth';
 import { fetchFilteredClientes, fetchFiltrosPorVendedor } from '@/app/lib/data';
+import { UpdateCliente } from '@/app/ui/invoices/buttons';
 
 export default async function Table({ query }: { query: string }) {
   const session = await auth();
@@ -28,13 +29,13 @@ export default async function Table({ query }: { query: string }) {
       <table className="min-w-full text-sm text-gray-900 border rounded-lg overflow-hidden">
         <thead className="bg-gray-100 text-left font-medium">
           <tr>
+            <th className="px-2 py-5 font-medium">Editar</th>
             <th className="px-2 py-5 font-medium">Razón Social</th>
             <th className="px-2 py-5 font-medium">Provincia</th>
             <th className="px-2 py-5 font-medium">Localidad</th>
             {filtrosUnicos.map((nombre) => (
               <th key={nombre} className="px-2 py-5 font-medium whitespace-nowrap">{nombre}</th>
             ))}
-            <th className="py-5 pr-4 text-right"></th>
           </tr>
         </thead>
         <tbody className="bg-white">
@@ -42,22 +43,21 @@ export default async function Table({ query }: { query: string }) {
             const filtrosDelCliente = filtroMap.get(cliente.id) || new Map();
 
             return (
-              <Link
-                key={cliente.id}
-                href={`/dashboard/invoices/${cliente.id}/edit`}
-                className="contents"
-              >
-                <tr className="hover:bg-gray-50 transition cursor-pointer">
-                  <td className="whitespace-nowrap px-2 py-3">{cliente.razon_social}</td>
-                  <td className="whitespace-nowrap px-2 py-3">{cliente.provincia_nombre}</td>
-                  <td className="whitespace-nowrap px-2 py-3">{cliente.localidad_nombre}</td>
-                  {filtrosUnicos.map((nombre) => (
-                    <td key={nombre} className="whitespace-nowrap px-2 py-3">
-                      {filtrosDelCliente.get(nombre) ?? '—'}
-                    </td>
-                  ))}
-                </tr>
-              </Link>
+              <tr key={cliente.id}>
+                <td className="whitespace-nowrap px-2 py-3">
+                  <div className="flex justify-start pl-1">
+                    <UpdateCliente id={cliente.id} />
+                  </div>
+                </td>
+                <td className="whitespace-nowrap px-2 py-3">{cliente.razon_social}</td>
+                <td className="whitespace-nowrap px-2 py-3">{cliente.provincia_nombre}</td>
+                <td className="whitespace-nowrap px-2 py-3">{cliente.localidad_nombre}</td>
+                {filtrosUnicos.map((nombre) => (
+                  <td key={nombre} className="whitespace-nowrap px-2 py-3">
+                    {filtrosDelCliente.get(nombre) ?? '—'}
+                  </td>
+                ))}
+              </tr>
             );
           })}
         </tbody>
@@ -65,6 +65,7 @@ export default async function Table({ query }: { query: string }) {
     </div>
   );
 }
+
 
 
 

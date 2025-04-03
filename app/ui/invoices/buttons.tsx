@@ -14,4 +14,13 @@ export function CrearEtiqueta() {
   );
 }
 
-
+export function UpdateCliente({ id }: { id: string }) {
+  console.log('UpdateCliente - ID recibido:', id); // Depurar el valor del ID
+  return (
+    <Link
+      href={`/dashboard/invoices/${id}/edit`}     
+      className="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 transition">
+      <DocumentDuplicateIcon className="w-5" />
+    </Link>
+  );
+}
