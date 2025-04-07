@@ -174,4 +174,61 @@ export async function getVendedorById(id: number | string): Promise<(vendedor & 
   }
 }
 
+export async function fetchProspectos() {
+  try {
+    const result = await sql`
+      SELECT 
+        p.id,
+        p.nombre,
+        p.email,
+        p.telefono,
+        p.fecha_contacto,
+        prov.nombre AS provincia,
+        loc.nombre AS ciudad
+      FROM prospectos p
+      LEFT JOIN provincia prov ON p.provincia_id = prov.id
+      LEFT JOIN localidad loc ON p.localidad_id = loc.id
+      ORDER BY p.fecha_contacto DESC;
+    `;
+
+    return result;
+  } catch (error) {
+    console.error('Error al obtener prospectos:', error);
+    throw new Error('No se pudieron obtener los prospectos.');
+  }
+}
+
+export async function getProspectoById(id: number) {
+  try {
+    const result = await sql`
+      SELECT 
+        p.id,
+        p.fecha_contacto,
+        p.por_donde_llego,
+        p.nombre,
+        p.email,
+        p.telefono,
+        p.negocio,
+        prov.nombre AS provincia,
+        loc.nombre AS ciudad,
+        p.cuit,
+        p.anotaciones,
+        p.fecha_pedido_asesoramiento,
+        p.url
+      FROM prospectos p
+      LEFT JOIN provincia prov ON p.provincia_id = prov.id
+      LEFT JOIN localidad loc ON p.localidad_id = loc.id
+      WHERE p.id = ${id};
+    `;
+
+    return result[0] ?? null; // ✅ Solo el prospecto
+  } catch (error) {
+    console.error('Error al obtener prospecto por ID:', error);
+    return null;
+  }
+}
+
+
+
+
 

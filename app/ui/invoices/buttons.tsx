@@ -1,4 +1,4 @@
-import { DocumentDuplicateIcon, PlusIcon, TrashIcon  } from '@heroicons/react/24/outline';
+import { DocumentDuplicateIcon, PlusIcon, TrashIcon,PencilIcon  } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 //import { deleteInvoice } from '@/app/lib/actions';
 
@@ -21,6 +21,26 @@ export function UpdateCliente({ id }: { id: string }) {
       href={`/dashboard/invoices/${id}/edit`}     
       className="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 transition">
       <DocumentDuplicateIcon className="w-5" />
+    </Link>
+  );
+}
+
+export function UpdateProspecto({ id }: { id: number }) {
+  return (
+    <Link
+      href={`/dashboard/prospects/${id}/edit`}
+      className="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 transition">
+      <PencilIcon className="w-5 h-5 text-gray-600" />
+    </Link>
+  );
+}
+
+export function DeleteProspecto({ id }: { id: number }) {
+  return (
+    <Link
+      href={`/dashboard/invoices`}
+      className="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 transition">
+      <TrashIcon className="w-5 h-5 text-gray-600" />
     </Link>
   );
 }

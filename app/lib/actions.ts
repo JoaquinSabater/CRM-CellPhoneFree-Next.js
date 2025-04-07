@@ -96,6 +96,50 @@ export async function createEtiqueta(formData: FormData) {
   }
 }
 
+export async function updateProspecto(id: number, formData: FormData) {
+  const fields = {
+      fecha_contacto: formData.get('fecha_contacto')?.toString() || null,
+      por_donde_llego: formData.get('por_donde_llego')?.toString() || null,
+      nombre: formData.get('nombre')?.toString() || null,
+      email: formData.get('email')?.toString() || null,
+      telefono: formData.get('telefono')?.toString() || null,
+      negocio: formData.get('negocio')?.toString() || null,
+      provincia: formData.get('provincia')?.toString() || null,
+      ciudad: formData.get('ciudad')?.toString() || null,
+      cuit: formData.get('cuit')?.toString() || null,
+      anotaciones: formData.get('anotaciones')?.toString() || null,
+      fecha_pedido_asesoramiento: formData.get('fecha_pedido_asesoramiento')?.toString() || null,
+      url: formData.get('url')?.toString() || null,
+  };
+
+  try {
+    await sql`
+      UPDATE prospectos
+      SET
+        fecha_contacto = ${fields.fecha_contacto},
+        por_donde_llego = ${fields.por_donde_llego},
+        nombre = ${fields.nombre},
+        email = ${fields.email},
+        telefono = ${fields.telefono},
+        negocio = ${fields.negocio},
+        provincia = ${fields.provincia},
+        ciudad = ${fields.ciudad},
+        cuit = ${fields.cuit},
+        anotaciones = ${fields.anotaciones},
+        fecha_pedido_asesoramiento = ${fields.fecha_pedido_asesoramiento},
+        url = ${fields.url}
+      WHERE id = ${id};
+    `;
+
+    revalidatePath('/dashboard/prospects');
+    redirect('/dashboard/prospects');
+  } catch (error) {
+    console.error('Error al actualizar el prospecto:', error);
+    throw new Error('Error al actualizar el prospecto');
+  }
+}
+
+
   export async function authenticate(
     prevState: string | undefined,
     formData: FormData,
