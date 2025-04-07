@@ -4,10 +4,7 @@ const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 async function listInvoices() {
 const data = await sql`
-    SELECT table_name
-    FROM information_schema.tables
-    WHERE table_schema = 'public'
-    ORDER BY table_name;
+    SELECT rol FROM vendedores;
       `;
  	return data;
  }

@@ -40,6 +40,7 @@ export type usuario = {
   created_at: string;
   updated_at: string;
   vendedor_id: number;
+  rol: string;
 };
 
 export type cliente = {

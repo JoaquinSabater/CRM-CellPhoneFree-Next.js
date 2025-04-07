@@ -8,6 +8,7 @@ declare module "next-auth" {
     user: {
       email: string;
       vendedor_id: number;
+      rol: string;
     };
   }
 
@@ -35,5 +36,6 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     vendedor_id: number;
+    rol: string;
   }
 }

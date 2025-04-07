@@ -23,6 +23,7 @@ export const authConfig = {
     async jwt({ token, user }) {
       if (user) {
         token.vendedor_id = (user as any).vendedor_id;
+        token.rol = (user as any).rol; // <- Asegurate que venga del proveedor
       }
       return token;
     },
@@ -30,6 +31,7 @@ export const authConfig = {
     // ✅ Agregar vendedor_id a session.user
     async session({ session, token }) {
       session.user.vendedor_id = token.vendedor_id;
+      session.user.rol = token.rol; // <- Esto es clave
       return session;
     },
   },
