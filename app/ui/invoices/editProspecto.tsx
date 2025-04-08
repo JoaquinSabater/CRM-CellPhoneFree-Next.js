@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/app/ui/button';
 import { updateProspecto } from '@/app/lib/actions'; // Asegurate de tener esta acción
 
-export default function EditProspectoForm({ prospecto }: { prospecto: any }) {
+export default function EditProspectoForm({ prospecto,provincias,localidades }: any) {
   const updateWithId = updateProspecto.bind(null, prospecto.id);
 
   console.log('ID recibido prospecto:', prospecto.id);
@@ -78,26 +78,48 @@ export default function EditProspectoForm({ prospecto }: { prospecto: any }) {
             className={inputBase}
           />
         </div>
+        {/* Provincia */}
         <div>
-          <label htmlFor="provincia" className="block text-sm font-medium mb-1">Provincia</label>
-          <input
-            id="provincia"
-            name="provincia"
-            type="text"
-            defaultValue={prospecto.provincia}
+          <label htmlFor="provincia_id" className="block text-sm font-medium mb-1">
+            Provincia
+          </label>
+          <select
+            id="provincia_id"
+            name="provincia_id"
+            defaultValue={prospecto.provincia_id?.toString()}
             className={inputBase}
-          />
+            required
+          >
+            <option value="">Selecciona una provincia</option>
+            {provincias.map((provincia: any) => (
+              <option key={provincia.id} value={provincia.id}>
+                {provincia.nombre}
+              </option>
+            ))}
+          </select>
         </div>
+
+        {/* Localidad */}
         <div>
-          <label htmlFor="ciudad" className="block text-sm font-medium mb-1">Ciudad</label>
-          <input
-            id="ciudad"
-            name="ciudad"
-            type="text"
-            defaultValue={prospecto.ciudad}
+          <label htmlFor="localidad_id" className="block text-sm font-medium mb-1">
+            Ciudad / Localidad
+          </label>
+          <select
+            id="localidad_id"
+            name="localidad_id"
+            defaultValue={prospecto.localidad_id?.toString()}
             className={inputBase}
-          />
+            required
+          >
+            <option value="">Selecciona una localidad</option>
+            {localidades.map((localidad: any) => (
+              <option key={localidad.id} value={localidad.id}>
+                {localidad.nombre} 
+              </option>
+            ))}
+          </select>
         </div>
+
         <div>
           <label htmlFor="cuit" className="block text-sm font-medium mb-1">CUIT</label>
           <input

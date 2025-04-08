@@ -132,6 +132,25 @@ export async function getPedidosByCliente(clienteId: string): Promise<pedido[]> 
   `;
 }
 
+export async function getAllProvincias() {
+  const result = await sql`
+    SELECT id, nombre
+    FROM provincia
+    ORDER BY nombre;
+  `;
+  return result;
+}
+
+export async function getAllLocalidades() {
+  const result = await sql`
+    SELECT id, nombre, provincia_id
+    FROM localidad
+    ORDER BY nombre;
+  `;
+  return result;
+}
+
+
 export async function getFiltrosDelCliente(clienteId: string) {
   const id = Number(clienteId);
   try {
@@ -209,7 +228,9 @@ export async function getProspectoById(id: number) {
         p.email,
         p.telefono,
         p.negocio,
+        p.provincia_id,
         prov.nombre AS provincia,
+        p.localidad_id,
         loc.nombre AS ciudad,
         p.cuit,
         p.anotaciones,
@@ -221,12 +242,13 @@ export async function getProspectoById(id: number) {
       WHERE p.id = ${id};
     `;
 
-    return result[0] ?? null; // ✅ Solo el prospecto
+    return result[0] ?? null;
   } catch (error) {
     console.error('Error al obtener prospecto por ID:', error);
     return null;
   }
 }
+
 
 
 

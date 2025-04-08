@@ -97,22 +97,31 @@ export async function createEtiqueta(formData: FormData) {
 }
 
 export async function updateProspecto(id: number, formData: FormData) {
-  const fields = {
-      fecha_contacto: formData.get('fecha_contacto')?.toString() || null,
-      por_donde_llego: formData.get('por_donde_llego')?.toString() || null,
-      nombre: formData.get('nombre')?.toString() || null,
-      email: formData.get('email')?.toString() || null,
-      telefono: formData.get('telefono')?.toString() || null,
-      negocio: formData.get('negocio')?.toString() || null,
-      provincia: formData.get('provincia')?.toString() || null,
-      ciudad: formData.get('ciudad')?.toString() || null,
-      cuit: formData.get('cuit')?.toString() || null,
-      anotaciones: formData.get('anotaciones')?.toString() || null,
-      fecha_pedido_asesoramiento: formData.get('fecha_pedido_asesoramiento')?.toString() || null,
-      url: formData.get('url')?.toString() || null,
+  const getString = (key: string) => String(formData.get(key) ?? '');
+  const getNumberOrNull = (key: string) => {
+    const value = formData.get(key);
+    const parsed = Number(value);
+    return isNaN(parsed) ? null : parsed;
   };
 
-  try {
+  const fields = {
+    fecha_contacto: getString('fecha_contacto'),
+    por_donde_llego: getString('por_donde_llego'),
+    nombre: getString('nombre'),
+    email: getString('email'),
+    telefono: getString('telefono'),
+    negocio: getString('negocio'),
+    provincia_id: getNumberOrNull('provincia_id'),
+    localidad_id: getNumberOrNull('localidad_id'),
+    cuit: getString('cuit'),
+    anotaciones: getString('anotaciones'),
+    fecha_pedido_asesoramiento: getString('fecha_pedido_asesoramiento'),
+    url: getString('url'),
+  };
+
+  // ✅ Debug: Mostrar los valores del form
+  console.log('🔍 Campos recibidos para actualizar prospecto:', fields);
+
     await sql`
       UPDATE prospectos
       SET
@@ -122,8 +131,8 @@ export async function updateProspecto(id: number, formData: FormData) {
         email = ${fields.email},
         telefono = ${fields.telefono},
         negocio = ${fields.negocio},
-        provincia = ${fields.provincia},
-        ciudad = ${fields.ciudad},
+        provincia_id = ${fields.provincia_id},
+        localidad_id = ${fields.localidad_id},
         cuit = ${fields.cuit},
         anotaciones = ${fields.anotaciones},
         fecha_pedido_asesoramiento = ${fields.fecha_pedido_asesoramiento},
@@ -131,13 +140,11 @@ export async function updateProspecto(id: number, formData: FormData) {
       WHERE id = ${id};
     `;
 
-    revalidatePath('/dashboard/prospects');
-    redirect('/dashboard/prospects');
-  } catch (error) {
-    console.error('Error al actualizar el prospecto:', error);
-    throw new Error('Error al actualizar el prospecto');
-  }
+    revalidatePath('/dashboard/invoices');
+    redirect('/dashboard/invoices');
 }
+
+
 
 
   export async function authenticate(
