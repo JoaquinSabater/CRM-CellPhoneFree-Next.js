@@ -144,7 +144,65 @@ export async function updateProspecto(id: number, formData: FormData) {
     redirect('/dashboard/invoices');
 }
 
+export async function createProspecto(formData: FormData) {
+  const fields = {
+    fecha_contacto: formData.get('fecha_contacto')?.toString() || null,
+    por_donde_llego: formData.get('por_donde_llego')?.toString() || null,
+    nombre: formData.get('nombre')?.toString() || null,
+    email: formData.get('email')?.toString() || null,
+    telefono: formData.get('telefono')?.toString() || null,
+    negocio: formData.get('negocio')?.toString() || null,
+    provincia_id: Number(formData.get('provincia_id')) || null,
+    localidad_id: Number(formData.get('localidad_id')) || null,
+    cuit: formData.get('cuit')?.toString() || null,
+    anotaciones: formData.get('anotaciones')?.toString() || null,
+    fecha_pedido_asesoramiento: formData.get('fecha_pedido_asesoramiento')?.toString() || null,
+    url: formData.get('url')?.toString() || null,
+  };
 
+  // Debug
+  console.log('🟢 Campos recibidos para crear prospecto:', fields);
+
+  // Validación básica
+  if (!fields.nombre || !fields.email || !fields.fecha_contacto || !fields.provincia_id || !fields.localidad_id) {
+    throw new Error('Faltan campos obligatorios');
+  }
+
+  try {
+    await sql`
+      INSERT INTO prospectos (
+        fecha_contacto,
+        por_donde_llego,
+        nombre,
+        email,
+        telefono,
+        negocio,
+        provincia_id,
+        localidad_id,
+        cuit,
+        anotaciones,
+        fecha_pedido_asesoramiento,
+        url
+      ) VALUES (
+        ${fields.fecha_contacto},
+        ${fields.por_donde_llego},
+        ${fields.nombre},
+        ${fields.email},
+        ${fields.telefono},
+        ${fields.negocio},
+        ${fields.provincia_id},
+        ${fields.localidad_id},
+        ${fields.cuit},
+        ${fields.anotaciones},
+        ${fields.fecha_pedido_asesoramiento},
+        ${fields.url}
+      );
+    `;
+  } catch (error) {
+    console.error('❌ Error al crear el prospecto:', error);
+    throw new Error('Error al crear el prospecto');
+  }
+}
 
 
   export async function authenticate(
