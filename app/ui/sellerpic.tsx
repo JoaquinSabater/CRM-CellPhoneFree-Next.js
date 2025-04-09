@@ -19,7 +19,7 @@ export default async function SellerPic() {
   }
 
   return (
-    <div className={`${lusitana.className} flex flex-col items-center p-3 bg-gray-100 rounded-lg w-[280px]`}>
+    <div className={`${lusitana.className} flex flex-col items-center p-1 bg-gray-100 rounded-lg w-[280px]`}>
       <Image
         src={vendedor.url_imagen || '/sellers/default.png'}
         alt={vendedor.nombre}
