@@ -3,11 +3,15 @@ import Sellerpic from '../ui/sellerpic';
 
 export default async function Page() {
   return (
-    <main>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <main className="flex gap-2">
+      <div className="flex flex-wrap items-start justify-center gap-10 mt-2">
         <Sellerpic />
-        <CardWrapper />
+        <div className="flex flex-col gap-9">
+          <CardWrapper />
+        </div>
       </div>
     </main>
   );
 }
+
+
