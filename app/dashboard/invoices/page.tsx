@@ -3,7 +3,7 @@ import Search from '@/app/ui/search';
 import { Suspense } from 'react';
 import Table from '@/app/ui/invoices/table';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
-import { fetchClientesPages } from '@/app/lib/data';
+import { fetchClientesPages,fetchProspectsPages } from '@/app/lib/data';
 import {CrearEtiqueta,CrearProspecto} from '@/app/ui/invoices/buttons';
 import { auth } from '@/app/lib/auth';
 
@@ -16,6 +16,7 @@ export default async function Page(props: { searchParams: Promise<{ query?: stri
   const query = searchParams?.query ?? '';
   const currentPage = Number(searchParams?.page ?? '1');
   const totalPages = await fetchClientesPages(query,Number(vendedorId));
+  const totalProspectos = await fetchProspectsPages(query);
 
   return (
     <div className="w-full">
@@ -28,7 +29,8 @@ export default async function Page(props: { searchParams: Promise<{ query?: stri
         <Table query={query} />
       </Suspense>
       <div className="mt-5 flex w-full justify-center">
-        <Pagination totalPages={totalPages} />
+        {rol==='captador' && <Pagination totalPages={totalProspectos} />}
+        {rol==='vendedor' && <Pagination totalPages={totalPages} />}
       </div>
     </div>
   );

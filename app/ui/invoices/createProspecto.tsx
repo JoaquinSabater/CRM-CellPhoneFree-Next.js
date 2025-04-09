@@ -20,7 +20,7 @@ export default function CreateProspectoForm({
 
     try {
       await createProspecto(formData);
-      router.push('/dashboard/prospects');
+      router.push('/dashboard/invoices');
     } catch (err) {
       console.error('❌ Error al crear prospecto:', err);
       setError('Ocurrió un error al crear el prospecto.');

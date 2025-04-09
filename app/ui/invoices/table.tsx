@@ -3,7 +3,8 @@ import { auth } from '@/app/lib/auth';
 import {
   fetchFilteredClientes,
   fetchFiltrosPorVendedor,
-  fetchProspectos
+  fetchProspectos,
+  fetchFilteredProspects
 } from '@/app/lib/data';
 import { UpdateCliente,UpdateProspecto,DeleteProspecto } from '@/app/ui/invoices/buttons';
 
@@ -78,7 +79,7 @@ export default async function Table({ query }: { query: string }) {
 
   // 💙 Si es captador, tabla de prospectos
   if (rol === 'captador') {
-    const prospectos = await fetchProspectos();
+    const prospectos = await fetchFilteredProspects(query);
 
     return (
       <div className="mt-6 w-full overflow-x-auto">
@@ -101,7 +102,7 @@ export default async function Table({ query }: { query: string }) {
                 <td className="whitespace-nowrap px-2 py-3">{p.nombre}</td>
                 <td className="whitespace-nowrap px-2 py-3">{p.email}</td>
                 <td className="whitespace-nowrap px-2 py-3">{p.telefono}</td>
-                <td className="whitespace-nowrap px-2 py-3">{p.ciudad}</td>
+                <td className="whitespace-nowrap px-2 py-3">{p.localidad_nombre}</td>
                 <td className="whitespace-nowrap px-2 py-3">{new Date(p.fecha_contacto).toLocaleDateString()}</td>
                 <td className="py-1">
                   <UpdateProspecto id={p.id} />

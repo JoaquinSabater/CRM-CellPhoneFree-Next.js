@@ -58,6 +58,32 @@ export async function fetchFilteredClientes(query: string, vendedorId: number) {
   `;
 }
 
+export async function fetchFilteredProspects(query: string) {
+  return await sql`
+    SELECT 
+        p.id,
+        p.nombre,
+        p.email,
+        p.telefono,
+        p.negocio,
+        prov.nombre AS provincia_nombre,
+        loc.nombre AS localidad_nombre,
+        p.fecha_contacto
+      FROM prospectos p
+      LEFT JOIN provincia prov ON p.provincia_id = prov.id
+      LEFT JOIN localidad loc ON p.localidad_id = loc.id
+      WHERE p.activo = true
+        AND (
+          loc.nombre ILIKE ${'%' + query + '%'} OR
+          p.nombre ILIKE ${'%' + query + '%'} OR
+          p.email ILIKE ${'%' + query + '%'} OR
+          p.telefono ILIKE ${'%' + query + '%'}
+        )
+      ORDER BY p.fecha_contacto DESC;
+    `;
+}
+
+
 export async function fetchClientesPages(query: string, vendedorId: number) {
   const totalItems = await sql`
     SELECT COUNT(DISTINCT c.id) AS count
@@ -75,6 +101,24 @@ export async function fetchClientesPages(query: string, vendedorId: number) {
   `;
 
   const totalCount = Number(totalItems[0]?.count || 0);
+  return Math.ceil(totalCount / ITEMS_PER_PAGE);
+}
+
+export async function fetchProspectsPages(query: string) {
+  const countResult = await sql`
+    SELECT COUNT(*) as total
+    FROM prospectos
+    WHERE activo = true
+      AND (
+        nombre ILIKE ${'%' + query + '%'} OR
+        email ILIKE ${'%' + query + '%'} OR
+        telefono ILIKE ${'%' + query + '%'}
+      );
+  `;
+
+  const totalCount = Number(countResult[0]?.total || 0);
+  console.log('Total count of prospectos:', totalCount);
+
   return Math.ceil(totalCount / ITEMS_PER_PAGE);
 }
 
@@ -207,8 +251,10 @@ export async function fetchProspectos() {
       FROM prospectos p
       LEFT JOIN provincia prov ON p.provincia_id = prov.id
       LEFT JOIN localidad loc ON p.localidad_id = loc.id
+      WHERE p.activo = true
       ORDER BY p.fecha_contacto DESC;
     `;
+
 
     return result;
   } catch (error) {

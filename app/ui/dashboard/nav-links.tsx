@@ -22,11 +22,6 @@ const links = [
     href: '/dashboard/invoices',
     icon: UserGroupIcon,
   },
-  { 
-    name:'Prospects', 
-    href: '/dashboard/prospects', 
-    icon: DocumentDuplicateIcon 
-  },
 ];
 
 export default function NavLinks() {
