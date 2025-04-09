@@ -2,7 +2,7 @@ import Pagination from '@/app/ui/invoices/pagination';
 import Search from '@/app/ui/search';
 import { Suspense } from 'react';
 import Table from '@/app/ui/invoices/table';
-import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
+import LoadingSpinner from '@/app/ui/loading';
 import { fetchClientesPages,fetchProspectsPages } from '@/app/lib/data';
 import {CrearEtiqueta,CrearProspecto} from '@/app/ui/invoices/buttons';
 import { auth } from '@/app/lib/auth';
@@ -25,7 +25,7 @@ export default async function Page(props: { searchParams: Promise<{ query?: stri
         {vendedorId === 2 && <CrearEtiqueta />}
         {rol === 'captador' && <CrearProspecto />}
       </div>
-      <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
+      <Suspense fallback={<LoadingSpinner />}>
         <Table query={query} />
       </Suspense>
       <div className="mt-5 flex w-full justify-center">

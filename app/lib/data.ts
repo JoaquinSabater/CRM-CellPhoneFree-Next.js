@@ -117,8 +117,6 @@ export async function fetchProspectsPages(query: string) {
   `;
 
   const totalCount = Number(countResult[0]?.total || 0);
-  console.log('Total count of prospectos:', totalCount);
-
   return Math.ceil(totalCount / ITEMS_PER_PAGE);
 }
 
