@@ -79,7 +79,8 @@ export default async function Table({ query }: { query: string }) {
 
   // 💙 Si es captador, tabla de prospectos
   if (rol === 'captador') {
-    const prospectos = await fetchFilteredProspects(query);
+    const captadorId = session?.user?.captador_id;
+    const prospectos = await fetchFilteredProspects(query, captadorId);
 
     return (
       <div className="mt-6 w-full overflow-x-auto">

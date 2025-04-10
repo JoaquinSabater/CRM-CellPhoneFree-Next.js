@@ -22,8 +22,9 @@ export const authConfig = {
     // ✅ Agregar vendedor_id al JWT
     async jwt({ token, user }) {
       if (user) {
-        user.id = token.id as string;
+        token.id = user.id ?? '';
         token.vendedor_id = (user as any).vendedor_id;
+        token.captador_id = (user as any).captador_id;
         token.rol = (user as any).rol; // <- Asegurate que venga del proveedor
       }
       return token;
@@ -33,6 +34,7 @@ export const authConfig = {
     async session({ session, token }) {
       session.user.id = token.sub as string;
       session.user.vendedor_id = token.vendedor_id;
+      session.user.captador_id = token.captador_id;
       session.user.rol = token.rol; // <- Esto es clave
       return session;
     },

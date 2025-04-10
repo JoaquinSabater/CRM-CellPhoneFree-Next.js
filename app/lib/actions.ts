@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation';
 import { signIn } from 'app/auth';
 import { AuthError } from 'next-auth';
 import { crearEtiqueta } from './etiquetas';
+import { auth } from '@/app/lib/auth';
 import { clientes } from './placeholder-data';
 
 
@@ -145,6 +146,9 @@ export async function updateProspecto(id: number, formData: FormData) {
 }
 
 export async function createProspecto(formData: FormData) {
+  const session = await auth();
+  const captadorId = session?.user?.captador_id;
+
   const fields = {
     fecha_contacto: formData.get('fecha_contacto')?.toString() || null,
     por_donde_llego: formData.get('por_donde_llego')?.toString() || null,
@@ -158,6 +162,7 @@ export async function createProspecto(formData: FormData) {
     anotaciones: formData.get('anotaciones')?.toString() || null,
     fecha_pedido_asesoramiento: formData.get('fecha_pedido_asesoramiento')?.toString() || null,
     url: formData.get('url')?.toString() || null,
+    captador_id: captadorId || null,
   };
 
   // Debug
@@ -182,7 +187,8 @@ export async function createProspecto(formData: FormData) {
         cuit,
         anotaciones,
         fecha_pedido_asesoramiento,
-        url
+        url,
+        captador_id
       ) VALUES (
         ${fields.fecha_contacto},
         ${fields.por_donde_llego},
@@ -195,7 +201,8 @@ export async function createProspecto(formData: FormData) {
         ${fields.cuit},
         ${fields.anotaciones},
         ${fields.fecha_pedido_asesoramiento},
-        ${fields.url}
+        ${fields.url},
+        ${fields.captador_id}
       );
     `;
   } catch (error) {

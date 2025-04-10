@@ -58,21 +58,22 @@ export async function fetchFilteredClientes(query: string, vendedorId: number) {
   `;
 }
 
-export async function fetchFilteredProspects(query: string) {
-  return await sql`
-    SELECT 
-        p.id,
-        p.nombre,
-        p.email,
-        p.telefono,
-        p.negocio,
-        prov.nombre AS provincia_nombre,
-        loc.nombre AS localidad_nombre,
-        p.fecha_contacto
+export async function fetchFilteredProspects(query: string, captadorId: number) {
+    return await sql`
+      SELECT 
+          p.id,
+          p.nombre,
+          p.email,
+          p.telefono,
+          p.negocio,
+          prov.nombre AS provincia_nombre,
+          loc.nombre AS localidad_nombre,
+          p.fecha_contacto
       FROM prospectos p
       LEFT JOIN provincia prov ON p.provincia_id = prov.id
       LEFT JOIN localidad loc ON p.localidad_id = loc.id
       WHERE p.activo = true
+        AND p.captador_id = ${captadorId}
         AND (
           loc.nombre ILIKE ${'%' + query + '%'} OR
           p.nombre ILIKE ${'%' + query + '%'} OR
@@ -233,6 +234,15 @@ export async function getVendedorById(id: number | string): Promise<(vendedor & 
     console.error('[getVendedorById] Error:', error);
     return null;
   }
+}
+
+export async function getCaptadorById(id: number) {
+  const result = await sql`
+    SELECT id, nombre,url_imagen
+    FROM captador
+    WHERE id = ${id};
+  `;
+  return result[0];
 }
 
 export async function fetchProspectos() {
