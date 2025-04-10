@@ -1,6 +1,6 @@
 import { DocumentDuplicateIcon, PlusIcon, TrashIcon,PencilIcon  } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-//import { deleteInvoice } from '@/app/lib/actions';
+import { desactivarProspecto } from '@/app/lib/actions';
 
 export function CrearEtiqueta() {
   return (
@@ -47,11 +47,13 @@ export function UpdateProspecto({ id }: { id: number }) {
 }
 
 export function DeleteProspecto({ id }: { id: number }) {
+  const delate = desactivarProspecto.bind(null, id);
   return (
-    <Link
-      href={`/dashboard/invoices`}
-      className="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 transition">
-      <TrashIcon className="w-5 h-5 text-gray-600" />
-    </Link>
+    <form action={delate}>
+        <button type="submit" className="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 transition">
+          <span className="sr-only">Delete</span>
+          <TrashIcon className="w-5 h-5 text-gray-600" />
+        </button>
+    </form>
   );
 }

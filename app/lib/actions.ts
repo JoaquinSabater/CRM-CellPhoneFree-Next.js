@@ -121,8 +121,6 @@ export async function updateProspecto(id: number, formData: FormData) {
   };
 
   // ✅ Debug: Mostrar los valores del form
-  console.log('🔍 Campos recibidos para actualizar prospecto:', fields);
-
     await sql`
       UPDATE prospectos
       SET
@@ -145,6 +143,20 @@ export async function updateProspecto(id: number, formData: FormData) {
     redirect('/dashboard/invoices');
 }
 
+export async function desactivarProspecto(id: number) {
+  try {
+    await sql`
+      UPDATE prospectos
+      SET activo = false
+      WHERE id = ${id};
+    `;
+  } catch (error) {
+    console.error('❌ Error al desactivar el prospecto:', error);
+    throw new Error('No se pudo desactivar el prospecto');
+  }
+}
+
+
 export async function createProspecto(formData: FormData) {
   const session = await auth();
   const captadorId = session?.user?.captador_id;
@@ -166,8 +178,6 @@ export async function createProspecto(formData: FormData) {
   };
 
   // Debug
-  console.log('🟢 Campos recibidos para crear prospecto:', fields);
-
   // Validación básica
   if (!fields.nombre || !fields.email || !fields.fecha_contacto || !fields.provincia_id || !fields.localidad_id) {
     throw new Error('Faltan campos obligatorios');
