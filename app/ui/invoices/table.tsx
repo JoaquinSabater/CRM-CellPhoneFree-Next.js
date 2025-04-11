@@ -119,7 +119,6 @@ export default async function Table({ query }: { query: string }) {
     );
   }
 
-  // 🔴 Si el rol no es válido
   return <div className="text-red-500 p-4">Rol no válido.</div>;
 }
 

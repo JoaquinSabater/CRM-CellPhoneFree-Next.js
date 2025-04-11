@@ -15,8 +15,9 @@ export default async function Page(props: { searchParams: Promise<{ query?: stri
 
   const query = searchParams?.query ?? '';
   const currentPage = Number(searchParams?.page ?? '1');
-  const totalPages = await fetchClientesPages(query,Number(vendedorId));
-  const totalProspectos = await fetchProspectsPages(query);
+  const totalPages = rol === 'vendedor' ? await fetchClientesPages(query, Number(vendedorId)): 0;
+  const totalProspectos = rol === 'captador' ? await fetchProspectsPages(query): 0;
+
 
   return (
     <div className="w-full">

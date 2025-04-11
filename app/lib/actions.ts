@@ -37,6 +37,41 @@ export async function createEtiquetaOnServer(nombre: string, vendedorId: number)
   revalidatePath('/dashboard/etiquetas');
 }
 
+export async function createRecordatorio(formData: FormData) {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    return { success: false, error: 'No autenticado' };
+  }
+
+  const mensaje = formData.get('mensaje') as string;
+  const fecha = formData.get('fecha') as string;
+  const hora = formData.get('hora') as string;
+
+  const fechaEnvio = `${fecha} ${hora}`; // Formato compatible con timestamp
+
+  // ✅ Obtener chat_id y bot_token del usuario
+  const [usuario] = await sql`
+    SELECT chat_id, bot_token FROM usuarios WHERE id = ${userId};
+  `;
+
+  const chat_id = usuario?.chat_id;
+  const bot_token = usuario?.bot_token;
+
+  if (!chat_id || !bot_token) {
+    return { success: false, error: 'Faltan datos de Telegram (chat_id o bot_token)' };
+  }
+
+  // ✅ Insertar el recordatorio
+  await sql`
+    INSERT INTO recordatorios (mensaje, fecha_envio, chat_id, bot_token)
+    VALUES (${mensaje}, ${fechaEnvio}, ${chat_id}, ${bot_token});
+  `;
+
+  return { success: true };
+}
+
 export async function deleteFiltroById(id: number) {
   try {
     await sql`DELETE FROM filtros WHERE id = ${id};`;

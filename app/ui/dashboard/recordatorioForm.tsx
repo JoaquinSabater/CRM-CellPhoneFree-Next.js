@@ -1,21 +1,37 @@
 'use client';
 
 import { useState } from 'react';
+import { createRecordatorio } from '@/app/lib/actions';
 
 export default function RecordatorioForm() {
   const [mensaje, setMensaje] = useState('');
   const [fecha, setFecha] = useState('');
   const [hora, setHora] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
 
-    // TODO: enviar al backend vía fetch o action
-    console.log({
-      mensaje,
-      fecha,
-      hora,
-    });
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      const res = await createRecordatorio(formData);
+      if (res?.success) {
+        setSuccess('✅ Recordatorio guardado correctamente');
+
+        setMensaje('');
+        setFecha('');
+        setHora('');
+      } else {
+        setError('❌ Ocurrió un error al guardar el recordatorio');
+      }
+    } catch (err) {
+      console.error('Error al enviar recordatorio:', err);
+      setError('❌ Error inesperado');
+    }
   };
 
   return (
@@ -23,9 +39,8 @@ export default function RecordatorioForm() {
       <h2 className="text-lg font-semibold text-gray-800">📨 Programar recordatorio por Telegram</h2>
 
       <textarea
-        value={mensaje}
-        onChange={(e) => setMensaje(e.target.value)}
-        rows={4}
+        name="mensaje"
+        required
         placeholder="Escribí el mensaje que querés recibir..."
         className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
       />
@@ -35,7 +50,7 @@ export default function RecordatorioForm() {
           <label className="block text-sm mb-1">📅 Fecha</label>
           <input
             type="date"
-            value={fecha}
+            name="fecha"
             onChange={(e) => setFecha(e.target.value)}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
           />
@@ -45,7 +60,7 @@ export default function RecordatorioForm() {
           <label className="block text-sm mb-1">🕒 Hora</label>
           <input
             type="time"
-            value={hora}
+            name="hora"
             onChange={(e) => setHora(e.target.value)}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
           />
