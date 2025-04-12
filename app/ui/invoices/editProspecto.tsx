@@ -2,12 +2,10 @@
 
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
-import { updateProspecto } from '@/app/lib/actions'; // Asegurate de tener esta acción
+import { updateProspecto } from '@/app/lib/actions';
 
-export default function EditProspectoForm({ prospecto,provincias,localidades }: any) {
+export default function EditProspectoForm({ prospecto, provincias, localidades }: any) {
   const updateWithId = updateProspecto.bind(null, prospecto.id);
-
-  console.log('ID recibido prospecto:', prospecto.id);
 
   const inputBase = 'peer block w-full rounded-md border py-2 pl-3 text-sm outline-2 placeholder:text-gray-500';
 
@@ -21,13 +19,14 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
             name="fecha_contacto"
             type="date"
             defaultValue={
-              prospecto.fecha_contacto
+              prospecto.fecha_contacto && !isNaN(new Date(prospecto.fecha_contacto).getTime())
                 ? new Date(prospecto.fecha_contacto).toISOString().slice(0, 10)
                 : ''
             }
             className={inputBase}
           />
         </div>
+
         <div>
           <label htmlFor="por_donde_llego" className="block text-sm font-medium mb-1">¿Por dónde llegó?</label>
           <input
@@ -38,6 +37,7 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
             className={inputBase}
           />
         </div>
+
         <div>
           <label htmlFor="nombre" className="block text-sm font-medium mb-1">Nombre</label>
           <input
@@ -48,6 +48,7 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
             className={inputBase}
           />
         </div>
+
         <div>
           <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
           <input
@@ -58,6 +59,7 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
             className={inputBase}
           />
         </div>
+
         <div>
           <label htmlFor="telefono" className="block text-sm font-medium mb-1">Teléfono</label>
           <input
@@ -68,6 +70,7 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
             className={inputBase}
           />
         </div>
+
         <div>
           <label htmlFor="negocio" className="block text-sm font-medium mb-1">Tipo de Negocio</label>
           <input
@@ -78,6 +81,7 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
             className={inputBase}
           />
         </div>
+
         {/* Provincia */}
         <div>
           <label htmlFor="provincia_id" className="block text-sm font-medium mb-1">
@@ -114,7 +118,7 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
             <option value="">Selecciona una localidad</option>
             {localidades.map((localidad: any) => (
               <option key={localidad.id} value={localidad.id}>
-                {localidad.nombre} 
+                {localidad.nombre}
               </option>
             ))}
           </select>
@@ -131,6 +135,7 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
           />
         </div>
 
+        {/* Seguimientos con radio buttons */}
         <div className="flex flex-col justify-center mt-1">
           <label className="block text-sm font-medium mb-1">Seguimientos</label>
           <div className="flex gap-4">
@@ -140,7 +145,6 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
                 id="segundo_contacto"
                 name="seguimiento"
                 value="2"
-                defaultChecked={prospecto.segundo_contacto}
               />
               <label htmlFor="segundo_contacto" className="text-sm">2º contacto</label>
             </div>
@@ -150,7 +154,6 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
                 id="tercer_contacto"
                 name="seguimiento"
                 value="3"
-                defaultChecked={prospecto.tercer_contacto}
               />
               <label htmlFor="tercer_contacto" className="text-sm">3º contacto</label>
             </div>
@@ -160,13 +163,11 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
                 id="cuarto_contacto"
                 name="seguimiento"
                 value="4"
-                defaultChecked={prospecto.cuarto_contacto}
               />
               <label htmlFor="cuarto_contacto" className="text-sm">4º contacto</label>
             </div>
           </div>
         </div>
-
 
         <div className="md:col-span-2">
           <label htmlFor="anotaciones" className="block text-sm font-medium mb-1">Anotaciones</label>
@@ -178,6 +179,7 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
             className={`${inputBase} resize-none`}
           />
         </div>
+
         <div>
           <label htmlFor="fecha_pedido_asesoramiento" className="block text-sm font-medium mb-1">Fecha Pedido Asesoramiento</label>
           <input
@@ -185,13 +187,14 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
             name="fecha_pedido_asesoramiento"
             type="date"
             defaultValue={
-              prospecto.fecha_pedido_asesoramiento
+              prospecto.fecha_pedido_asesoramiento && !isNaN(new Date(prospecto.fecha_pedido_asesoramiento).getTime())
                 ? new Date(prospecto.fecha_pedido_asesoramiento).toISOString().slice(0, 10)
                 : ''
             }
             className={inputBase}
           />
         </div>
+
         <div>
           <label htmlFor="url" className="block text-sm font-medium mb-1">URL</label>
           <input
@@ -216,3 +219,5 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
     </form>
   );
 }
+
+

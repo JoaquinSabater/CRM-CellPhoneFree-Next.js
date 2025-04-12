@@ -153,7 +153,9 @@ export async function updateProspecto(id: number, formData: FormData) {
     anotaciones: getString('anotaciones'),
     fecha_pedido_asesoramiento: getString('fecha_pedido_asesoramiento'),
     url: getString('url'),
+    seguimiento: getString('seguimiento'),
   };
+
 
   // ✅ Debug: Mostrar los valores del form
     await sql`
@@ -173,6 +175,31 @@ export async function updateProspecto(id: number, formData: FormData) {
         url = ${fields.url}
       WHERE id = ${id};
     `;
+
+    if (fields.seguimiento) {
+      let diasExtra = 0;
+
+      if (fields.seguimiento === '2') diasExtra = 1;
+      if (fields.seguimiento === '3') diasExtra = 7;
+      if (fields.seguimiento === '4') diasExtra = 15;
+
+      const now = new Date();
+      const fechaEnvio = new Date(now);
+      fechaEnvio.setDate(now.getDate() + diasExtra);
+
+      const fecha = fechaEnvio.toISOString().slice(0, 10);
+      const hora = '10:00'; // 🕙 hora por defecto para enviar
+
+      const mensaje = `📌 Seguimiento ${fields.seguimiento} para el prospecto: ${fields.nombre}`;
+
+      // Formar un objeto FormData simulado
+      const recordatorioForm = new FormData();
+      recordatorioForm.append('mensaje', mensaje);
+      recordatorioForm.append('fecha', fecha);
+      recordatorioForm.append('hora', hora);
+
+      await createRecordatorio(recordatorioForm);
+    }
 
     revalidatePath('/dashboard/invoices');
     redirect('/dashboard/invoices');
