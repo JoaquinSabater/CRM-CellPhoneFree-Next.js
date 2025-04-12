@@ -130,6 +130,44 @@ export default function EditProspectoForm({ prospecto,provincias,localidades }: 
             className={inputBase}
           />
         </div>
+
+        <div className="flex flex-col justify-center mt-1">
+          <label className="block text-sm font-medium mb-1">Seguimientos</label>
+          <div className="flex gap-4">
+            <div className="flex items-center gap-1">
+              <input
+                type="radio"
+                id="segundo_contacto"
+                name="seguimiento"
+                value="2"
+                defaultChecked={prospecto.segundo_contacto}
+              />
+              <label htmlFor="segundo_contacto" className="text-sm">2º contacto</label>
+            </div>
+            <div className="flex items-center gap-1">
+              <input
+                type="radio"
+                id="tercer_contacto"
+                name="seguimiento"
+                value="3"
+                defaultChecked={prospecto.tercer_contacto}
+              />
+              <label htmlFor="tercer_contacto" className="text-sm">3º contacto</label>
+            </div>
+            <div className="flex items-center gap-1">
+              <input
+                type="radio"
+                id="cuarto_contacto"
+                name="seguimiento"
+                value="4"
+                defaultChecked={prospecto.cuarto_contacto}
+              />
+              <label htmlFor="cuarto_contacto" className="text-sm">4º contacto</label>
+            </div>
+          </div>
+        </div>
+
+
         <div className="md:col-span-2">
           <label htmlFor="anotaciones" className="block text-sm font-medium mb-1">Anotaciones</label>
           <textarea

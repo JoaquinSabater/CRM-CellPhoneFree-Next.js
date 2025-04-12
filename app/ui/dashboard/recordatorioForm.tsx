@@ -55,16 +55,6 @@ export default function RecordatorioForm() {
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
           />
         </div>
-
-        <div className="flex-1">
-          <label className="block text-sm mb-1">🕒 Hora</label>
-          <input
-            type="time"
-            name="hora"
-            onChange={(e) => setHora(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
-          />
-        </div>
       </div>
 
       <button
