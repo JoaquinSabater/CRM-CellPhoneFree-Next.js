@@ -6,9 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { signIn } from 'app/auth';
 import { AuthError } from 'next-auth';
-import { crearEtiqueta } from './etiquetas';
 import { auth } from '@/app/lib/auth';
-import { clientes } from './placeholder-data';
 
 
 const FormSchema = z.object({
@@ -31,11 +29,6 @@ const ClienteFormSchema = z.object({
 });
 
 const UpdateCliente = ClienteFormSchema.omit({ id: true });
-
-export async function createEtiquetaOnServer(nombre: string, vendedorId: number) {
-  await crearEtiqueta(nombre, vendedorId);
-  revalidatePath('/dashboard/etiquetas');
-}
 
 export async function createRecordatorio(formData: FormData) {
   const session = await auth();
@@ -113,6 +106,7 @@ export async function updateCliente(id: string, formData: FormData) {
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
 }
+
 export async function createEtiqueta(formData: FormData) {
   const nombre = formData.get('nombre')?.toString().trim();
 

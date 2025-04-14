@@ -11,6 +11,7 @@ const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 const ITEMS_PER_PAGE = 6;
 
+//Funciona
 export async function getCantidadClientesPorVendedor(vendedorId: number) {
   const result = await sql`
     SELECT COUNT(*) AS count
@@ -33,7 +34,29 @@ export async function getCantidadPedidosDelMes(vendedorId: number) {
   return Number(result[0]?.count ?? 0);
 }
 
+/*
+  Anda pero hay que cambiar ILIKE por LIKE
 
+      SELECT 
+      c.id,
+      c.razon_social,
+      p.nombre AS provincia_nombre,
+      l.nombre AS localidad_nombre
+    FROM clientes c
+    LEFT JOIN localidad l ON c.localidad_id = l.id
+    LEFT JOIN provincia p ON l.provincia_id = p.id
+    LEFT JOIN filtros_clientes fc ON c.id = fc.cliente_id
+    LEFT JOIN filtros f ON fc.filtro_id = f.id
+    WHERE c.vendedor_id = 1
+      AND (
+        c.razon_social LIKE '%h%' OR
+        p.nombre LIKE '%h%' OR
+        l.nombre LIKE '%h%' OR
+        fc.valor LIKE '%h%'
+      )
+    GROUP BY c.id, p.nombre, l.nombre
+    ORDER BY c.razon_social ASC
+*/
 export async function fetchFilteredClientes(query: string, vendedorId: number) {
   return await sql`
     SELECT 
@@ -84,7 +107,7 @@ export async function fetchFilteredProspects(query: string, captadorId: number) 
     `;
 }
 
-
+//Funciona cambiando por LIKE
 export async function fetchClientesPages(query: string, vendedorId: number) {
   const totalItems = await sql`
     SELECT COUNT(DISTINCT c.id) AS count
@@ -105,6 +128,7 @@ export async function fetchClientesPages(query: string, vendedorId: number) {
   return Math.ceil(totalCount / ITEMS_PER_PAGE);
 }
 
+//Cambiar por LIKE
 export async function fetchProspectsPages(query: string) {
   const countResult = await sql`
     SELECT COUNT(*) as total
@@ -121,6 +145,7 @@ export async function fetchProspectsPages(query: string) {
   return Math.ceil(totalCount / ITEMS_PER_PAGE);
 }
 
+//Funciona
 export async function fetchFiltrosPorVendedor(vendedorId: number) {
   return await sql`
     SELECT 
@@ -134,6 +159,7 @@ export async function fetchFiltrosPorVendedor(vendedorId: number) {
   `;
 }
 
+//Funciona
 export async function fetchClienteById(id: string) {
   try {
     const data = await sql<clienteForm[]>`
@@ -154,6 +180,7 @@ export async function fetchClienteById(id: string) {
   }
 }
 
+//Funciona
 export async function getEtiquetasGlobales() {
   const result = await sql`
     SELECT id, nombre FROM filtros ORDER BY nombre;
@@ -161,6 +188,7 @@ export async function getEtiquetasGlobales() {
   return result;
 }
 
+//Funciona
 export async function getPedidosByCliente(clienteId: string): Promise<pedido[]> {
   return await sql<pedido[]>`
     SELECT 
@@ -175,6 +203,7 @@ export async function getPedidosByCliente(clienteId: string): Promise<pedido[]> 
   `;
 }
 
+//Funciona
 export async function getAllProvincias() {
   const result = await sql`
     SELECT id, nombre
@@ -184,6 +213,7 @@ export async function getAllProvincias() {
   return result;
 }
 
+//Funciona
 export async function getAllLocalidades() {
   const result = await sql`
     SELECT id, nombre, provincia_id
@@ -193,7 +223,7 @@ export async function getAllLocalidades() {
   return result;
 }
 
-
+//Funciona
 export async function getFiltrosDelCliente(clienteId: string) {
   const id = Number(clienteId);
   try {
@@ -245,6 +275,7 @@ export async function getCaptadorById(id: number) {
   return result[0];
 }
 
+//Funciona
 export async function fetchProspectos() {
   try {
     const result = await sql`
