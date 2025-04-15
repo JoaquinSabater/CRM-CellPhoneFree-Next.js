@@ -33,8 +33,13 @@ export default function RecordatorioForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-xl rounded-lg bg-gray-50 py-3 px-4 shadow-sm space-y-4 ">
-      <h2 className="text-lg font-semibold text-gray-800">📨 Programar recordatorio por Telegram</h2>
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white p-4 rounded-lg shadow-md w-full h-full max-w-sm flex flex-col justify-between"
+    >
+      <h2 className="text-lg font-semibold text-gray-800 mb-2">
+        📨 Programar recordatorio por Telegram
+      </h2>
 
       <textarea
         name="mensaje"
@@ -42,25 +47,21 @@ export default function RecordatorioForm() {
         placeholder="Escribí el mensaje que querés recibir..."
         value={mensaje}
         onChange={(e) => setMensaje(e.target.value)}
-        className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
+        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500 mb-2"
       />
 
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <label className="block text-sm mb-1">📅 Fecha</label>
-          <input
-              type="date"
-              name="fecha"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
-            />
-        </div>
-      </div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">📅 Fecha</label>
+      <input
+        type="date"
+        name="fecha"
+        value={fecha}
+        onChange={(e) => setFecha(e.target.value)}
+        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500 mb-4"
+      />
 
       <button
         type="submit"
-        className="mt-2 w-full rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-orange-600"
+        className="mt-auto w-full rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-orange-600"
       >
         Programar recordatorio
       </button>

@@ -35,36 +35,16 @@ export default async function SellerPic() {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
-      {/* Imagen del vendedor */}
+    <div className="bg-white p-4 rounded-lg shadow-md w-full h-full max-w-sm flex flex-col items-center justify-center text-center">
       <Image
         src={userData.url_imagen || '/sellers/default.png'}
         alt={userData.nombre}
-        width={600}
-        height={300}
+        width={160}
+        height={160}
         className="rounded-full object-cover"
       />
-
-      {/* Información */}
-      <h2 className="text-2xl md:text-3xl font-semibold my-4 text-gray-900">
-        {userData.nombre}
-      </h2>
-      <p className="text-base text-gray-800 capitalize mb-2">
-        Rol: {rol}
-      </p>
-      <p className="text-base text-gray-800 mb-4">
-        Email: {userData.email || 'Sin email'}
-      </p>
-
-      {/* Botón (opcional) */}
-      <div className="mt-4">
-        <a
-          href={`mailto:${userData.email}`}
-          className="bg-black text-white px-4 py-2 rounded"
-        >
-          Contactar
-        </a>
-      </div>
+      <h2 className="text-lg font-semibold mt-3 text-gray-800">{userData.nombre}</h2>
+      <p className="text-sm text-gray-500 capitalize">{rol}</p>
     </div>
   );
 }

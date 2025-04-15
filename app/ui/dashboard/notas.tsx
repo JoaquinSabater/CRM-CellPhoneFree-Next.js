@@ -29,7 +29,7 @@ export default function NotasPersonales({ userId }: { userId: number }) {
         name="notas"
         placeholder="Escribí tus notas personales aquí..."
         className="w-full rounded-lg border border-gray-300 p-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-        rows={4}
+        rows={13} // 👈 aumentamos el alto del campo
         value={nota}
         onChange={(e) => setNota(e.target.value)}
       />

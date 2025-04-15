@@ -10,10 +10,10 @@ export default async function Page() {
   return (
     <main className="w-full px-4 py-6">
       <div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto items-start"
       >
         {/* Columna 1 - Foto */}
-        <div>
+        <div className="w-full h-full">
           <Sellerpic />
         </div>
 
@@ -23,10 +23,12 @@ export default async function Page() {
         </div>
 
         {/* Columna 3 - Formulario */}
-        <div>
+        <div className="w-full h-full">
           <RecordatorioForm />
         </div>
       </div>
+
+      {/* Notas personales abajo */}
       {userId && <NotasPersonales userId={Number(userId)} />}
     </main>
   );
