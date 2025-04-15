@@ -40,11 +40,19 @@ export async function createRecordatorio(formData: FormData) {
 
   const mensaje = formData.get('mensaje') as string;
   const fecha = formData.get('fecha') as string;
-  const hora = formData.get('hora') as string;
 
-  const fechaEnvio = `${fecha} ${hora}`; // Formato compatible con timestamp
+  if (!fecha) {
+    return { success: false, error: 'La fecha es requerida' };
+  }
 
-  // ✅ Obtener chat_id y bot_token del usuario
+  const fechaCompleta = new Date(fecha); // solo usamos la fecha, sin hora
+
+  if (isNaN(fechaCompleta.getTime())) {
+    return { success: false, error: 'Fecha inválida' };
+  }
+
+  const fechaEnvio = fechaCompleta.toISOString();
+
   const [usuario] = await sql`
     SELECT chat_id, bot_token FROM usuarios WHERE id = ${userId};
   `;
@@ -56,7 +64,6 @@ export async function createRecordatorio(formData: FormData) {
     return { success: false, error: 'Faltan datos de Telegram (chat_id o bot_token)' };
   }
 
-  // ✅ Insertar el recordatorio
   await sql`
     INSERT INTO recordatorios (mensaje, fecha_envio, chat_id, bot_token)
     VALUES (${mensaje}, ${fechaEnvio}, ${chat_id}, ${bot_token});

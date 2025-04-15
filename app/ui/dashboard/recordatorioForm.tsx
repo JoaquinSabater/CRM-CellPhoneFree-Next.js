@@ -6,7 +6,6 @@ import { createRecordatorio } from '@/app/lib/actions';
 export default function RecordatorioForm() {
   const [mensaje, setMensaje] = useState('');
   const [fecha, setFecha] = useState('');
-  const [hora, setHora] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -24,7 +23,6 @@ export default function RecordatorioForm() {
 
         setMensaje('');
         setFecha('');
-        setHora('');
       } else {
         setError('❌ Ocurrió un error al guardar el recordatorio');
       }
@@ -42,6 +40,8 @@ export default function RecordatorioForm() {
         name="mensaje"
         required
         placeholder="Escribí el mensaje que querés recibir..."
+        value={mensaje}
+        onChange={(e) => setMensaje(e.target.value)}
         className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
       />
 
@@ -49,11 +49,12 @@ export default function RecordatorioForm() {
         <div className="flex-1">
           <label className="block text-sm mb-1">📅 Fecha</label>
           <input
-            type="date"
-            name="fecha"
-            onChange={(e) => setFecha(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
-          />
+              type="date"
+              name="fecha"
+              value={fecha}
+              onChange={(e) => setFecha(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
+            />
         </div>
       </div>
 

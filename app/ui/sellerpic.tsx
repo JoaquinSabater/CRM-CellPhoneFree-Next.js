@@ -35,18 +35,35 @@ export default async function SellerPic() {
   }
 
   return (
-    <div className={`${lusitana.className} flex flex-col items-center p-1 bg-gray-100 rounded-lg w-[280px]`}>
+    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
+      {/* Imagen del vendedor */}
       <Image
         src={userData.url_imagen || '/sellers/default.png'}
         alt={userData.nombre}
-        width={220}
-        height={220}
+        width={600}
+        height={300}
         className="rounded-full object-cover"
       />
-      <div className="mt-2 text-center">
-        <h2 className="text-lg font-semibold text-gray-800">{userData.nombre}</h2>
-        <p className="text-sm text-gray-600 capitalize">{rol}</p>
-        <p className="text-sm text-gray-600">{userData.email || 'Sin email'}</p>
+
+      {/* Información */}
+      <h2 className="text-2xl md:text-3xl font-semibold my-4 text-gray-900">
+        {userData.nombre}
+      </h2>
+      <p className="text-base text-gray-800 capitalize mb-2">
+        Rol: {rol}
+      </p>
+      <p className="text-base text-gray-800 mb-4">
+        Email: {userData.email || 'Sin email'}
+      </p>
+
+      {/* Botón (opcional) */}
+      <div className="mt-4">
+        <a
+          href={`mailto:${userData.email}`}
+          className="bg-black text-white px-4 py-2 rounded"
+        >
+          Contactar
+        </a>
       </div>
     </div>
   );
