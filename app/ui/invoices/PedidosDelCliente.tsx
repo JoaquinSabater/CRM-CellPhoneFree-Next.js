@@ -10,7 +10,7 @@ export default function PedidosDelCliente({ pedidos }: Props) {
   return (
     <div className="space-y-4 bg-gray-50 rounded-lg p-4 border">
       <label className="text-lg font-semibold">Pedidos del Cliente</label>
-
+  
       <div className="max-h-96 overflow-y-auto space-y-3">
         {pedidos.length === 0 ? (
           <p className="text-gray-500 text-sm">Este cliente no tiene pedidos.</p>
@@ -26,10 +26,18 @@ export default function PedidosDelCliente({ pedidos }: Props) {
                 <span><strong>Estado:</strong> {p.estado}</span>
                 <span><strong>Armador ID:</strong> {p.armador_id}</span>
                 <span><strong>Controlador ID:</strong> {p.controlador_id}</span>
-                <span><strong>Remito:</strong> {p.remito || '—'}</span>
-                <span><strong>Consolidado:</strong> {p.consolidado_id}</span>
-                <span></span><strong>Armado:</strong> {p.hora_inicio_armado} → {p.hora_fin_armado}<span></span>
-                <span></span><strong> Control:</strong> {p.hora_inicio_control} → {p.hora_fin_control}<span></span>
+                <span><strong>Remito:</strong> {p.remito?? '—'}</span>
+                <span><strong>Consolidado:</strong> {p.consolidado_id ?? '—'}</span>
+                <span>
+                  <strong>Armado:</strong>{' '}
+                  {p.hora_inicio_armado ? new Date(p.hora_inicio_armado).toLocaleTimeString() : '—'} →{' '}
+                  {p.hora_fin_armado ? new Date(p.hora_fin_armado).toLocaleTimeString() : '—'}
+                </span>
+                <span>
+                  <strong>Control:</strong>{' '}
+                  {p.hora_inicio_control ? new Date(p.hora_inicio_control).toLocaleTimeString() : '—'} →{' '}
+                  {p.hora_fin_control ? new Date(p.hora_fin_control).toLocaleTimeString() : '—'}
+                </span>
               </div>
             </div>
           ))
@@ -37,6 +45,7 @@ export default function PedidosDelCliente({ pedidos }: Props) {
       </div>
     </div>
   );
+  
 }
 
 

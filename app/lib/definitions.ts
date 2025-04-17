@@ -110,10 +110,10 @@ export type pedido = {
   estado: string;
   hora_inicio_armado: string;
   hora_fin_armado: string;
-  armador_id: number;
+  armador_id: string;
   hora_inicio_control: string;
   hora_fin_control: string;
-  controlador_id: number;
+  controlador_id: string;
   remito: string;
   consolidado_id: number;
 };

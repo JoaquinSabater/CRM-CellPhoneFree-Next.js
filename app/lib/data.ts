@@ -241,14 +241,14 @@ export async function getEtiquetasGlobales() {
 export async function getPedidosByCliente(clienteId: string): Promise<pedido[]> {
   const sql = `
     SELECT 
-      id,
-      vendedor_id,
-      cliente_id,
-      fecha_creacion,
-      estado
-    FROM pedidos
-    WHERE cliente_id = ?
-    ORDER BY fecha_creacion DESC;
+      p.*,
+      u1.username AS nombre_armador,
+      u2.username AS nombre_controlador
+    FROM pedidos p
+    LEFT JOIN usuarios u1 ON p.armador_id = u1.id
+    LEFT JOIN usuarios u2 ON p.controlador_id = u2.id
+    WHERE p.cliente_id = ?
+    ORDER BY p.fecha_creacion DESC;
   `;
 
   const [rows] = await db.query<RowDataPacket[]>(sql, [clienteId]);
