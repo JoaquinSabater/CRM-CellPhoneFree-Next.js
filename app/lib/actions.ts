@@ -32,6 +32,7 @@ const ClienteFormSchema = z.object({
 
 const UpdateCliente = ClienteFormSchema.omit({ id: true });
 
+
 export async function createRecordatorio(formData: FormData) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -47,7 +48,7 @@ export async function createRecordatorio(formData: FormData) {
     return { success: false, error: 'La fecha es requerida' };
   }
 
-  const fechaCompleta = new Date(fecha); // solo usamos la fecha, sin hora
+  const fechaCompleta = new Date(fecha);
 
   if (isNaN(fechaCompleta.getTime())) {
     return { success: false, error: 'Fecha inválida' };
@@ -55,9 +56,13 @@ export async function createRecordatorio(formData: FormData) {
 
   const fechaEnvio = fechaCompleta.toISOString();
 
-  const [usuario] = await sql`
-    SELECT chat_id, bot_token FROM usuarios WHERE id = ${userId};
-  `;
+  // Obtener datos de Telegram del usuario
+  const [rows]: any = await db.query(
+    'SELECT chat_id, bot_token FROM usuarios WHERE id = ?',
+    [userId]
+  );
+
+  const usuario = rows[0];
 
   const chat_id = usuario?.chat_id;
   const bot_token = usuario?.bot_token;
@@ -66,31 +71,34 @@ export async function createRecordatorio(formData: FormData) {
     return { success: false, error: 'Faltan datos de Telegram (chat_id o bot_token)' };
   }
 
-  await sql`
-    INSERT INTO recordatorios (mensaje, fecha_envio, chat_id, bot_token)
-    VALUES (${mensaje}, ${fechaEnvio}, ${chat_id}, ${bot_token});
-  `;
+  // Insertar el recordatorio
+  await db.query(
+    'INSERT INTO recordatorios (mensaje, fecha_envio, chat_id, bot_token) VALUES (?, ?, ?, ?)',
+    [mensaje, fechaEnvio, chat_id, bot_token]
+  );
 
   return { success: true };
 }
 
+
 export async function deleteFiltroById(id: number) {
   try {
-    await sql`DELETE FROM filtros WHERE id = ${id};`;
+    await db.query('DELETE FROM filtros WHERE id = ?', [id]);
   } catch (error) {
     console.error('Error al eliminar el filtro:', error);
     throw error;
   }
 }
 
+
 export async function updateCliente(id: string, formData: FormData) {
   const observaciones = formData.get('observaciones') as string | null;
 
-  await sql`
-    UPDATE clientes
-    SET observaciones = ${observaciones}
-    WHERE id = ${id};
-  `;
+  // 1. Actualizar campo fijo
+  await db.query(
+    'UPDATE clientes SET observaciones = ? WHERE id = ?',
+    [observaciones, id]
+  );
 
   // 2. Procesar los filtros dinámicos
   const keys = Array.from(formData.keys());
@@ -100,21 +108,22 @@ export async function updateCliente(id: string, formData: FormData) {
     const filtroId = key.replace('filtro-', '');
     const value = formData.get(key) as string;
 
-    // Validación opcional: si querés evitar insertar valores vacíos
     if (!value) continue;
 
-    await sql`
-      INSERT INTO filtros_clientes (cliente_id, filtro_id, valor)
-      VALUES (${id}, ${filtroId}, ${value})
-      ON CONFLICT (cliente_id, filtro_id)
-      DO UPDATE SET valor = EXCLUDED.valor;
-    `;
+    // Inserta o actualiza si ya existe
+    await db.query(
+      `INSERT INTO filtros_clientes (cliente_id, filtro_id, valor)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE valor = VALUES(valor)`,
+      [id, filtroId, value]
+    );
   }
 
-  // Redirección y revalidación
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
 }
+
+
 
 export async function createEtiqueta(formData: FormData) {
   const nombre = formData.get('nombre')?.toString().trim();
@@ -124,11 +133,11 @@ export async function createEtiqueta(formData: FormData) {
   }
 
   try {
-    await sql`
-      INSERT INTO filtros (nombre)
-      VALUES (${nombre})
-    `;
-    revalidatePath('/dashboard/invoices'); // o donde quieras refrescar los datos
+    await db.query(
+      'INSERT INTO filtros (nombre) VALUES (?)',
+      [nombre]
+    );
+    revalidatePath('/dashboard/invoices'); // o el path que necesites refrescar
   } catch (error) {
     console.error('Error creando la etiqueta:', error);
     throw new Error('No se pudo crear la etiqueta.');

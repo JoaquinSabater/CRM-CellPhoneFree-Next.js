@@ -16,25 +16,25 @@ const ITEMS_PER_PAGE = 6;
 
 //Funciona
 export async function getCantidadClientesPorVendedor(vendedorId: number) {
-  const result = await sql`
-    SELECT COUNT(*) AS count
-    FROM clientes
-    WHERE vendedor_id = ${vendedorId};
-  `;
-  return Number(result[0]?.count ?? 0);
+  const [rows]: any = await db.query(
+    'SELECT COUNT(*) AS count FROM clientes WHERE vendedor_id = ?',
+    [vendedorId]
+  );
+
+  return Number(rows[0]?.count ?? 0);
 }
 
 export async function getCantidadPedidosDelMes(vendedorId: number) {
   const now = new Date();
   const primerDiaDelMes = new Date(now.getFullYear(), now.getMonth(), 1);
+  const fechaISO = primerDiaDelMes.toISOString().slice(0, 19).replace('T', ' '); // MySQL friendly
 
-  const result = await sql`
-    SELECT COUNT(*) AS count
-    FROM pedidos
-    WHERE vendedor_id = ${vendedorId}
-    AND fecha_creacion >= ${primerDiaDelMes};
-  `;
-  return Number(result[0]?.count ?? 0);
+  const [rows]: any = await db.query(
+    'SELECT COUNT(*) AS count FROM pedidos WHERE vendedor_id = ? AND fecha_creacion >= ?',
+    [vendedorId, fechaISO]
+  );
+
+  return Number(rows[0]?.count ?? 0);
 }
 
 /*
@@ -61,7 +61,9 @@ export async function getCantidadPedidosDelMes(vendedorId: number) {
     ORDER BY c.razon_social ASC
 */
 export async function fetchFilteredClientes(query: string, vendedorId: number) {
-  return await sql`
+  const likeQuery = `%${query}%`;
+
+  const sql = `
     SELECT 
       c.id,
       c.razon_social,
@@ -72,16 +74,26 @@ export async function fetchFilteredClientes(query: string, vendedorId: number) {
     LEFT JOIN provincia p ON l.provincia_id = p.id
     LEFT JOIN filtros_clientes fc ON c.id = fc.cliente_id
     LEFT JOIN filtros f ON fc.filtro_id = f.id
-    WHERE c.vendedor_id = ${vendedorId}
+    WHERE c.vendedor_id = ?
       AND (
-        c.razon_social ILIKE ${'%' + query + '%'} OR
-        p.nombre ILIKE ${'%' + query + '%'} OR
-        l.nombre ILIKE ${'%' + query + '%'} OR
-        fc.valor ILIKE ${'%' + query + '%'}
+        LOWER(c.razon_social) LIKE LOWER(?) OR
+        LOWER(p.nombre) LIKE LOWER(?) OR
+        LOWER(l.nombre) LIKE LOWER(?) OR
+        LOWER(fc.valor) LIKE LOWER(?)
       )
-    GROUP BY c.id, p.nombre, l.nombre
-    ORDER BY c.razon_social ASC;
+    GROUP BY c.id
+    ORDER BY c.razon_social ASC
   `;
+
+  const [rows]: any = await db.query(sql, [
+    vendedorId,
+    likeQuery,
+    likeQuery,
+    likeQuery,
+    likeQuery,
+  ]);
+
+  return rows;
 }
 
 //YA LO CAMBIE
@@ -120,22 +132,32 @@ export async function fetchFilteredProspects(query: string, captadorId: number) 
 
 //Funciona cambiando por LIKE
 export async function fetchClientesPages(query: string, vendedorId: number) {
-  const totalItems = await sql`
+  const likeQuery = `%${query}%`;
+
+  const sql = `
     SELECT COUNT(DISTINCT c.id) AS count
     FROM clientes c
     LEFT JOIN localidad l ON c.localidad_id = l.id
     LEFT JOIN provincia p ON l.provincia_id = p.id
     LEFT JOIN filtros_clientes fc ON c.id = fc.cliente_id
-    WHERE c.vendedor_id = ${vendedorId}
+    WHERE c.vendedor_id = ?
       AND (
-        c.razon_social ILIKE ${'%' + query + '%'} OR
-        p.nombre ILIKE ${'%' + query + '%'} OR
-        l.nombre ILIKE ${'%' + query + '%'} OR
-        fc.valor ILIKE ${'%' + query + '%'}
+        LOWER(c.razon_social) LIKE LOWER(?) OR
+        LOWER(p.nombre) LIKE LOWER(?) OR
+        LOWER(l.nombre) LIKE LOWER(?) OR
+        LOWER(fc.valor) LIKE LOWER(?)
       );
   `;
 
-  const totalCount = Number(totalItems[0]?.count || 0);
+  const [rows]: any = await db.query(sql, [
+    vendedorId,
+    likeQuery,
+    likeQuery,
+    likeQuery,
+    likeQuery,
+  ]);
+
+  const totalCount = Number(rows[0]?.count || 0);
   return Math.ceil(totalCount / ITEMS_PER_PAGE);
 }
 
@@ -168,7 +190,7 @@ export async function fetchProspectsPages(query: string) {
 
 //Funciona
 export async function fetchFiltrosPorVendedor(vendedorId: number) {
-  return await sql`
+  const sql = `
     SELECT 
       fc.cliente_id,
       f.nombre,
@@ -176,14 +198,17 @@ export async function fetchFiltrosPorVendedor(vendedorId: number) {
     FROM filtros_clientes fc
     JOIN filtros f ON fc.filtro_id = f.id
     JOIN clientes c ON c.id = fc.cliente_id
-    WHERE c.vendedor_id = ${vendedorId};
+    WHERE c.vendedor_id = ?;
   `;
+
+  const [rows] = await db.query(sql, [vendedorId]);
+  return rows;
 }
 
 //Funciona
 export async function fetchClienteById(id: string) {
   try {
-    const data = await sql<clienteForm[]>`
+    const sql = `
       SELECT 
         c.*,
         l.nombre AS localidad_nombre,
@@ -191,10 +216,11 @@ export async function fetchClienteById(id: string) {
       FROM clientes c
       LEFT JOIN localidad l ON c.localidad_id = l.id
       LEFT JOIN provincia p ON l.provincia_id = p.id
-      WHERE c.id = ${id};
+      WHERE c.id = ?;
     `;
 
-    return data[0];
+    const [rows]: any = await db.query(sql, [id]);
+    return rows[0];
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch cliente.');
@@ -203,15 +229,17 @@ export async function fetchClienteById(id: string) {
 
 //Funciona
 export async function getEtiquetasGlobales() {
-  const result = await sql`
+  const sql = `
     SELECT id, nombre FROM filtros ORDER BY nombre;
   `;
-  return result;
+
+  const [rows] = await db.query(sql);
+  return rows;
 }
 
 //Funciona
 export async function getPedidosByCliente(clienteId: string): Promise<pedido[]> {
-  return await sql<pedido[]>`
+  const sql = `
     SELECT 
       id,
       vendedor_id,
@@ -219,9 +247,12 @@ export async function getPedidosByCliente(clienteId: string): Promise<pedido[]> 
       fecha_creacion,
       estado
     FROM pedidos
-    WHERE cliente_id = ${clienteId}
+    WHERE cliente_id = ?
     ORDER BY fecha_creacion DESC;
   `;
+
+  const [rows] = await db.query<RowDataPacket[]>(sql, [clienteId]);
+  return rows as pedido[];
 }
 
 //Funciona
@@ -250,14 +281,15 @@ export async function getAllLocalidades() {
 
 //Funciona
 export async function getFiltrosDelCliente(clienteId: string) {
-  const id = Number(clienteId);
   try {
-    const result = await sql`
+    const sql = `
       SELECT filtro_id, valor
       FROM filtros_clientes
-      WHERE cliente_id = ${clienteId};
+      WHERE cliente_id = ?;
     `;
-    return result;
+
+    const [rows] = await db.query<RowDataPacket[]>(sql, [clienteId]);
+    return rows;
   } catch (error) {
     console.error('Error al obtener filtros del cliente:', error);
     throw new Error('No se pudieron cargar los filtros del cliente.');
@@ -267,22 +299,19 @@ export async function getFiltrosDelCliente(clienteId: string) {
 
 
 export async function getVendedorById(id: number | string): Promise<(vendedor & { rol: string }) | null> {
-  //console.log('[getVendedorById] ID recibido:', id);
   try {
-    const data = await sql<vendedor[]>`
+    const sql = `
       SELECT *
       FROM vendedores
-      WHERE id = ${id};
+      WHERE id = ?;
     `;
 
-    //console.log('[getVendedorById] Resultado DB:', data);
+    const [rows] = await db.query<RowDataPacket[]>(sql, [id]);
 
-    const vendedorExtendido = data.map((v) => ({
+    const vendedorExtendido = (rows as vendedor[]).map((v) => ({
       ...v,
       rol: 'Vendedor',
     }));
-
-    //console.log('[getVendedorById] Vendedor formateado:', vendedorExtendido[0]);
 
     return vendedorExtendido[0] ?? null;
   } catch (error) {
