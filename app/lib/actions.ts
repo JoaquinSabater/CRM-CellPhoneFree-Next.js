@@ -90,6 +90,28 @@ export async function deleteFiltroById(id: number) {
   }
 }
 
+export async function altaCliente(prospectoId: number, formData: FormData) {
+  const vendedorId = formData.get('vendedor_id');
+
+  if (!vendedorId) {
+    throw new Error('Debe seleccionar un vendedor.');
+  }
+
+  try {
+    // 1. Crear cliente
+    await db.query(
+      `INSERT INTO clientes (nombre, email, telefono, negocio, provincia_id, localidad_id, cuit, anotaciones, vendedor_id)
+       SELECT nombre, email, telefono, negocio, provincia_id, localidad_id, cuit, anotaciones, ? FROM prospectos WHERE id = ?`,
+      [vendedorId, prospectoId]
+    );
+
+    // 2. Desactivar prospecto
+    await db.query(`UPDATE prospectos SET activo = false WHERE id = ?`, [prospectoId]);
+  } catch (err) {
+    console.error('❌ Error al dar de alta cliente:', err);
+    throw err;
+  }
+}
 
 export async function updateCliente(id: string, formData: FormData) {
   const observaciones = formData.get('observaciones') as string | null;

@@ -144,6 +144,13 @@ export async function getEtiquetasGlobales() {
   return rows;
 }
 
+export async function getVendedores() {
+  const sql = `SELECT id, nombre FROM vendedores ORDER BY nombre`;
+
+  const [rows] = await db.query<RowDataPacket[]>(sql);
+  return rows;
+}
+
 //Funciona
 export async function getPedidosByCliente(clienteId: string): Promise<any[]> {
   const sql = `
@@ -177,7 +184,7 @@ export async function getAllProvincias() {
 //Funciona
 export async function getAllLocalidades() {
   const sql = `
-    SELECT id, nombre, provincia_id
+    SELECT id, nombre, provincia_id,codigopostal
     FROM localidad
     ORDER BY nombre;
   `;

@@ -47,7 +47,12 @@ export default function CreateProspectoForm({
       <input type="email" name="email" placeholder="Email" required className={inputBase} />
       <input type="text" name="telefono" placeholder="Teléfono" required className={inputBase} />
       <input type="text" name="negocio" placeholder="Negocio" required className={inputBase} />
-      <input type="text" name="por_donde_llego" placeholder="¿Por dónde llegó?" className={inputBase} />
+      <select name="por_donde_llego" className={inputBase} required>
+        <option value="">¿Por dónde llegó?</option>
+        <option value="instagram">Instagram</option>
+        <option value="facebook">Facebook</option>
+        <option value="googleAds">Google Ads</option>
+      </select>
       <input type="date" name="fecha_contacto" required className={inputBase} />
       <input type="text" name="cuit" placeholder="CUIT" className={inputBase} />
       <textarea name="anotaciones" placeholder="Anotaciones" className={`${inputBase} resize-none`} rows={3} />
@@ -75,7 +80,7 @@ export default function CreateProspectoForm({
         <option value="">Selecciona una localidad</option>
         {localidadesFiltradas.map((loc: any) => (
           <option key={loc.id} value={loc.id}>
-            {loc.nombre}
+            {`${loc.nombre} - ${loc.codigopostal}`}
           </option>
         ))}
       </select>
