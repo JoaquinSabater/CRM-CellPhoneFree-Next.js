@@ -4,9 +4,11 @@ import { z } from 'zod';
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { signIn } from 'app/auth';
+import { signIn } from '@/app/lib/auth';
 import { AuthError } from 'next-auth';
 import { auth } from '@/app/lib/auth';
+import {db} from "../lib/mysql";
+
 
 
 const FormSchema = z.object({
@@ -133,6 +135,8 @@ export async function createEtiqueta(formData: FormData) {
   }
 }
 
+
+//YA CAMBIE ESTA 
 export async function updateProspecto(id: number, formData: FormData) {
   const getString = (key: string) => String(formData.get(key) ?? '');
   const getNumberOrNull = (key: string) => {
@@ -157,62 +161,78 @@ export async function updateProspecto(id: number, formData: FormData) {
     seguimiento: getString('seguimiento'),
   };
 
+  const updateQuery = `
+    UPDATE prospectos SET
+      fecha_contacto = ?,
+      por_donde_llego = ?,
+      nombre = ?,
+      email = ?,
+      telefono = ?,
+      negocio = ?,
+      provincia_id = ?,
+      localidad_id = ?,
+      cuit = ?,
+      anotaciones = ?,
+      fecha_pedido_asesoramiento = ?,
+      url = ?
+    WHERE id = ?
+  `;
 
-  // ✅ Debug: Mostrar los valores del form
-    await sql`
-      UPDATE prospectos
-      SET
-        fecha_contacto = ${fields.fecha_contacto},
-        por_donde_llego = ${fields.por_donde_llego},
-        nombre = ${fields.nombre},
-        email = ${fields.email},
-        telefono = ${fields.telefono},
-        negocio = ${fields.negocio},
-        provincia_id = ${fields.provincia_id},
-        localidad_id = ${fields.localidad_id},
-        cuit = ${fields.cuit},
-        anotaciones = ${fields.anotaciones},
-        fecha_pedido_asesoramiento = ${fields.fecha_pedido_asesoramiento},
-        url = ${fields.url}
-      WHERE id = ${id};
-    `;
+  const values = [
+    fields.fecha_contacto,
+    fields.por_donde_llego,
+    fields.nombre,
+    fields.email,
+    fields.telefono,
+    fields.negocio,
+    fields.provincia_id,
+    fields.localidad_id,
+    fields.cuit,
+    fields.anotaciones,
+    fields.fecha_pedido_asesoramiento,
+    fields.url,
+    id,
+  ];
 
-    if (fields.seguimiento) {
-      let diasExtra = 0;
+  await db.query(updateQuery, values);
 
-      if (fields.seguimiento === '2') diasExtra = 1;
-      if (fields.seguimiento === '3') diasExtra = 7;
-      if (fields.seguimiento === '4') diasExtra = 15;
+  // 🔁 Seguimiento → crear recordatorio
+  if (fields.seguimiento) {
+    let diasExtra = 0;
 
-      const now = new Date();
-      const fechaEnvio = new Date(now);
-      fechaEnvio.setDate(now.getDate() + diasExtra);
+    if (fields.seguimiento === '2') diasExtra = 1;
+    if (fields.seguimiento === '3') diasExtra = 7;
+    if (fields.seguimiento === '4') diasExtra = 15;
 
-      const fecha = fechaEnvio.toISOString().slice(0, 10);
-      const hora = '10:00'; // 🕙 hora por defecto para enviar
+    const now = new Date();
+    const fechaEnvio = new Date(now);
+    fechaEnvio.setDate(now.getDate() + diasExtra);
 
-      const mensaje = `📌 Seguimiento ${fields.seguimiento} para el prospecto: ${fields.nombre}`;
+    const fecha = fechaEnvio.toISOString().slice(0, 10);
 
-      // Formar un objeto FormData simulado
-      const recordatorioForm = new FormData();
-      recordatorioForm.append('mensaje', mensaje);
-      recordatorioForm.append('fecha', fecha);
-      recordatorioForm.append('hora', hora);
+    const mensaje = `📌 Seguimiento ${fields.seguimiento} para el prospecto: ${fields.nombre}`;
 
-      await createRecordatorio(recordatorioForm);
-    }
+    const recordatorioForm = new FormData();
+    recordatorioForm.append('mensaje', mensaje);
+    recordatorioForm.append('fecha', fecha);
 
-    revalidatePath('/dashboard/invoices');
-    redirect('/dashboard/invoices');
+    await createRecordatorio(recordatorioForm);
+  }
+
+  revalidatePath('/dashboard/invoices');
+  redirect('/dashboard/invoices');
 }
 
+
+//YA CAMBIE ESTA
 export async function desactivarProspecto(id: number) {
   try {
-    await sql`
+    const query = `
       UPDATE prospectos
       SET activo = false
-      WHERE id = ${id};
+      WHERE id = ?
     `;
+    await db.query(query, [id]);
   } catch (error) {
     console.error('❌ Error al desactivar el prospecto:', error);
     throw new Error('No se pudo desactivar el prospecto');
@@ -220,6 +240,9 @@ export async function desactivarProspecto(id: number) {
 }
 
 
+
+
+//YA CAMBIE ESTA
 export async function createProspecto(formData: FormData) {
   const session = await auth();
   const captadorId = session?.user?.captador_id;
@@ -240,14 +263,13 @@ export async function createProspecto(formData: FormData) {
     captador_id: captadorId || null,
   };
 
-  // Debug
   // Validación básica
   if (!fields.nombre || !fields.email || !fields.fecha_contacto || !fields.provincia_id || !fields.localidad_id) {
     throw new Error('Faltan campos obligatorios');
   }
 
   try {
-    await sql`
+    const query = `
       INSERT INTO prospectos (
         fecha_contacto,
         por_donde_llego,
@@ -262,22 +284,25 @@ export async function createProspecto(formData: FormData) {
         fecha_pedido_asesoramiento,
         url,
         captador_id
-      ) VALUES (
-        ${fields.fecha_contacto},
-        ${fields.por_donde_llego},
-        ${fields.nombre},
-        ${fields.email},
-        ${fields.telefono},
-        ${fields.negocio},
-        ${fields.provincia_id},
-        ${fields.localidad_id},
-        ${fields.cuit},
-        ${fields.anotaciones},
-        ${fields.fecha_pedido_asesoramiento},
-        ${fields.url},
-        ${fields.captador_id}
-      );
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
+    const values = [
+      fields.fecha_contacto,
+      fields.por_donde_llego,
+      fields.nombre,
+      fields.email,
+      fields.telefono,
+      fields.negocio,
+      fields.provincia_id,
+      fields.localidad_id,
+      fields.cuit,
+      fields.anotaciones,
+      fields.fecha_pedido_asesoramiento,
+      fields.url,
+      fields.captador_id,
+    ];
+
+    await db.query(query, values);
   } catch (error) {
     console.error('❌ Error al crear el prospecto:', error);
     throw new Error('Error al crear el prospecto');

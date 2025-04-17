@@ -5,9 +5,12 @@ import {
 import { formatCurrency } from './utils';
 import { vendedor } from '@/app/lib/definitions'; // adaptá si tu ruta es distinta
 import { pedido } from './definitions'; // Asegurate de importar tu tipo
+import {db} from "../lib/mysql";
+import { RowDataPacket } from 'mysql2';
 
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+
 
 const ITEMS_PER_PAGE = 6;
 
@@ -81,31 +84,39 @@ export async function fetchFilteredClientes(query: string, vendedorId: number) {
   `;
 }
 
+//YA LO CAMBIE
 export async function fetchFilteredProspects(query: string, captadorId: number) {
-    return await sql`
-      SELECT 
-          p.id,
-          p.nombre,
-          p.email,
-          p.telefono,
-          p.negocio,
-          prov.nombre AS provincia_nombre,
-          loc.nombre AS localidad_nombre,
-          p.fecha_contacto
-      FROM prospectos p
-      LEFT JOIN provincia prov ON p.provincia_id = prov.id
-      LEFT JOIN localidad loc ON p.localidad_id = loc.id
-      WHERE p.activo = true
-        AND p.captador_id = ${captadorId}
-        AND (
-          loc.nombre ILIKE ${'%' + query + '%'} OR
-          p.nombre ILIKE ${'%' + query + '%'} OR
-          p.email ILIKE ${'%' + query + '%'} OR
-          p.telefono ILIKE ${'%' + query + '%'}
-        )
-      ORDER BY p.fecha_contacto DESC;
-    `;
+  const likeQuery = `%${query}%`;
+
+  const sql = `
+    SELECT 
+        p.id,
+        p.nombre,
+        p.email,
+        p.telefono,
+        p.negocio,
+        prov.nombre AS provincia_nombre,
+        loc.nombre AS localidad_nombre,
+        p.fecha_contacto
+    FROM prospectos p
+    LEFT JOIN provincia prov ON p.provincia_id = prov.id
+    LEFT JOIN localidad loc ON p.localidad_id = loc.id
+    WHERE p.activo = true
+      AND p.captador_id = ?
+      AND (
+        LOWER(loc.nombre) LIKE LOWER(?) OR
+        LOWER(p.nombre) LIKE LOWER(?) OR
+        LOWER(p.email) LIKE LOWER(?) OR
+        LOWER(p.telefono) LIKE LOWER(?)
+      )
+    ORDER BY p.fecha_contacto DESC
+  `;
+
+  const [rows] = await db.query(sql, [captadorId, likeQuery, likeQuery, likeQuery, likeQuery]);
+  return rows;
 }
+
+
 
 //Funciona cambiando por LIKE
 export async function fetchClientesPages(query: string, vendedorId: number) {
@@ -128,20 +139,30 @@ export async function fetchClientesPages(query: string, vendedorId: number) {
   return Math.ceil(totalCount / ITEMS_PER_PAGE);
 }
 
-//Cambiar por LIKE
+
+
+//YA LO CAMBIE
 export async function fetchProspectsPages(query: string) {
-  const countResult = await sql`
+  const likeQuery = `%${query}%`;
+
+  const sql = `
     SELECT COUNT(*) as total
     FROM prospectos
     WHERE activo = true
       AND (
-        nombre ILIKE ${'%' + query + '%'} OR
-        email ILIKE ${'%' + query + '%'} OR
-        telefono ILIKE ${'%' + query + '%'}
+        LOWER(nombre) LIKE LOWER(?) OR
+        LOWER(email) LIKE LOWER(?) OR
+        LOWER(telefono) LIKE LOWER(?)
       );
   `;
 
-  const totalCount = Number(countResult[0]?.total || 0);
+  const [rows] = await db.query<RowDataPacket[]>(sql, [likeQuery, likeQuery, likeQuery]);
+
+  // ⬇️ Casteo como array del shape esperado
+  const result = rows as { total: number }[];
+
+  const totalCount = Number(result[0]?.total || 0);
+
   return Math.ceil(totalCount / ITEMS_PER_PAGE);
 }
 
@@ -205,22 +226,26 @@ export async function getPedidosByCliente(clienteId: string): Promise<pedido[]> 
 
 //Funciona
 export async function getAllProvincias() {
-  const result = await sql`
+  const sql = `
     SELECT id, nombre
     FROM provincia
     ORDER BY nombre;
   `;
-  return result;
+
+  const [rows]: any = await db.query(sql);
+  return rows;
 }
 
 //Funciona
 export async function getAllLocalidades() {
-  const result = await sql`
+  const sql = `
     SELECT id, nombre, provincia_id
     FROM localidad
     ORDER BY nombre;
   `;
-  return result;
+
+  const [rows]: any = await db.query(sql);
+  return rows;
 }
 
 //Funciona
@@ -266,19 +291,25 @@ export async function getVendedorById(id: number | string): Promise<(vendedor & 
   }
 }
 
+
+//YA LO CAMBIE
 export async function getCaptadorById(id: number) {
-  const result = await sql`
-    SELECT id, nombre,url_imagen
+
+  const sql = `
+    SELECT id, nombre, url_imagen
     FROM captador
-    WHERE id = ${id};
+    WHERE id = ?;
   `;
-  return result[0];
+
+  const [rows]: any = await db.query(sql, [id]);
+  
+  return rows[0];
 }
 
-//Funciona
+//YA LO CAMBIE
 export async function fetchProspectos() {
   try {
-    const result = await sql`
+    const sql = `
       SELECT 
         p.id,
         p.nombre,
@@ -294,17 +325,19 @@ export async function fetchProspectos() {
       ORDER BY p.fecha_contacto DESC;
     `;
 
-
-    return result;
+    const [rows] = await db.query(sql);
+    return rows;
   } catch (error) {
     console.error('Error al obtener prospectos:', error);
     throw new Error('No se pudieron obtener los prospectos.');
   }
 }
 
+//YA LO CAMBIE
 export async function getProspectoById(id: number) {
   try {
-    const result = await sql`
+
+    const sql = `
       SELECT 
         p.id,
         p.fecha_contacto,
@@ -324,10 +357,11 @@ export async function getProspectoById(id: number) {
       FROM prospectos p
       LEFT JOIN provincia prov ON p.provincia_id = prov.id
       LEFT JOIN localidad loc ON p.localidad_id = loc.id
-      WHERE p.id = ${id};
+      WHERE p.id = ?;
     `;
 
-    return result[0] ?? null;
+    const [rows]: any = await db.query(sql, [id]);
+    return rows[0] ?? null;
   } catch (error) {
     console.error('Error al obtener prospecto por ID:', error);
     return null;

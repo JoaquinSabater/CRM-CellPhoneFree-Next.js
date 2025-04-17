@@ -1,14 +1,13 @@
-import postgres from 'postgres';
+//import postgres from 'postgres';
+import {db} from "../lib/mysql";
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+//const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 async function listInvoices() {
-const data = await sql`
-    SELECT * FROM recordatorios;
-
-      `;
- 	return data;
- }
+  const sql = `SELECT * FROM usuarios;`;
+  const [rows] = await db.query(sql);
+  return rows;
+}
 
 export async function GET() {
   try {

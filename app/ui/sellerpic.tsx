@@ -28,6 +28,7 @@ export default async function SellerPic() {
       return <div className="text-red-500">No se pudo cargar el captador.</div>;
     }
     userData = await getCaptadorById(captadorId);
+    console.log('userData', userData);
   }
 
   if (!userData) {
