@@ -24,8 +24,8 @@ export default function PedidosDelCliente({ pedidos }: Props) {
                 <span><strong>ID:</strong> {p.id}</span>
                 <span><strong>Fecha:</strong> {new Date(p.fecha_creacion).toLocaleDateString()}</span>
                 <span><strong>Estado:</strong> {p.estado}</span>
-                <span><strong>Armador ID:</strong> {p.armador_id}</span>
-                <span><strong>Controlador ID:</strong> {p.controlador_id}</span>
+                <span><strong>Armador ID:</strong> {p.armador_nombre}</span>
+                <span><strong>Controlador ID:</strong> {p.controlador_nombre}</span>
                 <span><strong>Remito:</strong> {p.remito?? '—'}</span>
                 <span><strong>Consolidado:</strong> {p.consolidado_id ?? '—'}</span>
                 <span>

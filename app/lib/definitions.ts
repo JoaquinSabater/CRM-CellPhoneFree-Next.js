@@ -116,4 +116,6 @@ export type pedido = {
   controlador_id: string;
   remito: string;
   consolidado_id: number;
+  controlador_nombre: string;
+  armador_nombre: string;
 };

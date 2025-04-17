@@ -1,18 +1,8 @@
-import postgres from 'postgres';
-import {
-  clienteForm,
-} from './definitions';
 import { formatCurrency } from './utils';
 import { vendedor } from '@/app/lib/definitions'; // adaptá si tu ruta es distinta
 import { pedido } from './definitions'; // Asegurate de importar tu tipo
 import {db} from "../lib/mysql";
 import { RowDataPacket } from 'mysql2';
-
-
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
-
-
-const ITEMS_PER_PAGE = 6;
 
 //Funciona
 export async function getCantidadClientesPorVendedor(vendedorId: number) {
@@ -37,29 +27,6 @@ export async function getCantidadPedidosDelMes(vendedorId: number) {
   return Number(rows[0]?.count ?? 0);
 }
 
-/*
-  Anda pero hay que cambiar ILIKE por LIKE
-
-      SELECT 
-      c.id,
-      c.razon_social,
-      p.nombre AS provincia_nombre,
-      l.nombre AS localidad_nombre
-    FROM clientes c
-    LEFT JOIN localidad l ON c.localidad_id = l.id
-    LEFT JOIN provincia p ON l.provincia_id = p.id
-    LEFT JOIN filtros_clientes fc ON c.id = fc.cliente_id
-    LEFT JOIN filtros f ON fc.filtro_id = f.id
-    WHERE c.vendedor_id = 1
-      AND (
-        c.razon_social LIKE '%h%' OR
-        p.nombre LIKE '%h%' OR
-        l.nombre LIKE '%h%' OR
-        fc.valor LIKE '%h%'
-      )
-    GROUP BY c.id, p.nombre, l.nombre
-    ORDER BY c.razon_social ASC
-*/
 export async function fetchFilteredClientes(query: string, vendedorId: number) {
   const likeQuery = `%${query}%`;
 
@@ -128,66 +95,6 @@ export async function fetchFilteredProspects(query: string, captadorId: number) 
   return rows;
 }
 
-
-
-//Funciona cambiando por LIKE
-export async function fetchClientesPages(query: string, vendedorId: number) {
-  const likeQuery = `%${query}%`;
-
-  const sql = `
-    SELECT COUNT(DISTINCT c.id) AS count
-    FROM clientes c
-    LEFT JOIN localidad l ON c.localidad_id = l.id
-    LEFT JOIN provincia p ON l.provincia_id = p.id
-    LEFT JOIN filtros_clientes fc ON c.id = fc.cliente_id
-    WHERE c.vendedor_id = ?
-      AND (
-        LOWER(c.razon_social) LIKE LOWER(?) OR
-        LOWER(p.nombre) LIKE LOWER(?) OR
-        LOWER(l.nombre) LIKE LOWER(?) OR
-        LOWER(fc.valor) LIKE LOWER(?)
-      );
-  `;
-
-  const [rows]: any = await db.query(sql, [
-    vendedorId,
-    likeQuery,
-    likeQuery,
-    likeQuery,
-    likeQuery,
-  ]);
-
-  const totalCount = Number(rows[0]?.count || 0);
-  return Math.ceil(totalCount / ITEMS_PER_PAGE);
-}
-
-
-
-//YA LO CAMBIE
-export async function fetchProspectsPages(query: string) {
-  const likeQuery = `%${query}%`;
-
-  const sql = `
-    SELECT COUNT(*) as total
-    FROM prospectos
-    WHERE activo = true
-      AND (
-        LOWER(nombre) LIKE LOWER(?) OR
-        LOWER(email) LIKE LOWER(?) OR
-        LOWER(telefono) LIKE LOWER(?)
-      );
-  `;
-
-  const [rows] = await db.query<RowDataPacket[]>(sql, [likeQuery, likeQuery, likeQuery]);
-
-  // ⬇️ Casteo como array del shape esperado
-  const result = rows as { total: number }[];
-
-  const totalCount = Number(result[0]?.total || 0);
-
-  return Math.ceil(totalCount / ITEMS_PER_PAGE);
-}
-
 //Funciona
 export async function fetchFiltrosPorVendedor(vendedorId: number) {
   const sql = `
@@ -238,12 +145,12 @@ export async function getEtiquetasGlobales() {
 }
 
 //Funciona
-export async function getPedidosByCliente(clienteId: string): Promise<pedido[]> {
+export async function getPedidosByCliente(clienteId: string): Promise<any[]> {
   const sql = `
     SELECT 
       p.*,
-      u1.username AS nombre_armador,
-      u2.username AS nombre_controlador
+      u1.username AS armador_nombre,
+      u2.username AS controlador_nombre
     FROM pedidos p
     LEFT JOIN usuarios u1 ON p.armador_id = u1.id
     LEFT JOIN usuarios u2 ON p.controlador_id = u2.id
@@ -252,7 +159,7 @@ export async function getPedidosByCliente(clienteId: string): Promise<pedido[]> 
   `;
 
   const [rows] = await db.query<RowDataPacket[]>(sql, [clienteId]);
-  return rows as pedido[];
+  return rows;
 }
 
 //Funciona
