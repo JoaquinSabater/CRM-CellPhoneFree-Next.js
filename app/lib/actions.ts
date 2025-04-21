@@ -98,20 +98,42 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
   }
 
   try {
-    // 1. Crear cliente
     await db.query(
-      `INSERT INTO clientes (nombre, email, telefono, negocio, provincia_id, localidad_id, cuit, anotaciones, vendedor_id)
-       SELECT nombre, email, telefono, negocio, provincia_id, localidad_id, cuit, anotaciones, ? FROM prospectos WHERE id = ?`,
+      `INSERT INTO clientes (
+        nombre,
+        email,
+        telefono,
+        localidad_id,
+        cuit_dni,
+        observaciones,
+        vendedor_id,
+        fecha_creacion
+      )
+      SELECT 
+        nombre,
+        email,
+        telefono,
+        localidad_id,
+        cuit,
+        anotaciones,
+        ?,
+        CURDATE()
+      FROM prospectos 
+      WHERE id = ?`,
       [vendedorId, prospectoId]
     );
 
-    // 2. Desactivar prospecto
-    await db.query(`UPDATE prospectos SET activo = false WHERE id = ?`, [prospectoId]);
+    await db.query(
+      `UPDATE prospectos SET activo = false WHERE id = ?`,
+      [prospectoId]
+    );
   } catch (err) {
     console.error('❌ Error al dar de alta cliente:', err);
     throw err;
   }
 }
+
+
 
 export async function updateCliente(id: string, formData: FormData) {
   const observaciones = formData.get('observaciones') as string | null;
