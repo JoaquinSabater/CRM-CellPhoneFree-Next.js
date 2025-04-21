@@ -11,66 +11,62 @@ import cron from 'node-cron';
 import {db} from "../lib/mysql";
 
 
-// cron.schedule('*/20 * * * *', async () => {
-//   console.log('⏰ Ejecutando cron de recordatorios...');
+const botToken = process.env.TELEGRAM_BOT_TOKEN;
 
-//   try {
-//     const now = new Date();
+// 🔔 Envío de recordatorios
+async function enviarRecordatoriosPendientes() {
+  console.log('📤 Verificando recordatorios pendientes al iniciar sesión...');
 
-//     const recordatorios = await sql`
-//       SELECT id, mensaje, chat_id, bot_token FROM recordatorios
-//       WHERE enviado = false AND fecha_envio <= ${now};
-//     `;
+  if (!botToken) {
+    console.error('❌ BOT_TOKEN no definido en el entorno.');
+    return;
+  }
 
-//     if (recordatorios.length === 0) {
-//       console.log('✅ No hay recordatorios para enviar ahora.');
-//       return;
-//     }
+  const now = new Date();
 
-//     for (const r of recordatorios) {
-//       const chatId = r.chat_id;
-//       const mensaje = r.mensaje;
-//       const botToken = r.bot_token;
+  try {
+    const [recordatorios]: any = await db.query(
+      `SELECT id, mensaje, chat_id 
+       FROM recordatorios 
+       WHERE enviado = false AND fecha_envio <= ?`,
+      [now]
+    );
 
-//       if (!botToken) {
-//         console.warn(`⚠️ No se encontró bot_token para el recordatorio ${r.id}`);
-//         continue;
-//       }
+    if (!recordatorios || recordatorios.length === 0) {
+      console.log('✅ No hay recordatorios para enviar.');
+      return;
+    }
 
-//       console.log('➡️ Enviando a:', chatId);
+    for (const r of recordatorios) {
+      const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+      const payload = {
+        chat_id: r.chat_id,
+        text: `🔔 Recordatorio:\n${r.mensaje}`,
+      };
 
-//       const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-//       const payload = {
-//         chat_id: chatId,
-//         text: `🔔 Recordatorio:\n${mensaje}`,
-//       };
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
 
-//       try {
-//         const res = await fetch(url, {
-//           method: 'POST',
-//           headers: { 'Content-Type': 'application/json' },
-//           body: JSON.stringify(payload),
-//         });
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Telegram API error: ${errorText}`);
+        }
 
-//         if (!res.ok) {
-//           const error = await res.text();
-//           throw new Error(`Error al enviar a Telegram: ${error}`);
-//         }
-
-//         // ✅ Marcar como enviado
-//         await sql`
-//           UPDATE recordatorios SET enviado = true WHERE id = ${r.id};
-//         `;
-
-//         console.log(`📤 Enviado a ${chatId}: "${mensaje}"`);
-//       } catch (err: any) {
-//         console.error(`❌ Error con chat_id ${chatId}:`, err.message);
-//       }
-//     }
-//   } catch (error) {
-//     console.error('❌ Error general en el cron de recordatorios:', error);
-//   }
-// });
+        // ✅ Marcar como enviado
+        await db.query(`UPDATE recordatorios SET enviado = true WHERE id = ?`, [r.id]);
+        console.log(`✅ Enviado a chat_id ${r.chat_id}: "${r.mensaje}"`);
+      } catch (err: any) {
+        console.error(`❌ Error al enviar a ${r.chat_id}: ${err.message}`);
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error general al procesar recordatorios:', error);
+  }
+}
 
 async function getUsuario(id: string): Promise<usuario | null> {
   try {
@@ -106,6 +102,8 @@ export const { auth, signIn, signOut } = NextAuth({
 
         const passwordsMatch = await bcrypt.compare(password, usuario.password.trim());
         if (!passwordsMatch) return null;
+
+        await enviarRecordatoriosPendientes();
 
         return usuario as any;
       },

@@ -9,6 +9,7 @@ import { AuthError } from 'next-auth';
 import { auth } from '@/app/lib/auth';
 import {db} from "../lib/mysql";
 
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
 
 const FormSchema = z.object({
@@ -32,7 +33,6 @@ const ClienteFormSchema = z.object({
 
 const UpdateCliente = ClienteFormSchema.omit({ id: true });
 
-
 export async function createRecordatorio(formData: FormData) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -54,28 +54,33 @@ export async function createRecordatorio(formData: FormData) {
     return { success: false, error: 'Fecha inválida' };
   }
 
-  const fechaEnvio = fechaCompleta.toISOString();
-
-  // Obtener datos de Telegram del usuario
-  const [rows]: any = await db.query(
-    'SELECT chat_id, bot_token FROM usuarios WHERE id = ?',
-    [userId]
-  );
-
-  const usuario = rows[0];
-
-  const chat_id = usuario?.chat_id;
-  const bot_token = usuario?.bot_token;
-
-  if (!chat_id || !bot_token) {
-    return { success: false, error: 'Faltan datos de Telegram (chat_id o bot_token)' };
+  if (!BOT_TOKEN) {
+    console.error('❌ BOT_TOKEN no está definido en el .env');
+    return { success: false, error: 'Error interno del servidor (BOT_TOKEN faltante)' };
   }
 
-  // Insertar el recordatorio
+  const fechaEnvio = fechaCompleta.toISOString();
+
+  const [rows]: any = await db.query(
+    'SELECT chat_id FROM usuarios WHERE id = ?',
+    [userId]
+  );
+  const usuario = rows[0];
+  const chat_id = usuario?.chat_id;
+
+  if (!chat_id) {
+    return {
+      success: false,
+      error: 'Falta el chat_id del usuario para enviar el recordatorio.',
+    };
+  }
+
   await db.query(
     'INSERT INTO recordatorios (mensaje, fecha_envio, chat_id, bot_token) VALUES (?, ?, ?, ?)',
-    [mensaje, fechaEnvio, chat_id, bot_token]
+    [mensaje, fechaEnvio, chat_id, BOT_TOKEN]
   );
+
+  console.log(`✅ Recordatorio creado para el ${fechaEnvio} con mensaje: "${mensaje}"`);
 
   return { success: true };
 }
