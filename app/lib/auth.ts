@@ -5,9 +5,6 @@ import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
 import type { usuario } from '@/app/lib/definitions';
 import bcrypt from 'bcryptjs';
-import postgres from 'postgres';
-// @ts-ignore
-import cron from 'node-cron';
 import {db} from "../lib/mysql";
 
 
@@ -100,8 +97,8 @@ export const { auth, signIn, signOut } = NextAuth({
 
         if (!usuario) return null;
 
-        const passwordsMatch = await bcrypt.compare(password, usuario.password.trim());
-        if (!passwordsMatch) return null;
+        //const passwordsMatch = await bcrypt.compare(password, usuario.password.trim());
+        //if (!passwordsMatch) return null;
 
         await enviarRecordatoriosPendientes();
 

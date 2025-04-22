@@ -108,8 +108,8 @@ export async function fetchFiltrosPorVendedor(vendedorId: number) {
     WHERE c.vendedor_id = ?;
   `;
 
-  const [rows] = await db.query(sql, [vendedorId]);
-  return rows;
+  const [rows]: any = await db.query(sql, [vendedorId]);
+  return rows; // 💥 importante: devolvés solo rows
 }
 
 //Funciona

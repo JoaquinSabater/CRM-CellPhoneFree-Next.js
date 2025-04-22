@@ -56,6 +56,8 @@ export type cliente = {
   cuit_dni: string;
   vendedor_id: number;
   localidad_id: number;
+  provincia_nombre: string;
+  localidad_nombre: string;
   condicion_iva_id: number;
   condicion_iibb_id: number;
   observaciones: string;
@@ -70,6 +72,15 @@ export type cliente = {
   cuenta_corriente: boolean;
   monto: number;
   moroso: boolean;
+};
+
+export type prospecto = {
+  id: number;
+  nombre: string;
+  email: string;
+  telefono: string;
+  localidad_nombre: string;
+  fecha_contacto: Date;
 };
 
 export type clienteForm = {

@@ -7,6 +7,13 @@ import {
   fetchFilteredProspects
 } from '@/app/lib/data';
 import { UpdateCliente,UpdateProspecto,DeleteProspecto } from '@/app/ui/invoices/buttons';
+import {cliente,prospecto} from '@/app/lib/definitions';
+
+type FiltroCliente = {
+  cliente_id: number;
+  nombre: string;
+  valor: string;
+};
 
 export default async function Table({ query }: { query: string }) {
   const session = await auth();
@@ -23,8 +30,8 @@ export default async function Table({ query }: { query: string }) {
       return <div className="text-red-500 p-4">No se pudo obtener el vendedor actual.</div>;
     }
 
-    const clientes = await fetchFilteredClientes(query, vendedorId);
-    const filtrosCliente = await fetchFiltrosPorVendedor(vendedorId);
+    const clientes: cliente[] = await fetchFilteredClientes(query, vendedorId);
+    const filtrosCliente: FiltroCliente[] = await fetchFiltrosPorVendedor(vendedorId);
     const filtrosUnicos = Array.from(new Set(filtrosCliente.map((f) => f.nombre)));
 
     const filtroMap = new Map<number, Map<string, string>>();
@@ -57,7 +64,7 @@ export default async function Table({ query }: { query: string }) {
                 <tr key={cliente.id}>
                   <td className="whitespace-nowrap px-2 py-3">
                     <div className="flex justify-start pl-1">
-                      <UpdateCliente id={cliente.id} />
+                      <UpdateCliente id={cliente.id.toString()} />
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-2 py-3">{cliente.razon_social}</td>
@@ -80,7 +87,7 @@ export default async function Table({ query }: { query: string }) {
   // 💙 Si es captador, tabla de prospectos
   if (rol === 'captador') {
     const captadorId = session?.user?.captador_id;
-    const prospectos = await fetchFilteredProspects(query, captadorId);
+    const prospectos = await fetchFilteredProspects(query, captadorId) as prospecto[];
 
     return (
       <div className="mt-6 w-full overflow-x-auto">
