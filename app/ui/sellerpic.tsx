@@ -38,7 +38,7 @@ export default async function SellerPic() {
   return (
     <div className="bg-white p-4 rounded-lg shadow-md w-full h-full max-w-sm flex flex-col items-center justify-center text-center">
       <Image
-        src={userData.url_imagen || '/sellers/default.png'}
+        src={userData.url_imagen || '/logo-25.png'}
         alt={userData.nombre}
         width={160}
         height={160}
