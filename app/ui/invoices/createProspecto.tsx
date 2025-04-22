@@ -47,17 +47,25 @@ export default function CreateProspectoForm({
       <input type="email" name="email" placeholder="Email" required className={inputBase} />
       <input type="text" name="telefono" placeholder="Teléfono" required className={inputBase} />
       <input type="text" name="negocio" placeholder="Negocio" required className={inputBase} />
+
       <select name="por_donde_llego" className={inputBase} required>
         <option value="">¿Por dónde llegó?</option>
         <option value="instagram">Instagram</option>
         <option value="facebook">Facebook</option>
         <option value="googleAds">Google Ads</option>
       </select>
+
+      <label className="block text-sm font-medium text-gray-700 mt-3">Fecha de contacto</label>
       <input type="date" name="fecha_contacto" required className={inputBase} />
+
       <input type="text" name="cuit" placeholder="CUIT" className={inputBase} />
       <textarea name="anotaciones" placeholder="Anotaciones" className={`${inputBase} resize-none`} rows={3} />
+
+      <label className="block text-sm font-medium text-gray-700 mt-3">Fecha pedido de asesoramiento</label>
       <input type="date" name="fecha_pedido_asesoramiento" className={inputBase} />
+
       <input type="url" name="url" placeholder="URL seguimiento" className={inputBase} />
+
 
       {/* Selector de provincia */}
       <select
