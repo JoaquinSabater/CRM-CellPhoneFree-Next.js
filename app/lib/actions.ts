@@ -62,11 +62,13 @@ export async function createRecordatorio(formData: FormData) {
   const fechaEnvio = fechaCompleta.toISOString();
 
   const [rows]: any = await db.query(
-    'SELECT chat_id FROM usuarios WHERE id = ?',
+    'SELECT chat_id_crm FROM usuarios WHERE id = ?',
     [userId]
   );
   const usuario = rows[0];
-  const chat_id = usuario?.chat_id;
+  const chat_id = usuario?.chat_id_crm;
+  
+  console.log('chat_id:', chat_id);
 
   if (!chat_id) {
     return {

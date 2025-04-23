@@ -97,9 +97,11 @@ export const { auth, signIn, signOut } = NextAuth({
 
         if (!usuario) return null;
 
-        //const passwordsMatch = await bcrypt.compare(password, usuario.password.trim());
-        //if (!passwordsMatch) return null;
+        const hashNormalizado = usuario.password.trim().replace('$2y$', '$2a$');
 
+        const passwordsMatch = await bcrypt.compare(password, hashNormalizado);
+        if (!passwordsMatch) return null;
+        
         await enviarRecordatoriosPendientes();
 
         return usuario as any;
