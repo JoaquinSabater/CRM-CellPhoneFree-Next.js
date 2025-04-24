@@ -12,13 +12,26 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
 
   const [provinciaId, setProvinciaId] = useState<string>(prospecto.provincia_id?.toString() || '');
   const [localidadesFiltradas, setLocalidadesFiltradas] = useState<any[]>([]);
+  const [localidadId, setLocalidadId] = useState<string>(prospecto.localidad_id?.toString() || '');
 
   const inputBase = 'peer block w-full rounded-md border py-2 pl-3 text-sm outline-2 placeholder:text-gray-500';
 
+  // Filtra las localidades cuando cambia la provincia
   useEffect(() => {
+    if (!provinciaId) return;
     const filtradas = localidades.filter((l: any) => l.provincia_id == provinciaId);
     setLocalidadesFiltradas(filtradas);
   }, [provinciaId, localidades]);
+
+  // Si ya hay localidad seleccionada, deduce la provincia y actualiza
+  useEffect(() => {
+    if (!provinciaId && prospecto.localidad_id) {
+      const localidad = localidades.find((l: any) => l.id === prospecto.localidad_id);
+      if (localidad) {
+        setProvinciaId(localidad.provincia_id.toString());
+      }
+    }
+  }, [prospecto.localidad_id, localidades]);
 
   const handleProvinciaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setProvinciaId(e.target.value);
@@ -103,7 +116,8 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
               name="localidad_id"
               id="localidad_id"
               className={inputBase}
-              defaultValue={prospecto.localidad_id?.toString()}
+              value={localidadId}
+              onChange={(e) => setLocalidadId(e.target.value)}
               required
             >
               <option value="">Selecciona una localidad</option>
