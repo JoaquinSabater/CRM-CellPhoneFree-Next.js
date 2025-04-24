@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { updateProspecto,altaCliente } from '@/app/lib/actions';
 import { Button } from '@/app/ui/button';
 import Link from 'next/link';
@@ -9,12 +9,17 @@ import Link from 'next/link';
 export default function EditProspectoForm({ prospecto, provincias, localidades, vendedores }: any) {
   const router = useRouter();
   const updateWithId = updateProspecto.bind(null, prospecto.id);
+  const [successMessage, setSuccessMessage] = useState<string>('');
 
   const [provinciaId, setProvinciaId] = useState<string>(prospecto.provincia_id?.toString() || '');
   const [localidadesFiltradas, setLocalidadesFiltradas] = useState<any[]>([]);
   const [localidadId, setLocalidadId] = useState<string>(prospecto.localidad_id?.toString() || '');
 
   const inputBase = 'peer block w-full rounded-md border py-2 pl-3 text-sm outline-2 placeholder:text-gray-500';
+
+  const redireccion = () => {
+    setSuccessMessage('✅ Dado de alta correctamente. Tocá Cancelar o Customers para volver atrás.');
+  }
 
   // Filtra las localidades cuando cambia la provincia
   useEffect(() => {
@@ -200,9 +205,18 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
           ))}
         </select>
 
-        <div className="flex justify-end">
-          <Button type="submit" className="mt-4">Alta</Button>
+        <div className="flex items-center gap-6 justify-start mt-4">
+          <Button type="submit" onClick={redireccion}>
+            Alta
+          </Button>
+
+          {successMessage && (
+            <div className="p-3 rounded bg-green-100 text-green-800 border border-green-300 shadow-sm">
+              {successMessage}
+            </div>
+          )}
         </div>
+
       </form>
     </>
   );
