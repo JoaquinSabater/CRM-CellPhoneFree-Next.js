@@ -1,13 +1,12 @@
-import Link from 'next/link';
 import { auth } from '@/app/lib/auth';
 import {
   fetchFilteredClientes,
   fetchFiltrosPorVendedor,
-  fetchProspectos,
   fetchFilteredProspects
 } from '@/app/lib/data';
 import { UpdateCliente,UpdateProspecto,DeleteProspecto } from '@/app/ui/invoices/buttons';
 import {cliente,prospecto} from '@/app/lib/definitions';
+import {ClientProspectosTable} from '@/app/ui/invoices/ClientProspectosTable';
 
 type FiltroCliente = {
   cliente_id: number;
@@ -87,50 +86,13 @@ export default async function Table({ query }: { query: string }) {
   // 💙 Si es captador, tabla de prospectos
   if (rol === 'captador') {
     const captadorId = session?.user?.captador_id;
-    const prospectos = await fetchFilteredProspects(query, captadorId) as prospecto[];
-
+    const initialProspectos = await fetchFilteredProspects(query, captadorId) as prospecto[];
+  
+    // ⚡ Convertimos la tabla en un componente reactivo
     return (
-      <div className="mt-6 w-full overflow-x-auto">
-        <table className="min-w-full text-sm text-gray-900 border rounded-lg overflow-hidden">
-          <thead className="bg-gray-100 text-left font-medium">
-            <tr>
-              <th className="px-2 py-5 font-medium">Nombre</th>
-              <th className="px-2 py-5 font-medium">Email</th>
-              <th className="px-2 py-5 font-medium">Teléfono</th>
-              <th className="px-2 py-5 font-medium">Ciudad</th>
-              <th className="px-2 py-5 font-medium">Fecha Contacto</th>
-              <th className="px-2 py-5 font-medium"></th>
-              <th className="px-2 py-5 font-medium"></th>
-              {/* Aca podes agregar más columnas como seguimiento o botones */}
-            </tr>
-          </thead>
-          <tbody className="bg-white">
-            {prospectos.map((p: any) => (
-              <tr key={p.id}>
-                <td className="whitespace-nowrap px-2 py-3">{p.nombre}</td>
-                <td className="whitespace-nowrap px-2 py-3">{p.email}</td>
-                <td className="whitespace-nowrap px-2 py-3">{p.telefono}</td>
-                <td className="whitespace-nowrap px-2 py-3">{p.localidad_nombre}</td>
-                <td className="whitespace-nowrap px-2 py-3">{new Date(p.fecha_contacto).toLocaleDateString()}</td>
-                <td className="py-1">
-                  <UpdateProspecto id={p.id} />
-                </td>
-                <td className="py-1">
-                  <DeleteProspecto id={p.id} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <ClientProspectosTable initialProspectos={initialProspectos} />
     );
   }
 
   return <div className="text-red-500 p-4">Rol no válido.</div>;
 }
-
-
-
-
-
-

@@ -323,11 +323,6 @@ export async function createProspecto(formData: FormData) {
     captador_id: captadorId || null,
   };
 
-  // Validación básica
-  if (!fields.nombre || !fields.email || !fields.fecha_contacto || !fields.provincia_id || !fields.localidad_id) {
-    throw new Error('Faltan campos obligatorios');
-  }
-
   try {
     const query = `
       INSERT INTO prospectos (
