@@ -88,9 +88,10 @@ export default async function Table({ query }: { query: string }) {
     const captadorId = session?.user?.captador_id;
     const initialProspectos = await fetchFilteredProspects(query, captadorId) as prospecto[];
   
-    // ⚡ Convertimos la tabla en un componente reactivo
     return (
-      <ClientProspectosTable initialProspectos={initialProspectos} />
+      <ClientProspectosTable
+        initialProspectos={initialProspectos}
+      />
     );
   }
 

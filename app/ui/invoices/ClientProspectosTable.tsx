@@ -1,18 +1,26 @@
 'use client';
 
-import { useState } from 'react';
-import { UpdateProspecto } from '@/app/ui/invoices/buttons';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { desactivarProspecto } from '@/app/lib/actions';
+import { UpdateProspecto } from '@/app/ui/invoices/buttons';
+import { fetchFilteredProspects } from '@/app/lib/data';
 import { prospecto } from '@/app/lib/definitions';
 
-export function ClientProspectosTable({ initialProspectos }: { initialProspectos: prospecto[] }) {
-  const [prospectos, setProspectos] = useState(initialProspectos);
+export function ClientProspectosTable({
+  initialProspectos
+}: {
+  initialProspectos: prospecto[];
+}) {
 
+  const prospectos: prospecto[] = initialProspectos ?? [];
+  const router = useRouter();
+  
   const handleDelete = async (id: number) => {
     try {
       await desactivarProspecto(id);
-      setProspectos(prev => prev.filter(p => p.id !== id));
+      router.refresh(); // Refresca la página para mostrar los cambios
     } catch (err) {
       console.error('❌ Error al eliminar prospecto:', err);
     }
