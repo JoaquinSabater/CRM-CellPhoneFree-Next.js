@@ -80,6 +80,7 @@ export type prospecto = {
   email: string;
   telefono: string;
   localidad_nombre: string;
+  negocio: string;
   fecha_contacto: Date;
 };
 

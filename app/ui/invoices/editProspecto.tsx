@@ -73,6 +73,7 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
               <option value="instagram">Instagram</option>
               <option value="facebook">Facebook</option>
               <option value="googleAds">Google Ads</option>
+              <option value="whatsapp">WhatsApp</option>
             </select>
           </div>
 
@@ -105,7 +106,6 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
               className={inputBase}
               value={provinciaId}
               onChange={handleProvinciaChange}
-              required
             >
               <option value="">Selecciona una provincia</option>
               {provincias.map((prov: any) => (
@@ -123,7 +123,6 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
               className={inputBase}
               value={localidadId}
               onChange={(e) => setLocalidadId(e.target.value)}
-              required
             >
               <option value="">Selecciona una localidad</option>
               {localidadesFiltradas.map((loc: any) => (
