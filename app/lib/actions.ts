@@ -202,7 +202,7 @@ export async function updateProspecto(id: number, formData: FormData) {
   const getNumberOrNull = (key: string) => {
     const value = formData.get(key);
     const parsed = Number(value);
-    return isNaN(parsed) ? null : parsed;
+    return !value || parsed === 0 || isNaN(parsed) ? null : parsed;
   };
 
   const fields = {
