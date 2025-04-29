@@ -131,9 +131,10 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
     );
 
     await db.query(
-      `UPDATE prospectos SET activo = false WHERE id = ?`,
+      `UPDATE prospectos SET activo = false, convertido = 1 WHERE id = ?`,
       [prospectoId]
     );
+    
   } catch (err) {
     console.error('❌ Error al dar de alta cliente:', err);
     throw err;
