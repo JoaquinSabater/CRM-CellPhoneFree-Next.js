@@ -77,6 +77,8 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
             </select>
           </div>
 
+
+
           <div>
             <label htmlFor="nombre" className="block text-sm font-medium mb-1">Nombre</label>
             <input id="nombre" name="nombre" type="text" defaultValue={prospecto.nombre} className={inputBase} />
@@ -94,7 +96,19 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
 
           <div>
             <label htmlFor="negocio" className="block text-sm font-medium mb-1">Tipo de Negocio</label>
-            <input id="negocio" name="negocio" type="text" defaultValue={prospecto.negocio} className={inputBase} />
+            <select
+              id="negocio"
+              name="negocio"
+              defaultValue={prospecto.negocio || ''}
+              className={inputBase}
+            >
+              <option value="">Selecciona una opción</option>
+              <option value="online">Online</option>
+              <option value="fisico">Físico</option>
+              <option value="fisicos y online">Fisicos y online</option>
+              <option value="fisico mas de uno">Físico (mas de uno)</option>
+              <option value="emprendedor">Emprendedor</option>
+            </select>
           </div>
 
           {/* Provincia */}
