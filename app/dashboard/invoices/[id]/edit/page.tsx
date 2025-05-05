@@ -1,5 +1,5 @@
 import EditClienteForm from '@/app/ui/invoices/edit-form';
-import { fetchClienteById, getPedidosByCliente, getEtiquetasGlobales, getFiltrosDelCliente } from '@/app/lib/data';
+import { fetchClienteById, getPedidosByCliente, getEtiquetasGlobales, getFiltrosDelCliente,getTopItemsByCliente } from '@/app/lib/data';
 import { Suspense } from 'react';
 import LoadingSpinner from '@/app/ui/loading';
 
@@ -8,11 +8,12 @@ import LoadingSpinner from '@/app/ui/loading';
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
 
-  const [cliente, pedidos, filtrosDisponibles, filtrosCliente] = await Promise.all([
+  const [cliente, pedidos, filtrosDisponibles, filtrosCliente,topArticulos] = await Promise.all([
     fetchClienteById(id),
     getPedidosByCliente(id),
     getEtiquetasGlobales(),
     getFiltrosDelCliente(id),
+    getTopItemsByCliente(id),
   ]);
 
   if (!cliente) {
@@ -27,6 +28,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           pedidos={pedidos}
           filtrosDisponibles={filtrosDisponibles}
           filtrosCliente={filtrosCliente}
+          topArticulos={topArticulos}
         />
       </Suspense>
     </main>

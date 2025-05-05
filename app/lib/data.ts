@@ -169,6 +169,25 @@ export async function getPedidosByCliente(clienteId: string): Promise<any[]> {
   return rows;
 }
 
+export async function getTopItemsByCliente(clienteId: string): Promise<any[]> {
+  const sql = `
+    SELECT 
+      i.nombre AS item_nombre, 
+      SUM(rd.cantidad) AS total_comprado
+    FROM remitos r
+    JOIN remitos_detalle rd ON r.id = rd.remito_id
+    JOIN articulos a ON rd.articulo_codigo = a.codigo_interno
+    JOIN items i ON a.item_id = i.id
+    WHERE r.cliente_id = ?
+    GROUP BY i.nombre
+    ORDER BY total_comprado DESC
+    LIMIT 5;
+  `;
+
+  const [rows] = await db.query<RowDataPacket[]>(sql, [clienteId]);
+  return rows;
+}
+
 //Funciona
 export async function getAllProvincias() {
   const sql = `

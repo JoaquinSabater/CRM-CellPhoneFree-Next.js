@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { Button } from '@/app/ui/button';
 import { updateCliente } from '@/app/lib/actions';
 import PedidosDelCliente from '@/app/ui/invoices/PedidosDelCliente';
+import TopItemsDelCliente from '@/app/ui/invoices/TopItemsDelCliente';
 
-export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente }: any) {
+export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos }: any) {
   const updateClienteWithId = updateCliente.bind(null, cliente.id);
 
   const inputBase = 'peer block w-full rounded-md border py-2 pl-3 text-sm outline-2 placeholder:text-gray-500';
@@ -104,6 +105,11 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
               })}
             </div>
           )}
+        </div>
+
+        {/* Top Artículos */}  
+        <div className="mt-8">
+          <TopItemsDelCliente items={topArticulos}/>
         </div>
 
         {/* Pedidos */}
