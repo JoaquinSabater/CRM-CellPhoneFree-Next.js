@@ -169,6 +169,26 @@ export async function getPedidosByCliente(clienteId: string): Promise<any[]> {
   return rows;
 }
 
+export async function getTopClientesPorItem(nombreItem: string, vendedorId: number) {
+  const sql = `
+    SELECT c.razon_social, SUM(rd.cantidad) AS total_comprado
+    FROM remitos r
+    JOIN remitos_detalle rd ON r.id = rd.remito_id
+    JOIN articulos a ON rd.articulo_codigo = a.codigo_interno
+    JOIN items i ON a.item_id = i.id
+    JOIN clientes c ON r.cliente_id = c.id
+    WHERE i.nombre LIKE ? AND c.vendedor_id = ?
+    GROUP BY c.id
+    ORDER BY total_comprado DESC
+    LIMIT 5
+  `;
+
+  // Agregamos los comodines % para búsqueda parcial
+  const [rows] = await db.query<RowDataPacket[]>(sql, [`%${nombreItem}%`, vendedorId]);
+  return rows;
+}
+
+
 export async function getTopItemsByCliente(clienteId: string): Promise<any[]> {
   const sql = `
     SELECT 

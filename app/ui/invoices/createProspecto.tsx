@@ -47,7 +47,7 @@ export default function CreateProspectoForm({
       <input type="email" name="email" placeholder="Email" className={inputBase} />
       <input type="text" name="telefono" placeholder="Teléfono" className={inputBase} />
 
-      <select name="negocio" className={inputBase} required>
+      <select name="negocio" className={inputBase}>
         <option value="">Selecciona una opción</option>
         <option value="online">Online</option>
         <option value="fisico">Físico</option>
