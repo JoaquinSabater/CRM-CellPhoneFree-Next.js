@@ -47,7 +47,13 @@ export function ClientProspectosTable({
               <td className="whitespace-nowrap px-2 py-3">{p.telefono}</td>
               <td className="whitespace-nowrap px-2 py-3">{p.localidad_nombre}</td>
               <td className="whitespace-nowrap px-2 py-3">{p.negocio}</td>
-              <td className="whitespace-nowrap px-2 py-3">{new Date(p.fecha_contacto).toLocaleDateString()}</td>
+              <td className="whitespace-nowrap px-2 py-3">{p.fecha_contacto
+                ? new Date(p.fecha_contacto).toLocaleDateString('es-AR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  })
+                : '—'}</td>
               <td className="py-1">
                 <UpdateProspecto id={p.id} />
               </td>
