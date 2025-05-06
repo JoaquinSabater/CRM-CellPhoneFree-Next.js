@@ -358,7 +358,26 @@ export async function createProspecto(formData: FormData) {
       fields.captador_id,
     ];
 
+    let diasExtra = 0;
+
+    diasExtra = 1;
+
+    const now = new Date();
+    const fechaEnvio = new Date(now);
+    fechaEnvio.setDate(now.getDate() + diasExtra);
+
+    const fecha = fechaEnvio.toISOString().slice(0, 10);
+
+    const mensaje = `📌 Seguimiento 2 para el prospecto: ${fields.nombre}`;
+
+    const recordatorioForm = new FormData();
+    recordatorioForm.append('mensaje', mensaje);
+    recordatorioForm.append('fecha', fecha);
+
+    await createRecordatorio(recordatorioForm);
+
     await db.query(query, values);
+    
   } catch (error) {
     console.error('❌ Error al crear el prospecto:', error);
     throw new Error('Error al crear el prospecto');
