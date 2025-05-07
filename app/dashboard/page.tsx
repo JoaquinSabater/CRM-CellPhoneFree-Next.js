@@ -11,6 +11,8 @@ export default async function Page() {
   const rol = session?.user?.rol;
   const vendedorId = session?.user?.vendedor_id;
 
+  const isCaptador = rol === 'captador';
+
   return (
     <main className="w-full px-4 py-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto items-start">
@@ -30,8 +32,12 @@ export default async function Page() {
         </div>
       </div>
 
-      {/* Sección inferior dividida horizontalmente en dos columnas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto mt-8 items-start">
+      {/* Sección inferior dividida horizontalmente */}
+      <div
+        className={`grid ${
+          isCaptador ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'
+        } gap-6 max-w-7xl mx-auto mt-8 items-start`}
+      >
         {/* Notas personales */}
         {userId && (
           <div className="w-full">
@@ -49,6 +55,7 @@ export default async function Page() {
     </main>
   );
 }
+
 
 
 
