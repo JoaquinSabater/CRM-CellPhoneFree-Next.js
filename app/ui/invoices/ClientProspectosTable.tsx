@@ -47,9 +47,9 @@ export function ClientProspectosTable({
               <td className="whitespace-nowrap px-2 py-3">{p.telefono}</td>
               <td className="whitespace-nowrap px-2 py-3">{p.localidad_nombre}</td>
               <td className="whitespace-nowrap px-2 py-3">{p.negocio}</td>
-              <td className="whitespace-nowrap px-2 py-3">{p.fecha_contacto instanceof Date
-                ? `${p.fecha_contacto.getDate().toString().padStart(2, '0')}/${(p.fecha_contacto.getMonth() + 1).toString().padStart(2, '0')}/${p.fecha_contacto.getFullYear()}`
-                : '—'}</td>
+              <td className="whitespace-nowrap px-2 py-3">
+                {p.fecha_contacto ? new Date(p.fecha_contacto).toISOString().slice(0, 10) : ''}
+              </td>
               <td className="py-1">
                 <UpdateProspecto id={p.id} />
               </td>
