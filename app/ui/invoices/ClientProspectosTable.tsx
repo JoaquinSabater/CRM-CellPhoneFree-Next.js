@@ -48,12 +48,7 @@ export function ClientProspectosTable({
               <td className="whitespace-nowrap px-2 py-3">{p.localidad_nombre}</td>
               <td className="whitespace-nowrap px-2 py-3">{p.negocio}</td>
               <td className="whitespace-nowrap px-2 py-3">{p.fecha_contacto instanceof Date
-                ? p.fecha_contacto.toLocaleDateString('es-AR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    timeZone: 'America/Argentina/Buenos_Aires', // 🧠 importante en Vercel
-                  })
+                ? `${p.fecha_contacto.getDate().toString().padStart(2, '0')}/${(p.fecha_contacto.getMonth() + 1).toString().padStart(2, '0')}/${p.fecha_contacto.getFullYear()}`
                 : '—'}</td>
               <td className="py-1">
                 <UpdateProspecto id={p.id} />
