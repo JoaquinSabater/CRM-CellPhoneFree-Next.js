@@ -6,12 +6,13 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const item = searchParams.get('item');
     const vendedorId = Number(searchParams.get('vendedorId'));
+    const limite = Number(searchParams.get('limite') || '5');
 
-    if (!item || !vendedorId || isNaN(vendedorId)) {
+    if (!item || !vendedorId || isNaN(vendedorId) || isNaN(limite)) {
       return NextResponse.json({ error: 'Parámetros inválidos' }, { status: 400 });
     }
 
-    const data = await getTopClientesPorItem(item, vendedorId);
+    const data = await getTopClientesPorItem(item, vendedorId, limite);
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error en API /topClientes:', error);

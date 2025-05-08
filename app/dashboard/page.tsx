@@ -36,7 +36,7 @@ export default async function Page() {
       <div
         className={`grid ${
           isCaptador ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'
-        } gap-6 max-w-7xl mx-auto mt-8 items-start`}
+        } gap-6 max-w-7xl mx-auto mt-8 items-stretch`}
       >
         {/* Notas personales */}
         {userId && (
@@ -55,7 +55,6 @@ export default async function Page() {
     </main>
   );
 }
-
 
 
 
