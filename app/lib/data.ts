@@ -184,6 +184,20 @@ export async function getClienteDinero(clienteId: number) {
   return rows as { mes: string; total: number }[];
 }
 
+export async function fetchPedidosPorMes(clienteId: number) {
+  const query = `
+    SELECT 
+      DATE_FORMAT(fecha_creacion, '%Y-%m') AS mes,
+      COUNT(*) AS cantidad
+    FROM pedidos
+    WHERE cliente_id = ?
+    GROUP BY DATE_FORMAT(fecha_creacion, '%Y-%m')
+    ORDER BY DATE_FORMAT(fecha_creacion, '%Y-%m') ASC;
+  `;
+  const [rows] = await db.query(query, [clienteId]);
+  return rows;
+}
+
 export async function getTopClientesPorItem(
   nombreItem: string,
   vendedorId: number,

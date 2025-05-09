@@ -6,6 +6,7 @@ import { updateCliente } from '@/app/lib/actions';
 import PedidosDelCliente from '@/app/ui/invoices/PedidosDelCliente';
 import TopItemsDelCliente from '@/app/ui/invoices/TopItemsDelCliente';
 import ClientesDinero from './ClientesDinero';
+import PedidosPorMes from './PedidosPorMes';
 
 export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos }: any) {
   const updateClienteWithId = updateCliente.bind(null, cliente.id);
@@ -115,6 +116,10 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
 
         <div className="mt-8">
           <ClientesDinero clienteId={cliente.id} />
+        </div>
+
+        <div className="mt-8">
+          <PedidosPorMes clienteId={cliente.id} />
         </div>
 
         {/* Pedidos */}
