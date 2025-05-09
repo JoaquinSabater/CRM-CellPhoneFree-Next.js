@@ -169,6 +169,21 @@ export async function getPedidosByCliente(clienteId: string): Promise<any[]> {
   return rows;
 }
 
+export async function getClienteDinero(clienteId: number) {
+  const sql = `
+    SELECT 
+      DATE_FORMAT(fecha_generacion, '%Y-%m') AS mes, 
+      SUM(total) AS total
+    FROM remitos
+    WHERE cliente_id = ?
+    GROUP BY mes
+    ORDER BY mes
+    LIMIT 12
+  `;
+  const [rows] = await db.query(sql, [clienteId]);
+  return rows as { mes: string; total: number }[];
+}
+
 export async function getTopClientesPorItem(
   nombreItem: string,
   vendedorId: number,
