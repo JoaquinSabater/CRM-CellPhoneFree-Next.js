@@ -204,7 +204,7 @@ export async function getTopClientesPorItem(
   limite: number
 ) {
   const sql = `
-    SELECT c.razon_social, SUM(rd.cantidad) AS total_comprado
+    SELECT c.id, c.razon_social, SUM(rd.cantidad) AS total_comprado
     FROM remitos r
     JOIN remitos_detalle rd ON r.id = rd.remito_id
     JOIN articulos a ON rd.articulo_codigo = a.codigo_interno
