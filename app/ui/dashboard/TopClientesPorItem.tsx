@@ -72,7 +72,7 @@ export default function TopClientesPorItem({ vendedorId }: { vendedorId: number 
               <span>
                 <strong>{cliente.razon_social}</strong> – {cliente.total_comprado} unidades
               </span>
-              <Link href={`/dashboard/invoices/${cliente.id}/edit`} className="ml-2 text-gray-500 hover:text-orange-600">
+              <Link href={`/dashboard/invoices/${cliente.id}/edit?from=dashboard`} className="ml-2 text-gray-500 hover:text-orange-600">
                 <PencilSquareIcon className="h-5 w-5" />
               </Link>
             </div>

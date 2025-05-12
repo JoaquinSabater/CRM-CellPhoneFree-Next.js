@@ -31,7 +31,7 @@ export function CrearProspecto() {
 export function UpdateCliente({ id }: { id: string }) {
   return (
       <Link
-        href={`/dashboard/invoices/${id}/edit`}     
+        href={`/dashboard/invoices/${id}/edit?from=clientes`}    
         className="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 transition">
         <PencilIcon className="w-5" />
       </Link>

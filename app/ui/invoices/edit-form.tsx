@@ -7,9 +7,14 @@ import PedidosDelCliente from '@/app/ui/invoices/PedidosDelCliente';
 import TopItemsDelCliente from '@/app/ui/invoices/TopItemsDelCliente';
 import ClientesDinero from './ClientesDinero';
 import PedidosPorMes from './PedidosPorMes';
+import { useSearchParams } from 'next/navigation';
 
 export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos }: any) {
   const updateClienteWithId = updateCliente.bind(null, cliente.id);
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from');
+  const cancelHref = from === 'dashboard' ? '/dashboard' : '/dashboard/invoices';
+
 
   const inputBase = 'peer block w-full rounded-md border py-2 pl-3 text-sm outline-2 placeholder:text-gray-500';
   const readOnlyStyle = 'bg-gray-100 text-gray-500 cursor-not-allowed';
@@ -131,7 +136,7 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
       {/* Botones */}
       <div className="mt-6 flex justify-end gap-4">
         <Link
-          href="/dashboard/invoices"
+          href={cancelHref}
           className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
         >
           Cancelar
