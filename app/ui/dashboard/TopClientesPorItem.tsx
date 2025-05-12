@@ -6,13 +6,14 @@ import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
 type Cliente = { id: number; razon_social: string; total_comprado: number };
 
-const STORAGE_KEY = 'topClientesPorItemBusqueda';
 
 export default function TopClientesPorItem({ vendedorId }: { vendedorId: number }) {
   const [item, setItem] = useState('');
   const [limite, setLimite] = useState('');
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const STORAGE_KEY = `topClientesPorItemBusqueda_${vendedorId}`;
 
   // Al montar, cargar búsqueda previa y volver a buscar si corresponde
   useEffect(() => {
