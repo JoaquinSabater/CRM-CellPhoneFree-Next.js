@@ -3,6 +3,7 @@ import Sellerpic from '../ui/sellerpic';
 import RecordatorioForm from '@/app/ui/dashboard/recordatorioForm';
 import NotasPersonales from '@/app/ui/dashboard/notas';
 import TopClientesPorItem from '@/app/ui/dashboard/TopClientesPorItem';
+import ClientesInactivosPorVendedor from '../ui/dashboard/ClientesInactivos';
 import { auth } from '@/app/lib/auth';
 
 export default async function Page() {
@@ -33,22 +34,18 @@ export default async function Page() {
       </div>
 
       {/* Sección inferior dividida horizontalmente */}
-      <div
-        className={`grid ${
-          isCaptador ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'
-        } gap-6 max-w-7xl mx-auto mt-8 items-stretch`}
-      >
-        {/* Notas personales */}
+      <div className="max-w-7xl mx-auto mt-8">
         {userId && (
           <div className="w-full">
             <NotasPersonales userId={Number(userId)} />
           </div>
         )}
 
-        {/* Top clientes por ítem - sólo para vendedores */}
+      {/* Solo para vendedores: Top clientes e inactivos */}
         {rol === 'vendedor' && vendedorId && (
-          <div className="w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
             <TopClientesPorItem vendedorId={vendedorId} />
+            <ClientesInactivosPorVendedor vendedorId={vendedorId} />
           </div>
         )}
       </div>

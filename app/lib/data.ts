@@ -220,6 +220,22 @@ export async function getTopClientesPorItem(
   return rows;
 }
 
+export async function getClientesInactivosPorVendedor(vendedorId: number, limite: number) {
+  const sql = `
+    SELECT 
+      c.id,
+      c.razon_social,
+      MAX(p.fecha_creacion) AS ultima_compra
+    FROM clientes c
+    LEFT JOIN pedidos p ON c.id = p.cliente_id
+    WHERE c.vendedor_id = ?
+    GROUP BY c.id
+    ORDER BY ultima_compra ASC
+    LIMIT ?
+  `;
+  const [rows] = await db.query(sql, [vendedorId, limite]);
+  return rows;
+}
 
 export async function getTopItemsByCliente(clienteId: string): Promise<any[]> {
   const sql = `
