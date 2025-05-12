@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
@@ -11,12 +11,47 @@ export default function ClientesInactivosPorVendedor({ vendedorId }: { vendedorI
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const handleBuscar = async () => {
-    if (!limite.trim() || isNaN(Number(limite))) return;
+  const STORAGE_KEY = `clientesInactivosBusqueda_${vendedorId}`;
+
+  // Al montar, cargar búsqueda previa y volver a buscar si corresponde
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const { limite: savedLimite } = JSON.parse(saved);
+      setLimite(savedLimite);
+      if (savedLimite) {
+        handleBuscar(savedLimite);
+      }
+    }
+    // eslint-disable-next-line
+  }, [vendedorId]);
+
+  // Guardar búsqueda cada vez que cambia
+  useEffect(() => {
+    if (limite) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ limite }));
+    }
+  }, [limite, vendedorId]);
+
+  // Re-hacer la consulta al volver a la pestaña si hay un límite cargado
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && limite && !loading) {
+        handleBuscar(limite);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [limite, vendedorId]);
+
+  const handleBuscar = async (limiteBuscar?: string) => {
+    const lim = limiteBuscar ?? limite;
+    if (!lim.trim() || isNaN(Number(lim))) return;
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/cliente-inactivo?vendedorId=${vendedorId}&limite=${limite}`
+        `/api/cliente-inactivo?vendedorId=${vendedorId}&limite=${lim}`
       );
       const data = await res.json();
       setClientes(data as Cliente[]);
@@ -31,6 +66,7 @@ export default function ClientesInactivosPorVendedor({ vendedorId }: { vendedorI
   const handleLimpiar = () => {
     setLimite('');
     setClientes([]);
+    localStorage.removeItem(STORAGE_KEY);
   };
 
   return (
@@ -65,35 +101,35 @@ export default function ClientesInactivosPorVendedor({ vendedorId }: { vendedorI
           Limpiar
         </button>
       </form>
-        {loading ? (
+      {loading ? (
         <p className="text-sm text-gray-600">Buscando...</p>
-        ) : clientes.length > 0 ? (
+      ) : clientes.length > 0 ? (
         <div
-            className={`text-sm space-y-1 ${
+          className={`text-sm space-y-1 ${
             clientes.length > 7 ? 'max-h-[168px] overflow-y-auto pr-2' : ''
-            }`}
+          }`}
         >
-            {clientes.map((cliente) => (
+          {clientes.map((cliente) => (
             <div key={cliente.id} className="flex items-center justify-between">
-                <span>
+              <span>
                 <strong>{cliente.razon_social}</strong>
                 {' – '}
                 {cliente.ultima_compra
-                    ? `Última compra: ${new Date(cliente.ultima_compra).toLocaleDateString()}`
-                    : 'Nunca compró'}
-                </span>
-                <Link
+                  ? `Última compra: ${new Date(cliente.ultima_compra).toLocaleDateString()}`
+                  : 'Nunca compró'}
+              </span>
+              <Link
                 href={`/dashboard/invoices/${cliente.id}/edit?from=dashboard`}
                 className="ml-2 text-gray-500 hover:text-orange-600"
-                >
+              >
                 <PencilSquareIcon className="h-5 w-5" />
-                </Link>
+              </Link>
             </div>
-            ))}
+          ))}
         </div>
-        ) : (
-            <p className="text-sm text-gray-500">No hay resultados aún.</p>
-        )}
+      ) : (
+        <p className="text-sm text-gray-500">No hay resultados aún.</p>
+      )}
     </div>
   );
 }
