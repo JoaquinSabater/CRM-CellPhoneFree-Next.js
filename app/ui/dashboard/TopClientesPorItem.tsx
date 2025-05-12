@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
 type Cliente = { id: number; razon_social: string; total_comprado: number };
+
+const STORAGE_KEY = 'topClientesPorItemBusqueda';
 
 export default function TopClientesPorItem({ vendedorId }: { vendedorId: number }) {
   const [item, setItem] = useState('');
@@ -12,52 +14,93 @@ export default function TopClientesPorItem({ vendedorId }: { vendedorId: number 
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const handleBuscar = async () => {
-    if (!item.trim() || !limite.trim() || isNaN(Number(limite))) return;
+  // Al montar, cargar búsqueda previa y volver a buscar si corresponde
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const { item: savedItem, limite: savedLimite } = JSON.parse(saved);
+      setItem(savedItem);
+      setLimite(savedLimite);
+      if (savedItem && savedLimite) {
+        buscarClientes(savedItem, savedLimite);
+      }
+    }
+  }, [vendedorId]); // <-- Siempre la misma cantidad de dependencias
 
+  useEffect(() => {
+    if (item || limite) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ item, limite }));
+    }
+  }, [item, limite]);
+
+  const buscarClientes = async (itemBuscar: string, limiteBuscar: string) => {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/topClientes?item=${encodeURIComponent(item)}&vendedorId=${vendedorId}&limite=${limite}`
+        `/api/topClientes?item=${encodeURIComponent(itemBuscar)}&vendedorId=${vendedorId}&limite=${limiteBuscar}`
       );
       const data = await res.json();
       setClientes(data as Cliente[]);
     } catch (err) {
+      setClientes([]);
       console.error('Error:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const isScrollable = clientes.length > 7;
+  const handleBuscar = () => {
+    if (!item.trim() || !limite.trim() || isNaN(Number(limite))) return;
+    buscarClientes(item, limite);
+  };
+
+  const handleLimpiar = () => {
+    setItem('');
+    setLimite('');
+    setClientes([]);
+    localStorage.removeItem(STORAGE_KEY);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow p-4 h-full flex flex-col">
       <h2 className="text-lg font-semibold mb-3">Buscar top clientes por ítem</h2>
 
-      <div className="flex items-center gap-2 mb-4">
-        <input
-          type="text"
-          value={item}
-          onChange={(e) => setItem(e.target.value)}
-          placeholder="Ej: Fundas"
-          className="border rounded px-3 py-1 text-sm w-full"
-        />
-        <input
-          type="number"
-          min={1}
-          value={limite}
-          onChange={(e) => setLimite(e.target.value)}
-          className="border rounded px-3 py-1 text-sm w-20"
-          placeholder="Cantidad"
-        />
-        <button
-          onClick={handleBuscar}
-          className="bg-orange-600 text-white px-4 py-1 rounded text-sm hover:bg-orange-500"
-        >
-          Buscar
-        </button>
-      </div>
+    <form
+      onSubmit={e => {
+        e.preventDefault();
+        handleBuscar();
+      }}
+      className="flex items-center gap-2 mb-4"
+    >
+      <input
+        type="text"
+        value={item}
+        onChange={(e) => setItem(e.target.value)}
+        placeholder="Ej: Fundas"
+        className="border rounded px-3 py-1 text-sm w-full"
+      />
+      <input
+        type="number"
+        min={1}
+        value={limite}
+        onChange={(e) => setLimite(e.target.value)}
+        className="border rounded px-3 py-1 text-sm w-20"
+        placeholder="Cantidad"
+      />
+      <button
+        type="submit"
+        className="bg-orange-600 text-white px-4 py-1 rounded text-sm hover:bg-orange-500"
+      >
+        Buscar
+      </button>
+      <button
+        type="button"
+        onClick={handleLimpiar}
+        className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-300"
+      >
+        Limpiar
+      </button>
+    </form>
 
       {loading ? (
         <p className="text-sm text-gray-600">Buscando...</p>
