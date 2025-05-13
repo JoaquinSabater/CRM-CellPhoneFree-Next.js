@@ -179,17 +179,22 @@ export async function updateCliente(id: string, formData: FormData) {
 
 export async function createEtiqueta(formData: FormData) {
   const nombre = formData.get('nombre')?.toString().trim();
+  const session = await auth();
+  const vendedorId = session?.user?.vendedor_id;
 
   if (!nombre) {
     throw new Error('El nombre de la etiqueta es requerido.');
   }
+  if (!vendedorId) {
+    throw new Error('No se pudo determinar el vendedor.');
+  }
 
   try {
     await db.query(
-      'INSERT INTO filtros (nombre) VALUES (?)',
-      [nombre]
+      'INSERT INTO filtros (nombre, vendedor_id) VALUES (?, ?)',
+      [nombre, vendedorId]
     );
-    revalidatePath('/dashboard/invoices'); // o el path que necesites refrescar
+    revalidatePath('/dashboard/invoices');
   } catch (error) {
     console.error('Error creando la etiqueta:', error);
     throw new Error('No se pudo crear la etiqueta.');

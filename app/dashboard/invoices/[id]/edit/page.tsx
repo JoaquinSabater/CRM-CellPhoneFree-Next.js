@@ -2,16 +2,19 @@ import EditClienteForm from '@/app/ui/invoices/edit-form';
 import { fetchClienteById, getPedidosByCliente, getEtiquetasGlobales, getFiltrosDelCliente,getTopItemsByCliente } from '@/app/lib/data';
 import { Suspense } from 'react';
 import LoadingSpinner from '@/app/ui/loading';
+import { auth } from '@/app/lib/auth';
 
 
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
+  const session = await auth();
+  const vendedorId = session?.user?.vendedor_id;
 
   const [cliente, pedidos, filtrosDisponibles, filtrosCliente,topArticulos] = await Promise.all([
     fetchClienteById(id),
     getPedidosByCliente(id),
-    getEtiquetasGlobales(),
+    getEtiquetasGlobales(vendedorId ?? 0),
     getFiltrosDelCliente(id),
     getTopItemsByCliente(id),
   ]);

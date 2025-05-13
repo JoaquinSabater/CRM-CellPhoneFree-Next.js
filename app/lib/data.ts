@@ -105,11 +105,12 @@ export async function fetchFiltrosPorVendedor(vendedorId: number) {
     FROM filtros_clientes fc
     JOIN filtros f ON fc.filtro_id = f.id
     JOIN clientes c ON c.id = fc.cliente_id
-    WHERE c.vendedor_id = ?;
+    WHERE c.vendedor_id = ?
+      AND (f.vendedor_id = ? OR f.vendedor_id IS NULL)
   `;
 
-  const [rows]: any = await db.query(sql, [vendedorId]);
-  return rows; // 💥 importante: devolvés solo rows
+  const [rows]: any = await db.query(sql, [vendedorId, vendedorId]);
+  return rows;
 }
 
 //Funciona
@@ -135,12 +136,13 @@ export async function fetchClienteById(id: string) {
 }
 
 //Funciona
-export async function getEtiquetasGlobales() {
+export async function getEtiquetasGlobales(vendedorId: number) {
   const sql = `
-    SELECT id, nombre FROM filtros ORDER BY nombre;
+    SELECT id, nombre FROM filtros
+    WHERE vendedor_id = ? OR vendedor_id IS NULL
+    ORDER BY nombre;
   `;
-
-  const [rows] = await db.query(sql);
+  const [rows] = await db.query(sql, [vendedorId]);
   return rows;
 }
 
