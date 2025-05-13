@@ -16,38 +16,39 @@ export default async function Page() {
 
   return (
     <main className="w-full px-4 py-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto items-start">
-        {/* Columna 1 - Foto */}
-        <div className="w-full h-full">
-          <Sellerpic />
-        </div>
-
-        {/* Columna 2 - Cards */}
-        <div className="flex flex-col gap-6">
-          <CardWrapper />
-        </div>
-
-        {/* Columna 3 - Formulario */}
-        <div className="w-full h-full">
-          <RecordatorioForm />
-        </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto items-stretch h-full">
+      {/* Columna 1 - Foto */}
+      <div className="flex flex-col h-full min-h-[220px]">
+        <Sellerpic />
       </div>
+
+      {/* Columna 2 - Cards */}
+      <div className="flex flex-col h-full gap-6 min-h-[220px]">
+        <CardWrapper />
+      </div>
+
+      {/* Columna 3 - Formulario */}
+      <div className="flex flex-col h-full min-h-[220px]">
+        <RecordatorioForm />
+      </div>
+      
+    </div>
 
       {/* Sección inferior dividida horizontalmente */}
       <div className="max-w-7xl mx-auto mt-8">
-        {userId && (
-          <div className="w-full">
-            <NotasPersonales userId={Number(userId)} />
-          </div>
-        )}
+          {userId && (
+            <div className="w-full">
+              <NotasPersonales userId={Number(userId)} />
+            </div>
+          )}
 
-      {/* Solo para vendedores: Top clientes e inactivos */}
-        {rol === 'vendedor' && vendedorId && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            <TopClientesPorItem vendedorId={vendedorId} />
-            <ClientesInactivosPorVendedor vendedorId={vendedorId} />
-          </div>
-        )}
+        {/* Solo para vendedores: Top clientes e inactivos */}
+          {rol === 'vendedor' && vendedorId && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <TopClientesPorItem vendedorId={vendedorId} />
+              <ClientesInactivosPorVendedor vendedorId={vendedorId} />
+            </div>
+          )}
       </div>
     </main>
   );

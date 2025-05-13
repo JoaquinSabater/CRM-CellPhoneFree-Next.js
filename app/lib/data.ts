@@ -229,7 +229,7 @@ export async function getClientesInactivosPorVendedor(vendedorId: number, limite
       c.razon_social,
       MAX(p.fecha_creacion) AS ultima_compra
     FROM clientes c
-    LEFT JOIN pedidos p ON c.id = p.cliente_id
+    INNER JOIN pedidos p ON c.id = p.cliente_id
     WHERE c.vendedor_id = ?
     GROUP BY c.id
     ORDER BY ultima_compra ASC
