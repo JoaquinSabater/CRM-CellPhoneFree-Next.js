@@ -239,6 +239,22 @@ export async function getClientesInactivosPorVendedor(vendedorId: number, limite
   return rows;
 }
 
+export async function getCantidadProspectosPorCaptador(captadorId: number) {
+  const [rows]: any = await db.query(
+    'SELECT COUNT(*) AS count FROM prospectos WHERE captador_id = ? AND activo = 1;',
+    [captadorId]
+  );
+  return Number(rows[0]?.count ?? 0);
+}
+
+export async function getCantidadProspectosConvertidosPorCaptador(captadorId: number) {
+  const [rows]: any = await db.query(
+    'SELECT COUNT(*) AS count FROM prospectos WHERE captador_id = ? AND convertido = 1;',
+    [captadorId]
+  );
+  return Number(rows[0]?.count ?? 0);
+}
+
 export async function getTopItemsByCliente(clienteId: string): Promise<any[]> {
   const sql = `
     SELECT 

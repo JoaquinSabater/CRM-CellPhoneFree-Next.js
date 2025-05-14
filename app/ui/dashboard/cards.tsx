@@ -1,33 +1,59 @@
 import {
   UserGroupIcon,
   InboxIcon,
+  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { lusitana } from '@/app/ui/fonts';
-import { getCantidadClientesPorVendedor, getCantidadPedidosDelMes } from '@/app/lib/data';
+import {
+  getCantidadClientesPorVendedor,
+  getCantidadPedidosDelMes,
+  getCantidadProspectosPorCaptador,
+  getCantidadProspectosConvertidosPorCaptador,
+} from '@/app/lib/data';
 import { auth } from '@/app/lib/auth';
 
 const iconMap = {
   clientes: UserGroupIcon,
   pedidos: InboxIcon,
+  prospectos: UserGroupIcon,
+  prospectosConvertidos: CheckCircleIcon,
 };
 
 export async function CardWrapper() {
   const session = await auth();
   const vendedorId = session?.user?.vendedor_id;
+  const captadorId = 1; //session?.user?.captador_id;
+  const rol = session?.user?.rol;
 
-  if (!vendedorId) return null;
+  if (rol === 'vendedor') {
+    if (!vendedorId) return null;
+    const [cantidadClientes, cantidadPedidosMes] = await Promise.all([
+      getCantidadClientesPorVendedor(vendedorId),
+      getCantidadPedidosDelMes(vendedorId),
+    ]);
+    return (
+      <div className="flex flex-col gap-4">
+        <Card title="Clientes" value={cantidadClientes} type="clientes" />
+        <Card title="Pedidos del Mes" value={cantidadPedidosMes} type="pedidos" />
+      </div>
+    );
+  }
 
-  const [cantidadClientes, cantidadPedidosMes] = await Promise.all([
-    getCantidadClientesPorVendedor(vendedorId),
-    getCantidadPedidosDelMes(vendedorId),
-  ]);
+  if (rol === 'captador') {
+    if (!captadorId) return null;
+    const [cantidadProspectos, cantidadProspectosConvertidos] = await Promise.all([
+      getCantidadProspectosPorCaptador(Number(captadorId)),
+      getCantidadProspectosConvertidosPorCaptador(Number(captadorId)),
+    ]);
+    return (
+      <div className="flex flex-col gap-4">
+        <Card title="Prospectos" value={cantidadProspectos} type="prospectos" />
+        <Card title="Prospectos Convertidos" value={cantidadProspectosConvertidos} type="prospectosConvertidos" />
+      </div>
+    );
+  }
 
-  return (
-    <div className="flex flex-col gap-4">
-      <Card title="Clientes" value={cantidadClientes} type="clientes" />
-      <Card title="Pedidos del Mes" value={cantidadPedidosMes} type="pedidos" />
-    </div>
-  );
+  return null;
 }
 
 export function Card({
@@ -37,7 +63,7 @@ export function Card({
 }: {
   title: string;
   value: number | string;
-  type: 'clientes' | 'pedidos';
+  type: 'clientes' | 'pedidos' | 'prospectos' | 'prospectosConvertidos';
 }) {
   const Icon = iconMap[type];
 
@@ -51,4 +77,3 @@ export function Card({
     </div>
   );
 }
-
