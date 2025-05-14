@@ -74,6 +74,7 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
               <option value="facebook">Facebook</option>
               <option value="googleAds">Google Ads</option>
               <option value="whatsapp">WhatsApp</option>
+              <option value="email">Email</option>
             </select>
           </div>
 

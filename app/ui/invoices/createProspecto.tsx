@@ -62,6 +62,7 @@ export default function CreateProspectoForm({
         <option value="facebook">Facebook</option>
         <option value="googleAds">Google Ads</option>
         <option value="whatsapp">WhatsApp</option>
+        <option value="email">Email</option>
       </select>
 
       <label className="block text-sm font-medium text-gray-700 mt-3">Fecha de contacto</label>
