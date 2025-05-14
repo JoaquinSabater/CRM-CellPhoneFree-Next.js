@@ -43,6 +43,7 @@ export async function createRecordatorio(formData: FormData) {
 
   const mensaje = formData.get('mensaje') as string;
   const fecha = formData.get('fecha') as string;
+  const prospecto_id = formData.get('prospecto_id') as string | null;
 
   if (!fecha) {
     return { success: false, error: 'La fecha es requerida' };
@@ -67,8 +68,6 @@ export async function createRecordatorio(formData: FormData) {
   );
   const usuario = rows[0];
   const chat_id = usuario?.chat_id_crm;
-  
-  console.log('chat_id:', chat_id);
 
   if (!chat_id) {
     return {
@@ -77,9 +76,10 @@ export async function createRecordatorio(formData: FormData) {
     };
   }
 
+  // Inserta prospecto_id si viene, si no, inserta null
   await db.query(
-    'INSERT INTO recordatorios (mensaje, fecha_envio, chat_id, bot_token) VALUES (?, ?, ?, ?)',
-    [mensaje, fechaEnvio, chat_id, BOT_TOKEN]
+    'INSERT INTO recordatorios (mensaje, fecha_envio, chat_id, bot_token, prospecto_id) VALUES (?, ?, ?, ?, ?)',
+    [mensaje, fechaEnvio, chat_id, BOT_TOKEN, prospecto_id ? Number(prospecto_id) : null]
   );
 
   console.log(`✅ Recordatorio creado para el ${fechaEnvio} con mensaje: "${mensaje}"`);
@@ -128,6 +128,12 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
       FROM prospectos 
       WHERE id = ?`,
       [vendedorId, prospectoId]
+    );
+
+    // Elimina los recordatorios asociados a este prospecto
+    await db.query(
+      `DELETE FROM recordatorios WHERE prospecto_id = ?`,
+      [prospectoId]
     );
 
     await db.query(
@@ -363,26 +369,29 @@ export async function createProspecto(formData: FormData) {
       fields.captador_id,
     ];
 
-    let diasExtra = 0;
+    const [result]: any = await db.query(query, values);
+    const prospectoId = result.insertId;
 
-    diasExtra = 1;
+    const seguimientos = [
+      { tipo: '2', dias: 1 },
+      { tipo: '3', dias: 7 },
+      { tipo: '4', dias: 15 },
+    ];
 
-    const now = new Date();
-    const fechaEnvio = new Date(now);
-    fechaEnvio.setDate(now.getDate() + diasExtra);
+    for (const seguimiento of seguimientos) {
+      const fechaEnvio = new Date();
+      fechaEnvio.setDate(fechaEnvio.getDate() + seguimiento.dias);
+      const fecha = fechaEnvio.toISOString().slice(0, 10);
+      const mensaje = `📌 Seguimiento ${seguimiento.tipo} para el prospecto: ${fields.nombre}`;
 
-    const fecha = fechaEnvio.toISOString().slice(0, 10);
+      const recordatorioForm = new FormData();
+      recordatorioForm.append('mensaje', mensaje);
+      recordatorioForm.append('fecha', fecha);
+      recordatorioForm.append('prospecto_id', String(prospectoId)); // Nuevo campo
 
-    const mensaje = `📌 Seguimiento 2 para el prospecto: ${fields.nombre}`;
+      await createRecordatorio(recordatorioForm);
+    }
 
-    const recordatorioForm = new FormData();
-    recordatorioForm.append('mensaje', mensaje);
-    recordatorioForm.append('fecha', fecha);
-
-    await createRecordatorio(recordatorioForm);
-
-    await db.query(query, values);
-    
   } catch (error) {
     console.error('❌ Error al crear el prospecto:', error);
     throw new Error('Error al crear el prospecto');
