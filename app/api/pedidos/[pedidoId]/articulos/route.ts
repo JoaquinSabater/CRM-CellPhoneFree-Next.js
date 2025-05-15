@@ -3,10 +3,11 @@ import { getArticulosDePedido } from '@/app/lib/data';
 
 export async function GET(
   request: Request,
-  { params }: { params: { pedidoId: string } }
+  context: { params: Promise<{ pedidoId: string }> } // params puede ser promesa
 ) {
-  // Espera explícitamente los params si es necesario
-  const pedidoIdNum = Number((await params).pedidoId);
+  const { pedidoId } = await context.params; // await aquí
+
+  const pedidoIdNum = Number(pedidoId);
 
   if (isNaN(pedidoIdNum)) return NextResponse.json([], { status: 400 });
   const articulos = await getArticulosDePedido(pedidoIdNum);
