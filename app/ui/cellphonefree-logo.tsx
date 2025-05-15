@@ -6,7 +6,7 @@ export default function CellPhoneFreeLogo() {
     <div
       className={`${lusitana.className} flex flex-row items-center leading-none text-white`}
     >
-      <Image src="/CellPhoneFreeLogos/cellphonesinfondo.png" alt="Company Logo" width={88} height={88} />
+      <Image src="/CellPhoneFreeLogos/cellphonesinfondo.png" alt="Company Logo" width={130} height={130} />
     </div>
   );
 }
