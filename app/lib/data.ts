@@ -274,6 +274,22 @@ export async function getTopItemsByCliente(clienteId: string): Promise<any[]> {
   return rows;
 }
 
+export async function getArticulosDePedido(pedidoId: number) {
+  const sql = `
+    SELECT 
+      i.nombre AS item_nombre,
+      a.modelo,
+      rd.cantidad
+    FROM remitos r
+    JOIN remitos_detalle rd ON r.id = rd.remito_id
+    JOIN articulos a ON rd.articulo_codigo = a.codigo_interno
+    JOIN items i ON a.item_id = i.id
+    WHERE r.pedido_id = ?
+  `;
+  const [rows] = await db.query(sql, [pedidoId]);
+  return rows;
+}
+
 //Funciona
 export async function getAllProvincias() {
   const sql = `
