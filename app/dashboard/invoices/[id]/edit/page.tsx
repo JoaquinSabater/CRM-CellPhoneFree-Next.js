@@ -1,5 +1,5 @@
 import EditClienteForm from '@/app/ui/invoices/edit-form';
-import { fetchClienteById, getPedidosByCliente, getEtiquetasGlobales, getFiltrosDelCliente,getTopItemsByCliente, getMarcas } from '@/app/lib/data';
+import { fetchClienteById, getPedidosByCliente, getEtiquetasGlobales, getFiltrosDelCliente,getTopItemsByCliente, getMarcasConProductos } from '@/app/lib/data';
 import { Suspense } from 'react';
 import LoadingSpinner from '@/app/ui/loading';
 import { auth } from '@/app/lib/auth';
@@ -18,7 +18,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     getEtiquetasGlobales(vendedorId ?? 0),
     getFiltrosDelCliente(id),
     getTopItemsByCliente(id),
-    getMarcas(),
+    getMarcasConProductos(Number(id)),
   ]);
 
   if (!cliente) {
