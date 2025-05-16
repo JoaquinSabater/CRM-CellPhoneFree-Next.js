@@ -8,8 +8,10 @@ import TopItemsDelCliente from '@/app/ui/invoices/TopItemsDelCliente';
 import ClientesDinero from './ClientesDinero';
 import PedidosPorMes from './PedidosPorMes';
 import { useSearchParams } from 'next/navigation';
+import ProductosPorMarca from './ProductoPorMarca';
 
-export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos }: any) {
+
+export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos,marcas }: any) {
   const updateClienteWithId = updateCliente.bind(null, cliente.id);
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
@@ -117,6 +119,10 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
         {/* Top Artículos */}  
         <div className="mt-8">
           <TopItemsDelCliente items={topArticulos}/>
+        </div>
+
+        <div className="mt-8">
+          <ProductosPorMarca clienteId={cliente.id} marcas={marcas} />
         </div>
 
         <div className="mt-8">

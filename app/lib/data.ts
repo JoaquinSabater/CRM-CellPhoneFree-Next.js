@@ -274,6 +274,30 @@ export async function getTopItemsByCliente(clienteId: string): Promise<any[]> {
   return rows;
 }
 
+export async function getMarcas() {
+  const sql = `SELECT id, nombre FROM marcas ORDER BY nombre;`;
+  const [rows] = await db.query(sql);
+  return rows;
+}
+
+export async function getProductosPorMarca(clienteId: number, marcaId: number) {
+  const sql = `
+    SELECT 
+      a.modelo,
+      i.nombre AS item_nombre,
+      SUM(rd.cantidad) AS cantidad
+    FROM remitos r
+    JOIN remitos_detalle rd ON r.id = rd.remito_id
+    JOIN articulos a ON rd.articulo_codigo = a.codigo_interno
+    JOIN items i ON a.item_id = i.id
+    WHERE r.cliente_id = ? AND a.marca_id = ?
+    GROUP BY a.modelo, i.nombre
+    ORDER BY cantidad DESC
+  `;
+  const [rows] = await db.query(sql, [clienteId, marcaId]);
+  return rows;
+}
+
 export async function getArticulosDePedido(pedidoId: number) {
   const sql = `
     SELECT 
