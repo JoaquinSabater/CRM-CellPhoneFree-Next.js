@@ -8,19 +8,21 @@ type Cliente = { id: number; razon_social: string; ultima_compra: string | null 
 
 export default function ClientesInactivosPorVendedor({ vendedorId }: { vendedorId: number }) {
   const [limite, setLimite] = useState('');
+  const [fecha, setFecha] = useState('');
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const STORAGE_KEY = `clientesInactivosBusqueda_${vendedorId}`;
+ const STORAGE_KEY = `clientesInactivosBusqueda_${vendedorId}`;
 
   // Al montar, cargar búsqueda previa y volver a buscar si corresponde
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      const { limite: savedLimite } = JSON.parse(saved);
-      setLimite(savedLimite);
+      const { limite: savedLimite, fecha: savedFecha } = JSON.parse(saved);
+      setLimite(savedLimite || '');
+      setFecha(savedFecha || '');
       if (savedLimite) {
-        handleBuscar(savedLimite);
+        handleBuscar(savedLimite, savedFecha);
       }
     }
     // eslint-disable-next-line
@@ -29,30 +31,31 @@ export default function ClientesInactivosPorVendedor({ vendedorId }: { vendedorI
   // Guardar búsqueda cada vez que cambia
   useEffect(() => {
     if (limite) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ limite }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ limite, fecha }));
     }
-  }, [limite, vendedorId]);
+  }, [limite, fecha, vendedorId]);
 
   // Re-hacer la consulta al volver a la pestaña si hay un límite cargado
   useEffect(() => {
     const handleVisibility = () => {
       if (document.visibilityState === 'visible' && limite && !loading) {
-        handleBuscar(limite);
+        handleBuscar(limite, fecha);
       }
     };
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [limite, vendedorId]);
+  }, [limite, fecha, vendedorId]);
 
-  const handleBuscar = async (limiteBuscar?: string) => {
+  const handleBuscar = async (limiteBuscar?: string, fechaBuscar?: string) => {
     const lim = limiteBuscar ?? limite;
+    const f = fechaBuscar ?? fecha;
     if (!lim.trim() || isNaN(Number(lim))) return;
     setLoading(true);
     try {
-      const res = await fetch(
-        `/api/cliente-inactivo?vendedorId=${vendedorId}&limite=${lim}`
-      );
+      let url = `/api/cliente-inactivo?vendedorId=${vendedorId}&limite=${lim}`;
+      if (f) url += `&fecha=${f}`;
+      const res = await fetch(url);
       const data = await res.json();
       setClientes(data as Cliente[]);
     } catch (err) {
@@ -65,6 +68,7 @@ export default function ClientesInactivosPorVendedor({ vendedorId }: { vendedorI
 
   const handleLimpiar = () => {
     setLimite('');
+    setFecha('');
     setClientes([]);
     localStorage.removeItem(STORAGE_KEY);
   };
@@ -86,6 +90,13 @@ export default function ClientesInactivosPorVendedor({ vendedorId }: { vendedorI
           onChange={e => setLimite(e.target.value)}
           className="border rounded px-3 py-1 text-sm w-24"
           placeholder="Cantidad"
+        />
+        <input
+          type="date"
+          value={fecha}
+          onChange={e => setFecha(e.target.value)}
+          className="border rounded px-3 py-1 text-sm w-40"
+          placeholder="Fecha límite"
         />
         <button
           type="submit"
@@ -109,23 +120,24 @@ export default function ClientesInactivosPorVendedor({ vendedorId }: { vendedorI
             clientes.length > 7 ? 'max-h-[168px] overflow-y-auto pr-2' : ''
           }`}
         >
-          {clientes.map((cliente) => (
-            <div key={cliente.id} className="flex items-center justify-between">
-              <span>
-                <strong>{cliente.razon_social}</strong>
-                {' – '}
-                {cliente.ultima_compra
-                  ? `Última compra: ${new Date(cliente.ultima_compra).toLocaleDateString()}`
-                  : 'Nunca compró'}
-              </span>
-              <Link
-                href={`/dashboard/invoices/${cliente.id}/edit?from=dashboard`}
-                className="ml-2 text-gray-500 hover:text-orange-600"
-              >
-                <PencilSquareIcon className="h-5 w-5" />
-              </Link>
-            </div>
-          ))}
+        {clientes.map((cliente) => (
+          <div key={cliente.id} className="flex items-center justify-between">
+            <span>
+              <strong>{cliente.razon_social}</strong>
+              {' – '}
+              {cliente.ultima_compra
+                ? `Última compra: ${new Date(cliente.ultima_compra).toLocaleDateString()}`
+                : 'Nunca compró'}
+            </span>
+            <Link
+              href={`/dashboard/invoices/${cliente.id}/edit?from=dashboard`}
+              className="ml-2 text-gray-500 hover:text-orange-600"
+              title="Ver perfil"
+            >
+              <PencilSquareIcon className="h-5 w-5" />
+            </Link>
+          </div>
+        ))}
         </div>
       ) : (
         <p className="text-sm text-gray-500">No hay resultados aún.</p>

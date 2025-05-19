@@ -222,8 +222,12 @@ export async function getTopClientesPorItem(
   return rows;
 }
 
-export async function getClientesInactivosPorVendedor(vendedorId: number, limite: number) {
-  const sql = `
+export async function getClientesInactivosPorVendedor(
+  vendedorId: number,
+  limite: number,
+  fecha?: string
+) {
+  let sql = `
     SELECT 
       c.id,
       c.razon_social,
@@ -231,11 +235,29 @@ export async function getClientesInactivosPorVendedor(vendedorId: number, limite
     FROM clientes c
     INNER JOIN pedidos p ON c.id = p.cliente_id
     WHERE c.vendedor_id = ?
+  `;
+  const params: any[] = [vendedorId];
+
+  if (fecha) {
+    sql += `
+      AND p.fecha_creacion < ?
+      AND c.id NOT IN (
+        SELECT cliente_id
+        FROM pedidos
+        WHERE fecha_creacion >= ?
+      )
+    `;
+    params.push(fecha, fecha);
+  }
+
+  sql += `
     GROUP BY c.id
-    ORDER BY ultima_compra ASC
+    ORDER BY ultima_compra ${fecha ? 'DESC' : 'ASC'}
     LIMIT ?
   `;
-  const [rows] = await db.query(sql, [vendedorId, limite]);
+  params.push(limite);
+
+  const [rows] = await db.query(sql, params);
   return rows;
 }
 
