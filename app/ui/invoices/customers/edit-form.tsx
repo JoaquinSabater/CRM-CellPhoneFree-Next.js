@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
 import { updateCliente } from '@/app/lib/actions';
-import PedidosDelCliente from '@/app/ui/invoices/PedidosDelCliente';
-import TopItemsDelCliente from '@/app/ui/invoices/TopItemsDelCliente';
+import PedidosDelCliente from '@/app/ui/invoices/customers/PedidosDelCliente';
+import TopItemsDelCliente from '@/app/ui/invoices/customers/TopItemsDelCliente';
 import ClientesDinero from './ClientesDinero';
 import PedidosPorMes from './PedidosPorMes';
 import { useSearchParams } from 'next/navigation';

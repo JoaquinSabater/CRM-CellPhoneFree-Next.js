@@ -6,7 +6,7 @@ import {
 } from '@/app/lib/data';
 import { UpdateCliente,UpdateProspecto,DeleteProspecto } from '@/app/ui/invoices/buttons';
 import {cliente,prospecto} from '@/app/lib/definitions';
-import {ClientProspectosTable} from '@/app/ui/invoices/ClientProspectosTable';
+import {ClientProspectosTable} from '@/app/ui/invoices/prospects/ClientProspectosTable';
 
 type FiltroCliente = {
   cliente_id: number;

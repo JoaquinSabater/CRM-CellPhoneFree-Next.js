@@ -1,4 +1,4 @@
-import EditProspectoForm from '@/app/ui/invoices/editProspecto';
+import EditProspectoForm from '@/app/ui/invoices/prospects/editProspecto';
 import { getProspectoById,getAllProvincias,getAllLocalidades,getVendedores} from '@/app/lib/data';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {

@@ -1,4 +1,3 @@
-import Pagination from '@/app/ui/invoices/pagination';
 import Search from '@/app/ui/search';
 import { Suspense } from 'react';
 import Table from '@/app/ui/invoices/table';
@@ -9,12 +8,9 @@ import { auth } from '@/app/lib/auth';
 export default async function Page(props: { searchParams: Promise<{ query?: string; page?: string }> }) {
   const searchParams = await props.searchParams; // Resuelve la promesa
   const session = await auth();
-  const vendedorId = session?.user?.vendedor_id;
   const rol = session?.user?.rol;
 
   const query = searchParams?.query ?? '';
-  const currentPage = Number(searchParams?.page ?? '1');
-
 
   return (
     <div className="w-full">

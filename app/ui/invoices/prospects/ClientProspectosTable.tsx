@@ -1,11 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { desactivarProspecto } from '@/app/lib/actions';
 import { UpdateProspecto } from '@/app/ui/invoices/buttons';
-import { fetchFilteredProspects } from '@/app/lib/data';
 import { prospecto } from '@/app/lib/definitions';
 
 export function ClientProspectosTable({

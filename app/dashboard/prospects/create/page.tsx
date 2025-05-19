@@ -1,5 +1,5 @@
 // app/dashboard/prospects/create/page.tsx
-import CreateProspectoForm from '@/app/ui/invoices/createProspecto';
+import CreateProspectoForm from '@/app/ui/invoices/prospects/createProspecto';
 import { getAllProvincias, getAllLocalidades } from '@/app/lib/data';
 
 export default async function Page() {

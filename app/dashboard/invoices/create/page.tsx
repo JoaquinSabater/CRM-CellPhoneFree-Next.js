@@ -1,5 +1,5 @@
 // 📁 app/dashboard/etiquetas/create/page.tsx
-import CreateEtiquetaForm from '@/app/ui/invoices/CreateEtiquetaForm';
+import CreateEtiquetaForm from '@/app/ui/invoices/customers/CreateEtiquetaForm';
 import { getEtiquetasGlobales } from '@/app/lib/data';
 import { auth } from '@/app/lib/auth';
 

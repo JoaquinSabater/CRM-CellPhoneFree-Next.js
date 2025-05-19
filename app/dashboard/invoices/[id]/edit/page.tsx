@@ -1,4 +1,4 @@
-import EditClienteForm from '@/app/ui/invoices/edit-form';
+import EditClienteForm from '@/app/ui/invoices/customers/edit-form';
 import { fetchClienteById, getPedidosByCliente, getEtiquetasGlobales, getFiltrosDelCliente,getTopItemsByCliente, getMarcasConProductos } from '@/app/lib/data';
 import { Suspense } from 'react';
 import LoadingSpinner from '@/app/ui/loading';
