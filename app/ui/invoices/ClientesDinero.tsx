@@ -2,6 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import { CalendarIcon } from '@heroicons/react/24/outline';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  ChartOptions,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 type MonthData = {
   mes: string; // formato YYYY-MM
@@ -22,7 +36,7 @@ export default function ClientesDinero({ clienteId }: { clienteId: number }) {
         setData(
           result.map((d: any) => ({
             ...d,
-            total: Number(d.total) || 0, // Asegúrate de que `total` sea un número
+            total: Number(d.total) || 0,
           }))
         );
       } catch (err) {
@@ -37,38 +51,59 @@ export default function ClientesDinero({ clienteId }: { clienteId: number }) {
   if (loading) return <p>Cargando gráfico...</p>;
   if (data.length === 0) return <p className="text-sm text-gray-500 mt-2">Este cliente no tiene compras recientes.</p>;
 
-  const chartHeight = 200;
-  const maxTotal = Math.max(...data.map(d => d.total));
-  const steps = 5;
-  const stepValue = maxTotal / steps;
+  // Preparar datos para Chart.js
+  const labels = data.map(d => {
+    const [year, month] = d.mes.split('-');
+    return `${MONTHS[+month - 1]} ${year}`;
+  });
+  const totals = data.map(d => d.total);
 
-  const yAxisLabels = Array.from({ length: steps + 1 }, (_, i) => (stepValue * i).toFixed(0)).reverse();
+  const chartData = {
+    labels,
+    datasets: [
+      {
+        label: 'Compras',
+        data: totals,
+        borderColor: '#ea580c', // naranja fuerte
+        backgroundColor: 'rgba(234, 88, 12, 0.2)', // naranja suave
+        pointBackgroundColor: '#ea580c',
+        pointBorderColor: '#ea580c',
+        pointRadius: 8,
+        pointHoverRadius: 10,
+        fill: false,
+        tension: 0, // curvas rectas
+      },
+    ],
+  };
+
+  const options: ChartOptions<'line'> = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Compras por mes (últimos 12 meses)',
+        font: { size: 18 },
+      },
+    },
+    scales: {
+      y: {
+        type: 'linear',
+        beginAtZero: true,
+        suggestedMin: 0, // fuerza el inicio en 0
+        ticks: {
+          callback: (value: string | number) => `$${value}`,
+        },
+      },
+    },
+  };
 
   return (
-    <div className="rounded-lg bg-gray-50 p-4 shadow-sm">
-      <h3 className="text-md font-semibold text-gray-800 mb-4">Compras por mes (últimos 12 meses)</h3>
-      <div className="grid grid-cols-12 items-end gap-4">
-        {/* Barras */}
-        {data.map((d) => {
-          const [year, month] = d.mes.split('-');
-          const total = Number(d.total) || 0; // Asegúrate de que sea un número
-          const height = (total / maxTotal) * chartHeight;
-          return (
-            <div key={d.mes} className="flex flex-col items-center gap-1">
-              {/* Importe arriba de la barra */}
-              <span className="text-xs text-gray-800 font-medium">${total.toFixed(2)}</span>
-              {/* Barra */}
-              <div
-                className="bg-orange-500 rounded w-[15px] sm:w-[20px]"
-                style={{ height: `${height}px` }}
-                title={`$${total.toFixed(2)}`}
-              />
-              {/* Etiqueta mes */}
-              <p className="text-xs text-gray-600 text-center">{`${MONTHS[+month - 1]} ${year}`}</p>
-            </div>
-          );
-        })}
-      </div>
+    <div className="rounded-lg bg-gray-50 p-4 shadow-sm h-96">
+      <Line data={chartData} options={options} />
       <div className="flex items-center pt-4">
         <CalendarIcon className="h-5 w-5 text-gray-500" />
         <p className="ml-2 text-sm text-gray-500">Últimos 12 meses</p>
