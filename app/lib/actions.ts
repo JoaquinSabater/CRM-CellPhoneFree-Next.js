@@ -272,7 +272,7 @@ export async function updateProspecto(id: number, formData: FormData) {
   if (fields.seguimiento) {
     let diasExtra = 0;
 
-    if (fields.seguimiento === '2') diasExtra = 1;
+    if (fields.seguimiento === '2') diasExtra = 3;
     if (fields.seguimiento === '3') diasExtra = 7;
     if (fields.seguimiento === '4') diasExtra = 15;
 
