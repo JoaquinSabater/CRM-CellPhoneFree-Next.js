@@ -16,7 +16,7 @@ export default async function Page(props: { searchParams: Promise<{ query?: stri
     <div className="w-full">
       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
         <Search placeholder="Buscar Clientes..." />
-        {rol === 'vendedor' && <CrearEtiqueta />}
+        {/*rol === 'vendedor' && <CrearEtiqueta />*/}
         {rol === 'captador' && <CrearProspecto />}
       </div>
       <Suspense fallback={<LoadingSpinner />}>

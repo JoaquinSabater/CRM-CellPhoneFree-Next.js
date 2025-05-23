@@ -147,9 +147,21 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
   }
 }
 
+export async function updateClienteFiltros(clienteId: number, filtros: { filtro_id: number, valor: string }[]) {
+  await db.query('DELETE FROM filtros_clientes WHERE cliente_id = ?', [clienteId]);
+
+  // Inserta los nuevos filtros
+  if (filtros.length > 0) {
+    const values = filtros.map(f => [clienteId, f.filtro_id, f.valor]);
+    await db.query(
+      'INSERT INTO filtros_clientes (cliente_id, filtro_id, valor) VALUES ?',
+      [values]
+    );
+  }
+}
 
 
-export async function updateCliente(id: string, formData: FormData) {
+export async function updateCliente(id: string, formData: FormData, filtrosDisponibles?: any[]) {
   const observaciones = formData.get('observaciones') as string | null;
 
   // 1. Actualizar campo fijo
@@ -158,23 +170,25 @@ export async function updateCliente(id: string, formData: FormData) {
     [observaciones, id]
   );
 
-  // 2. Procesar los filtros dinámicos
-  const keys = Array.from(formData.keys());
-  const filtroKeys = keys.filter((key) => key.startsWith('filtro-'));
+  // 2. Actualizar filtros si vienen disponibles
+  if (filtrosDisponibles && Array.isArray(filtrosDisponibles)) {
+    // Prepara los filtros seleccionados como checkboxes
+    const filtros = filtrosDisponibles.map((filtro: any) => ({
+      filtro_id: filtro.id,
+      valor: formData.get(`filtro-${filtro.id}`) === '1' ? '1' : '0',
+    }));
 
-  for (const key of filtroKeys) {
-    const filtroId = key.replace('filtro-', '');
-    const value = formData.get(key) as string;
+    // Borra los filtros actuales del cliente
+    await db.query('DELETE FROM filtros_clientes WHERE cliente_id = ?', [id]);
 
-    if (!value) continue;
-
-    // Inserta o actualiza si ya existe
-    await db.query(
-      `INSERT INTO filtros_clientes (cliente_id, filtro_id, valor)
-       VALUES (?, ?, ?)
-       ON DUPLICATE KEY UPDATE valor = VALUES(valor)`,
-      [id, filtroId, value]
-    );
+    // Inserta los nuevos filtros
+    if (filtros.length > 0) {
+      const values = filtros.map(f => [id, f.filtro_id, f.valor]);
+      await db.query(
+        'INSERT INTO filtros_clientes (cliente_id, filtro_id, valor) VALUES ?',
+        [values]
+      );
+    }
   }
 
   revalidatePath('/dashboard/invoices');

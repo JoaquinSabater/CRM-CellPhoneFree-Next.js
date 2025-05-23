@@ -1,6 +1,6 @@
 import { formatCurrency } from './utils';
 import { vendedor } from '@/app/lib/definitions'; // adaptá si tu ruta es distinta
-import { pedido } from './definitions'; // Asegurate de importar tu tipo
+import { cliente } from './definitions'; // Asegurate de importar tu tipo
 import {db} from "../lib/mysql";
 import { RowDataPacket } from 'mysql2';
 
@@ -46,7 +46,7 @@ export async function fetchFilteredClientes(query: string, vendedorId: number) {
         LOWER(c.razon_social) LIKE LOWER(?) OR
         LOWER(p.nombre) LIKE LOWER(?) OR
         LOWER(l.nombre) LIKE LOWER(?) OR
-        LOWER(fc.valor) LIKE LOWER(?)
+        (LOWER(f.nombre) LIKE LOWER(?) AND fc.valor = '1')
       )
     GROUP BY c.id
     ORDER BY c.razon_social ASC
@@ -60,7 +60,7 @@ export async function fetchFilteredClientes(query: string, vendedorId: number) {
     likeQuery,
   ]);
 
-  return rows;
+  return rows as cliente[];
 }
 
 //YA LO CAMBIE
@@ -132,6 +132,20 @@ export async function fetchClienteById(id: string) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch cliente.');
+  }
+}
+
+export async function updateClienteFiltros(clienteId: number, filtros: { filtro_id: number, valor: string }[]) {
+  // Borra los filtros actuales del cliente
+  await db.query('DELETE FROM cliente_filtro WHERE cliente_id = ?', [clienteId]);
+
+  // Inserta los nuevos filtros
+  if (filtros.length > 0) {
+    const values = filtros.map(f => [clienteId, f.filtro_id, f.valor]);
+    await db.query(
+      'INSERT INTO cliente_filtro (cliente_id, filtro_id, valor) VALUES ?',
+      [values]
+    );
   }
 }
 
@@ -484,6 +498,22 @@ export async function getProspectoById(id: number) {
     console.error('Error al obtener prospecto por ID:', error);
     return null;
   }
+}
+
+export async function fetchFiltrosFijos() {
+  const [rows] = await db.query('SELECT id, nombre FROM filtros ORDER BY nombre');
+  return rows as { id: number; nombre: string }[];
+}
+
+export async function fetchFiltrosDeClientes(clienteIds: number[]) {
+  if (clienteIds.length === 0) return [];
+  const ids = clienteIds.join(',');
+  const [rows] = await db.query(`
+    SELECT cliente_id, filtro_id, valor
+    FROM filtros_clientes
+    WHERE cliente_id IN (${ids})
+  `);
+  return rows as { cliente_id: number; filtro_id: number; valor: string }[];
 }
 
 

@@ -2,27 +2,37 @@
 
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
-import { updateCliente } from '@/app/lib/actions';
+import { updateCliente} from '@/app/lib/actions';
 import PedidosDelCliente from '@/app/ui/invoices/customers/PedidosDelCliente';
 import TopItemsDelCliente from '@/app/ui/invoices/customers/TopItemsDelCliente';
 import ClientesDinero from './ClientesDinero';
 import PedidosPorMes from './PedidosPorMes';
 import { useSearchParams } from 'next/navigation';
 import ProductosPorMarca from './ProductoPorMarca';
+import { useRef } from 'react';
 
-
-export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos,marcas }: any) {
-  const updateClienteWithId = updateCliente.bind(null, cliente.id);
+export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas }: any) {
+  const formRef = useRef<HTMLFormElement>(null);
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
   const cancelHref = from === 'dashboard' ? '/dashboard' : '/dashboard/invoices';
 
+  const filtrosActivos = new Map<number, string>();
+  filtrosCliente.forEach((f: any) => {
+    filtrosActivos.set(f.filtro_id, f.valor);
+  });
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(formRef.current!);
+    await updateCliente(cliente.id, formData, filtrosDisponibles);
+  }
 
   const inputBase = 'peer block w-full rounded-md border py-2 pl-3 text-sm outline-2 placeholder:text-gray-500';
   const readOnlyStyle = 'bg-gray-100 text-gray-500 cursor-not-allowed';
 
   return (
-    <form action={updateClienteWithId}>
+    <form ref={formRef} onSubmit={handleSubmit}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* Grid de dos columnas */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -59,8 +69,6 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
             <label htmlFor="cuit_dni" className="block text-sm font-medium mb-1">CUIT / DNI</label>
             <input id="cuit_dni" type="text" defaultValue={cliente.cuit_dni} readOnly className={`${inputBase} ${readOnlyStyle}`} />
           </div>
-
-          {/* Más campos de solo lectura */}
           <div>
             <label htmlFor="provincia" className="block text-sm font-medium mb-1">Provincia</label>
             <input id="provincia" type="text" defaultValue={cliente.provincia_nombre} readOnly className={`${inputBase} ${readOnlyStyle}`} />
@@ -86,32 +94,29 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
           />
         </div>
 
-
         {/* Filtros dinámicos */}
         <div className="mt-8">
           <h3 className="text-md font-semibold text-gray-800 mb-4">Filtros / Etiquetas</h3>
           {filtrosDisponibles.length === 0 ? (
             <p className="text-sm italic text-gray-500">No hay filtros disponibles.</p>
           ) : (
-            <div className="space-y-3">
-              {filtrosDisponibles.map((filtro: any) => {
-                const valorAsignado = filtrosCliente.find((f: any) => f.filtro_id === filtro.id)?.valor || '';
-                return (
-                  <div key={filtro.id} className="flex items-center gap-2">
-                    <label htmlFor={`filtro-${filtro.id}`} className="w-1/4 font-medium text-sm text-gray-700">
-                      {filtro.nombre}
-                    </label>
-                    <input
-                      type="text"
-                      id={`filtro-${filtro.id}`}
-                      name={`filtro-${filtro.id}`}
-                      defaultValue={valorAsignado}
-                      placeholder={`Ingrese un valor para ${filtro.nombre}`}
-                      className="w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
-                    />
-                  </div>
-                );
-              })}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4">
+              {filtrosDisponibles.map((filtro: any) => (
+                <div key={filtro.id} className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    style={{ accentColor: '#F97316' }}
+                    id={`filtro-${filtro.id}`}
+                    name={`filtro-${filtro.id}`}
+                    value="1"
+                    defaultChecked={filtrosActivos.get(filtro.id) === '1'}
+                    className="h-5 w-5 rounded-full border-2 border-orange-500 focus:ring-2 focus:ring-orange-300 transition-all duration-150"
+                  />
+                  <label htmlFor={`filtro-${filtro.id}`} className="font-medium text-sm text-gray-700 select-none cursor-pointer">
+                    {filtro.nombre}
+                  </label>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -133,13 +138,11 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
           <PedidosPorMes clienteId={cliente.id} />
         </div>
 
-        {/* Pedidos */}
         <div className="mt-8">
           <PedidosDelCliente pedidos={pedidos} />
         </div>
       </div>
 
-      {/* Botones */}
       <div className="mt-6 flex justify-end gap-4">
         <Link
           href={cancelHref}
