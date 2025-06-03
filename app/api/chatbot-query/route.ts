@@ -5,6 +5,7 @@ import { handleClientesInactivos } from '@/app/lib/chatbot/handlers/clientes_ina
 import { handleConsultaStockItem } from '@/app/lib/chatbot/handlers/stock_item'
 import { generarMensajeAyuda } from '@/app/lib/chatbot/handlers/ayuda'
 import { auth } from '@/app/lib/auth';
+import { handleTopClientesPorMonto } from '@/app/lib/chatbot/handlers/top_clientes_por_monto'
 
 
 export async function POST(req: Request) {
@@ -52,6 +53,15 @@ switch (intent) {
   case 'mostrar_ayuda':
     respuesta = generarMensajeAyuda()
   break
+  case 'top_clientes_por_monto': {
+    const { limite } = entities;
+    if (typeof limite === 'number') {
+      respuesta = await handleTopClientesPorMonto({ limite }, vendedorId);
+    } else {
+      respuesta = '⚠️ Faltan datos para procesar la consulta de top clientes por monto.';
+    }
+    break;
+  }
 }
 
   return NextResponse.json({ respuesta })
