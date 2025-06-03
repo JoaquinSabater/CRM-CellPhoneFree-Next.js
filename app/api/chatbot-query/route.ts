@@ -1,0 +1,58 @@
+import { NextResponse } from 'next/server'
+import { analizarMensaje } from '@/app/lib/chatbot/analizarMensajes'
+import { handleTopClientesPorItem } from '@/app/lib/chatbot/handlers/top_clientes'
+import { handleClientesInactivos } from '@/app/lib/chatbot/handlers/clientes_inactivos'
+import { handleConsultaStockItem } from '@/app/lib/chatbot/handlers/stock_item'
+import { generarMensajeAyuda } from '@/app/lib/chatbot/handlers/ayuda'
+import { auth } from '@/app/lib/auth';
+
+
+export async function POST(req: Request) {
+  const session = await auth()
+  const vendedorId = session?.user?.vendedor_id
+  const rol = session?.user?.rol
+
+  if (!vendedorId) {
+    return NextResponse.json({ respuesta: '⚠️ No se pudo identificar tu vendedor_id.' }, { status: 401 })
+  }
+
+  const { mensaje } = await req.json()
+  const { intent, entities } = analizarMensaje(mensaje)
+
+  let respuesta = '🤔 No entendí tu pregunta. Probá con: ¿Quiénes compraron más fundas?'
+
+switch (intent) {
+  case 'top_clientes_por_item': {
+    const { item, limite } = entities;
+    if (typeof item === 'string' && typeof limite === 'number') {
+      respuesta = await handleTopClientesPorItem({ item, limite }, vendedorId);
+    } else {
+      respuesta = '⚠️ Faltan datos para procesar la consulta de top clientes por item.';
+    }
+    break;
+  }
+  case 'clientes_inactivos': {
+    const { dias, limite } = entities;
+    if (typeof dias === 'number' && typeof limite === 'number') {
+      respuesta = await handleClientesInactivos({ dias, limite }, vendedorId);
+    } else {
+      respuesta = '⚠️ Faltan datos para procesar la consulta de clientes inactivos.';
+    }
+    break;
+  }
+   case 'consultar_stock_item': {
+    const { item } = entities;
+    if (typeof item === 'string') {
+      respuesta = await handleConsultaStockItem({ item });
+    } else {
+      respuesta = '⚠️ Faltan datos para procesar la consulta de stock de ítem.';
+    }
+    break;
+  }
+  case 'mostrar_ayuda':
+    respuesta = generarMensajeAyuda()
+  break
+}
+
+  return NextResponse.json({ respuesta })
+}

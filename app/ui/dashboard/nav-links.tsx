@@ -3,7 +3,7 @@
 import {
   UserGroupIcon,
   HomeIcon,
-  DocumentDuplicateIcon,
+  RocketLaunchIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -21,6 +21,11 @@ const links = [
     name: 'Customers',
     href: '/dashboard/invoices',
     icon: UserGroupIcon,
+  },
+  {
+    name: 'ChatBot',
+    href: '/dashboard/chatbot',
+    icon: RocketLaunchIcon,
   },
 ];
 

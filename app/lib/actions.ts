@@ -387,9 +387,10 @@ export async function createProspecto(formData: FormData) {
     const prospectoId = result.insertId;
 
     const seguimientos = [
-      { tipo: '2', dias: 1 },
+      { tipo: '2', dias: 2 },
       { tipo: '3', dias: 7 },
       { tipo: '4', dias: 15 },
+      { tipo: '5', dias: 30 },
     ];
 
     for (const seguimiento of seguimientos) {
