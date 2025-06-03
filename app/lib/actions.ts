@@ -386,25 +386,33 @@ export async function createProspecto(formData: FormData) {
     const [result]: any = await db.query(query, values);
     const prospectoId = result.insertId;
 
-    const seguimientos = [
-      { tipo: '2', dias: 2 },
-      { tipo: '3', dias: 7 },
-      { tipo: '4', dias: 15 },
-      { tipo: '5', dias: 30 },
+    // Solo crear recordatorios si negocio es uno de los valores permitidos
+    const negocioValido = [
+      'fisico',
+      'fisicos y online',
+      'fisico mas de uno'
     ];
+    if (fields.negocio && negocioValido.includes(fields.negocio.toLowerCase())) {
+      const seguimientos = [
+        { tipo: '2', dias: 2 },
+        { tipo: '3', dias: 7 },
+        { tipo: '4', dias: 15 },
+        { tipo: '5', dias: 30 },
+      ];
 
-    for (const seguimiento of seguimientos) {
-      const fechaEnvio = new Date();
-      fechaEnvio.setDate(fechaEnvio.getDate() + seguimiento.dias);
-      const fecha = fechaEnvio.toISOString().slice(0, 10);
-      const mensaje = `📌 Seguimiento ${seguimiento.tipo} para el prospecto: ${fields.nombre}`;
+      for (const seguimiento of seguimientos) {
+        const fechaEnvio = new Date();
+        fechaEnvio.setDate(fechaEnvio.getDate() + seguimiento.dias);
+        const fecha = fechaEnvio.toISOString().slice(0, 10);
+        const mensaje = `📌 Seguimiento ${seguimiento.tipo} para el prospecto: ${fields.nombre}`;
 
-      const recordatorioForm = new FormData();
-      recordatorioForm.append('mensaje', mensaje);
-      recordatorioForm.append('fecha', fecha);
-      recordatorioForm.append('prospecto_id', String(prospectoId)); // Nuevo campo
+        const recordatorioForm = new FormData();
+        recordatorioForm.append('mensaje', mensaje);
+        recordatorioForm.append('fecha', fecha);
+        recordatorioForm.append('prospecto_id', String(prospectoId)); // Nuevo campo
 
-      await createRecordatorio(recordatorioForm);
+        await createRecordatorio(recordatorioForm);
+      }
     }
 
   } catch (error) {
