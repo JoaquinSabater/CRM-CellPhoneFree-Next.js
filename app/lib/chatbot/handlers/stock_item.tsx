@@ -6,27 +6,32 @@ export async function handleConsultaStockItem(
 ): Promise<string> {
   const { item } = entities
 
-  const [rows]: any[] = await db.query(
-    `SELECT a.modelo
+  const [raw] = await db.query(
+    `SELECT 
+       a.modelo,
+       calcular_stock_fisico(a.codigo_interno) - calcular_stock_comprometido(a.codigo_interno) AS stock_real
      FROM articulos a
      JOIN items i ON a.item_id = i.id
      WHERE i.nombre LIKE ?
-       AND (a.ubicacion IS NULL OR a.ubicacion NOT LIKE 'SIN STOCK')
      ORDER BY a.modelo`,
     [`%${item}%`]
   )
 
-  if (!rows.length) {
-    return `🛑 No hay stock disponible actualmente para "<b>${item}</b>".`
+  const rows = raw as { modelo: string; stock_real: number }[]
+
+  const disponibles = rows.filter(r => r.stock_real > 0)
+
+  if (!disponibles.length) {
+    return `🛑 No hay stock disponible para "<b>${item}</b>".`
   }
 
-  const html = rows
+  const html = disponibles
     .map(
-      (row: any) =>
-        `• <b>${row.modelo || 'Modelo sin nombre'}</b>${row.ubicacion ? ` – Ubicación: ${row.ubicacion}` : ''}`
+      (row) =>
+        `• <b>${row.modelo || 'Modelo sin nombre'}</b> – ${row.stock_real} unidades`
     )
     .join('<br>')
 
-  return `📦 <b>Modelos disponibles de "${item}":</b><br>${html}`
+  return `📦 <b>Stock disponible de "${item}":</b><br>${html}`
 }
 

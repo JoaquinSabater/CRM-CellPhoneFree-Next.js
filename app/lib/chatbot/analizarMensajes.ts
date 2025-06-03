@@ -10,7 +10,7 @@ export function analizarMensaje(mensaje: string): {
   entities: Record<string, any>;
 } {
   // Aca comente detectarConsultaStockPorItem porque todavia no lo resolvi con cacha
-  const detectores = [detectarTopClientesPorItem,detectarClientesInactivos,detectarAyuda,detectarTopClientesPorMonto]
+  const detectores = [detectarTopClientesPorItem,detectarClientesInactivos,detectarAyuda,detectarTopClientesPorMonto,detectarConsultaStockPorItem]
 
   for (const detectar of detectores) {
     const result = detectar(mensaje)
