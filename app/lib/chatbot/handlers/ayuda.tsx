@@ -16,6 +16,12 @@ export function generarMensajeAyuda(): string {
     • Dame el stock de silky 2.0<br>
     <br>
 
+    📌 <b>Items:</b><br>
+    • vidrio templado 111d 250<br>
+    • vidrio templado 111d 280<br>
+    • vidrio laminado protector para celular - 0,3mm<br>
+    <br>
+
     Escribí cualquiera de esas frases y te voy a responder al instante 🙂
     `
 }
