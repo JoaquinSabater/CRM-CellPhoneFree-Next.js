@@ -2,6 +2,7 @@ import { CardWrapper } from '@/app/ui/dashboard/cards';
 import Sellerpic from '../ui/sellerpic';
 import NotasPersonales from '@/app/ui/dashboard/notas';
 import { auth } from '@/app/lib/auth';
+import DonutClientesPorVendedor from '@/app/ui/dashboard/DonutClientesPorVendedor';
 
 export default async function Page() {
   const session = await auth();
@@ -21,6 +22,13 @@ export default async function Page() {
         <div className="flex flex-col h-full gap-6 min-h-[220px]">
           <CardWrapper />
         </div>
+
+        <div className="flex flex-col h-full min-h-[220px] justify-center">
+          {rol === 'vendedor' && typeof vendedorId === 'number' && (
+            <DonutClientesPorVendedor vendedorId={vendedorId} />
+          )}
+        </div>
+
       </div>
 
       <div className="max-w-7xl mx-auto mt-8">
