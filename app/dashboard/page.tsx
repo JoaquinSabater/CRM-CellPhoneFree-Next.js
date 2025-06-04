@@ -1,9 +1,6 @@
 import { CardWrapper } from '@/app/ui/dashboard/cards';
 import Sellerpic from '../ui/sellerpic';
-import RecordatorioForm from '@/app/ui/dashboard/recordatorioForm';
 import NotasPersonales from '@/app/ui/dashboard/notas';
-import TopClientesPorItem from '@/app/ui/dashboard/TopClientesPorItem';
-import ClientesInactivosPorVendedor from '../ui/dashboard/ClientesInactivos';
 import { auth } from '@/app/lib/auth';
 
 export default async function Page() {
@@ -24,12 +21,6 @@ export default async function Page() {
         <div className="flex flex-col h-full gap-6 min-h-[220px]">
           <CardWrapper />
         </div>
-
-        {/* 
-          <div className="flex flex-col h-full min-h-[220px]">
-            <RecordatorioForm />
-          </div>
-        */}
       </div>
 
       <div className="max-w-7xl mx-auto mt-8">
@@ -38,15 +29,6 @@ export default async function Page() {
               <NotasPersonales userId={Number(userId)} />
             </div>
           )}
-
-        {/* Solo para vendedores: Top clientes e inactivos
-            {rol === 'vendedor' && vendedorId && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                <TopClientesPorItem vendedorId={vendedorId} />
-                <ClientesInactivosPorVendedor vendedorId={vendedorId} />
-              </div>
-            )}
-        */}
       </div>
     </main>
   );
