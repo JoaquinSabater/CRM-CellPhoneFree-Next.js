@@ -3,6 +3,8 @@ import Sellerpic from '../ui/sellerpic';
 import NotasPersonales from '@/app/ui/dashboard/notas';
 import { auth } from '@/app/lib/auth';
 import DonutClientesPorVendedor from '@/app/ui/dashboard/DonutClientesPorVendedor';
+import VentasMensualesPorVendedor from '@/app/ui/dashboard/SalesProgressChart';
+import VentasMesActualChart from '@/app/ui/dashboard/VentasMesActualChart';
 
 export default async function Page() {
   const session = await auth();
@@ -37,6 +39,16 @@ export default async function Page() {
               <NotasPersonales userId={Number(userId)} />
             </div>
           )}
+        <div className="w-full">
+            {rol === 'vendedor' && typeof vendedorId === 'number' && (
+              <VentasMensualesPorVendedor vendedorId={vendedorId} />
+            )}
+        </div>
+        <div className="w-full">
+            {rol === 'vendedor' && typeof vendedorId === 'number' && (
+              <VentasMesActualChart vendedorId={vendedorId} />
+            )}
+        </div>
       </div>
     </main>
   );
