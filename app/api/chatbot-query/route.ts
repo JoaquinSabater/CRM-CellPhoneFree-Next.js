@@ -6,6 +6,7 @@ import { handleConsultaStockItem } from '@/app/lib/chatbot/handlers/stock_item'
 import { generarMensajeAyuda } from '@/app/lib/chatbot/handlers/ayuda'
 import { auth } from '@/app/lib/auth';
 import { handleTopClientesPorMonto } from '@/app/lib/chatbot/handlers/top_clientes_por_monto'
+import { handleGraficoItemPorSemana } from '@/app/lib/chatbot/handlers/grafico_item_semana'
 
 
 export async function POST(req: Request) {
@@ -59,6 +60,15 @@ switch (intent) {
       respuesta = await handleTopClientesPorMonto({ limite }, vendedorId);
     } else {
       respuesta = '⚠️ Faltan datos para procesar la consulta de top clientes por monto.';
+    }
+    break;
+  }
+  case 'grafico_item_por_semana': {
+    const { item } = entities;
+    if (typeof item === 'string') {
+      respuesta = await handleGraficoItemPorSemana({ item }, vendedorId);
+    } else {
+      respuesta = '⚠️ Faltan datos para procesar la consulta del gráfico de ventas por semana.';
     }
     break;
   }

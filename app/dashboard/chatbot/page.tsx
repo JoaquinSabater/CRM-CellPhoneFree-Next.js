@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import GraficoItemPorSemanaChart from '@/app/ui/dashboard/GraficoItemPorSemanaChart'
 
 type Message = { from: 'user' | 'bot'; text: string }
 
@@ -115,17 +116,33 @@ export default function page() {
         <div className="p-4 border-b text-orange-600 font-bold text-xl">Asistente CRM 🤖</div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`text-sm p-3 rounded-xl ${
-                msg.from === 'user'
-                  ? 'bg-orange-100 text-right self-end'
-                  : 'bg-gray-100 text-left'
-              }`}
-              dangerouslySetInnerHTML={{ __html: msg.text }}
-            />
-          ))}
+          {messages.map((msg, i) => {
+            let parsed: any = null
+            try {
+              parsed = JSON.parse(msg.text)
+            } catch {}
+
+            return (
+              <div key={i}>
+                {parsed?.type === 'grafico_item_semana' ? (
+                  <GraficoItemPorSemanaChart
+                    labels={parsed.labels}
+                    data={parsed.data}
+                    title={parsed.title}
+                  />
+                ) : (
+                  <div
+                    className={`text-sm p-3 rounded-xl ${
+                      msg.from === 'user'
+                        ? 'bg-orange-100 text-right self-end'
+                        : 'bg-gray-100 text-left'
+                    }`}
+                    dangerouslySetInnerHTML={{ __html: msg.text }}
+                  />
+                )}
+              </div>
+            )
+          })}
 
           {loading && (
             <div className="text-sm text-gray-500 italic">Escribiendo...</div>

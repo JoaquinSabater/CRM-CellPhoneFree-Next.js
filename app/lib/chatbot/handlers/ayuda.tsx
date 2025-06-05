@@ -7,6 +7,7 @@ export function generarMensajeAyuda(): string {
     • <b>Top compradores de un ítem</b><br>
     • <b>Clientes que más gastaron en total</b><br>
     • <b>Stock real disponible por modelo</b><br>
+    • <b>Gráfico de ventas semanales por ítem</b><br>
     <br>
 
     📌 <b>Ejemplos que podés usar:</b><br>
@@ -14,6 +15,7 @@ export function generarMensajeAyuda(): string {
     • Top 5 clientes que compraron silky 2.0<br>
     • Top 5 clientes<br>
     • Dame el stock de silky 2.0<br>
+    • Gráfico de silky 2.0<br>
     <br>
 
     📌 <b>Items:</b><br>
@@ -23,5 +25,5 @@ export function generarMensajeAyuda(): string {
     <br>
 
     Escribí cualquiera de esas frases y te voy a responder al instante 🙂
-    `
+  `
 }

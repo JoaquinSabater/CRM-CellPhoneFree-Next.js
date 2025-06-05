@@ -3,6 +3,7 @@ import { detectarClientesInactivos } from './intenciones/clientes_inactivos'
 import { detectarConsultaStockPorItem } from './intenciones/stock_item'
 import { detectarAyuda } from './intenciones/ayuda'
 import { detectarTopClientesPorMonto } from './intenciones/top_clientes_por_monto'
+import { detectarGraficoItemPorSemana } from './intenciones/grafico_item_semana'
 
 
 export function analizarMensaje(mensaje: string): {
@@ -10,8 +11,14 @@ export function analizarMensaje(mensaje: string): {
   entities: Record<string, any>;
 } {
   // Aca comente detectarConsultaStockPorItem porque todavia no lo resolvi con cacha
-  const detectores = [detectarTopClientesPorItem,detectarClientesInactivos,detectarAyuda,detectarTopClientesPorMonto,detectarConsultaStockPorItem]
-
+  const detectores = [
+    detectarGraficoItemPorSemana,
+    detectarTopClientesPorItem,
+    detectarClientesInactivos,
+    detectarConsultaStockPorItem,
+    detectarTopClientesPorMonto,
+    detectarAyuda,
+  ]
   for (const detectar of detectores) {
     const result = detectar(mensaje)
     if (result.intent !== 'desconocido') return result
