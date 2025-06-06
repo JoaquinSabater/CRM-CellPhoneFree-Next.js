@@ -7,6 +7,7 @@ import { generarMensajeAyuda } from '@/app/lib/chatbot/handlers/ayuda'
 import { auth } from '@/app/lib/auth';
 import { handleTopClientesPorMonto } from '@/app/lib/chatbot/handlers/top_clientes_por_monto'
 import { handleGraficoItemPorSemana } from '@/app/lib/chatbot/handlers/grafico_item_semana'
+import { handleAccesoEstadisticasAvanzadas } from '@/app/lib/chatbot/handlers/acceso_estadisticas'
 
 
 export async function POST(req: Request) {
@@ -71,6 +72,15 @@ switch (intent) {
       respuesta = '⚠️ Faltan datos para procesar la consulta del gráfico de ventas por semana.';
     }
     break;
+  }
+  case 'acceso_estadisticas_avanzadas': {
+    const res = await handleAccesoEstadisticasAvanzadas(entities, vendedorId)
+    if (res) {
+      respuesta = res
+    } else {
+      return new Response(null, { status: 204 }) // No se responde nada
+    }
+    break
   }
 }
 

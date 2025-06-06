@@ -4,6 +4,7 @@ import { detectarConsultaStockPorItem } from './intenciones/stock_item'
 import { detectarAyuda } from './intenciones/ayuda'
 import { detectarTopClientesPorMonto } from './intenciones/top_clientes_por_monto'
 import { detectarGraficoItemPorSemana } from './intenciones/grafico_item_semana'
+import { detectarAccesoEstadisticasAvanzadas } from './intenciones/acceso_estadisticas'
 
 
 export function analizarMensaje(mensaje: string): {
@@ -18,6 +19,7 @@ export function analizarMensaje(mensaje: string): {
     detectarConsultaStockPorItem,
     detectarTopClientesPorMonto,
     detectarAyuda,
+    detectarAccesoEstadisticasAvanzadas,
   ]
   for (const detectar of detectores) {
     const result = detectar(mensaje)
