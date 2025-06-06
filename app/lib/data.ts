@@ -27,6 +27,22 @@ export async function getCantidadPedidosDelMes(vendedorId: number) {
   return Number(rows[0]?.count ?? 0);
 }
 
+export async function getPedidosPorSemana(vendedorId: number) {
+  const [rows]: any = await db.query(
+    `SELECT 
+        WEEK(fecha_creacion) AS semana,
+        COUNT(*) AS cantidad
+     FROM pedidos
+     WHERE vendedor_id = ?
+       AND fecha_creacion >= DATE_SUB(CURDATE(), INTERVAL 4 WEEK)
+     GROUP BY semana
+     ORDER BY semana`,
+    [vendedorId]
+  )
+
+  return rows as { semana: number; cantidad: number }[]
+}
+
 export async function fetchFilteredClientes(query: string, vendedorId: number) {
   const likeQuery = `%${query}%`;
 
