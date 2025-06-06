@@ -166,6 +166,19 @@ export default function page() {
           >
             Enviar
           </button>
+          <button
+            className="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-300 text-sm"
+            onClick={() => {
+              setMessages([])
+              setHistorial([])
+              setHistorialIndex(null)
+              localStorage.removeItem(STORAGE_KEY)
+              localStorage.removeItem(HISTORIAL_KEY)
+              localStorage.removeItem(TIMESTAMP_KEY)
+            }}
+          >
+            Limpiar
+          </button>
         </div>
       </div>
     </div>
