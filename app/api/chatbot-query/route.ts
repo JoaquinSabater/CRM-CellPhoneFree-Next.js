@@ -9,6 +9,7 @@ import { handleTopClientesPorMonto } from '@/app/lib/chatbot/handlers/top_client
 import { handleGraficoItemPorSemana } from '@/app/lib/chatbot/handlers/grafico_item_semana'
 import { handleAccesoEstadisticasAvanzadas } from '@/app/lib/chatbot/handlers/acceso_estadisticas'
 import { handleListarItems } from '@/app/lib/chatbot/handlers/listar_items'
+import { handleTopClientesPorModelo } from '@/app/lib/chatbot/handlers/top_clientes_por_modelo'
 
 
 export async function POST(req: Request) {
@@ -81,6 +82,15 @@ switch (intent) {
     } else {
       return new Response(null, { status: 204 }) // No se responde nada
     }
+    break
+  }
+    case 'top_clientes_por_modelo': {
+      const { modelo, tipo, limite } = entities;
+      if (typeof modelo === 'string' && typeof limite === 'number') {
+        respuesta = await handleTopClientesPorModelo({ modelo, tipo, limite }, vendedorId);
+      } else {
+        respuesta = '⚠️ Faltan datos para procesar la consulta de top clientes por modelo.';
+      }
     break
   }
   case 'listar_items':

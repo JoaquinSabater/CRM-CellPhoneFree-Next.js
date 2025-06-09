@@ -6,6 +6,7 @@ import { detectarTopClientesPorMonto } from './intenciones/top_clientes_por_mont
 import { detectarGraficoItemPorSemana } from './intenciones/grafico_item_semana'
 import { detectarAccesoEstadisticasAvanzadas } from './intenciones/acceso_estadisticas'
 import { detectarListarItems } from './intenciones/listar_items'
+import { detectarTopClientesPorModelo } from './intenciones/top_clientes_por_modelo'
 
 
 export function analizarMensaje(mensaje: string): {
@@ -18,6 +19,7 @@ export function analizarMensaje(mensaje: string): {
     detectarTopClientesPorItem,
     detectarClientesInactivos,
     detectarConsultaStockPorItem,
+    detectarTopClientesPorModelo,
     detectarTopClientesPorMonto,
     detectarAyuda,
     detectarAccesoEstadisticasAvanzadas,
