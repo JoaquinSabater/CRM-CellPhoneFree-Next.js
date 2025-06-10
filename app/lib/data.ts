@@ -517,8 +517,8 @@ export async function getProspectoById(id: number) {
 }
 
 export async function fetchFiltrosFijos() {
-  const [rows] = await db.query('SELECT id, nombre FROM filtros ORDER BY nombre');
-  return rows as { id: number; nombre: string }[];
+  const [rows] = await db.query('SELECT id, nombre, categoria FROM filtros ORDER BY categoria, nombre');
+  return rows as { id: number; nombre: string; categoria: string }[];
 }
 
 export async function fetchFiltrosDeClientes(clienteIds: number[]) {

@@ -95,31 +95,50 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
         </div>
 
         {/* Filtros dinámicos */}
+{/* Filtros dinámicos agrupados por categoría */}
         <div className="mt-8">
           <h3 className="text-md font-semibold text-gray-800 mb-4">Filtros / Etiquetas</h3>
           {filtrosDisponibles.length === 0 ? (
             <p className="text-sm italic text-gray-500">No hay filtros disponibles.</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4">
-              {filtrosDisponibles.map((filtro: any) => (
-                <div key={filtro.id} className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    style={{ accentColor: '#F97316' }}
-                    id={`filtro-${filtro.id}`}
-                    name={`filtro-${filtro.id}`}
-                    value="1"
-                    defaultChecked={filtrosActivos.get(filtro.id) === '1'}
-                    className="h-5 w-5 rounded-full border-2 border-orange-500 focus:ring-2 focus:ring-orange-300 transition-all duration-150"
-                  />
-                  <label htmlFor={`filtro-${filtro.id}`} className="font-medium text-sm text-gray-700 select-none cursor-pointer">
-                    {filtro.nombre}
-                  </label>
+            (() => {
+              const filtrosAgrupados = filtrosDisponibles.reduce((acc: any, filtro: any) => {
+                const cat = filtro.categoria || 'OTROS'
+                if (!acc[cat]) acc[cat] = []
+                acc[cat].push(filtro)
+                return acc
+              }, {})
+
+              return Object.entries(filtrosAgrupados).map(([categoria, filtros]) => (
+                <div key={categoria} className="mb-6">
+                  <h4 className="text-sm font-semibold text-gray-600 mb-2">{categoria}</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4">
+                    {(filtros as any[]).map((filtro: any) => (
+                      <div key={filtro.id} className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          style={{ accentColor: '#F97316' }}
+                          id={`filtro-${filtro.id}`}
+                          name={`filtro-${filtro.id}`}
+                          value="1"
+                          defaultChecked={filtrosActivos.get(filtro.id) === '1'}
+                          className="h-5 w-5 rounded-full border-2 border-orange-500 focus:ring-2 focus:ring-orange-300 transition-all duration-150"
+                        />
+                        <label
+                          htmlFor={`filtro-${filtro.id}`}
+                          className="font-medium text-sm text-gray-700 select-none cursor-pointer"
+                        >
+                          {filtro.nombre}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
+              ))
+            })()
           )}
         </div>
+
 
         {/* Top Artículos */}  
         <div className="mt-8">
