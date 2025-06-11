@@ -5,6 +5,8 @@ import { auth } from '@/app/lib/auth';
 import DonutClientesPorVendedor from '@/app/ui/dashboard/DonutClientesPorVendedor';
 import VentasMensualesPorVendedor from '@/app/ui/dashboard/SalesProgressChart';
 import VentasMesActualChart from '@/app/ui/dashboard/VentasMesActualChart';
+import ClientesPorCaerEnDesgracia from '@/app/ui/dashboard/ClientesPorCaerEnDesgracia';
+
 
 export default async function Page() {
   const session = await auth();
@@ -39,6 +41,11 @@ export default async function Page() {
               <NotasPersonales userId={Number(userId)} />
             </div>
           )}
+        <div className="w-full">
+            {rol === 'vendedor' && typeof vendedorId === 'number' && (
+              <ClientesPorCaerEnDesgracia vendedorId={vendedorId} />
+            )}
+        </div>
         <div className="w-full">
             {rol === 'vendedor' && typeof vendedorId === 'number' && (
               <VentasMensualesPorVendedor vendedorId={vendedorId} />

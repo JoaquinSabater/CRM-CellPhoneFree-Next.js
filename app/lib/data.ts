@@ -252,6 +252,26 @@ export async function getTopClientesPorItem(
   return rows;
 }
 
+export async function fetchClientesEnDesgraciaPorVendedor(vendedorId: number) {
+  const sql = `
+    SELECT 
+      c.id AS cliente_id,
+      c.razon_social AS cliente_nombre,
+      MAX(p.fecha_creacion) AS ultima_compra
+    FROM clientes c
+    INNER JOIN pedidos p ON c.id = p.cliente_id
+    WHERE c.vendedor_id = ?
+    GROUP BY c.id
+    HAVING
+      MAX(p.fecha_creacion) <= DATE_SUB(CURDATE(), INTERVAL 40 DAY)
+      AND MAX(p.fecha_creacion) > DATE_SUB(CURDATE(), INTERVAL 60 DAY)
+    ORDER BY ultima_compra ASC
+  `;
+  const [rows]: any[] = await db.query(sql, [vendedorId]);
+  return rows;
+}
+
+
 export async function getClientesInactivosPorVendedor(
   vendedorId: number,
   limite: number,
