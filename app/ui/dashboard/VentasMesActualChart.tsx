@@ -100,7 +100,7 @@ export default function VentasMesActualChart({ vendedorId }: Props) {
             title: {
               display: true,
               text: 'Progreso mensual actual',
-              font: { size: 14 },
+              font: { size: 18 },
             },
           },
           scales: {

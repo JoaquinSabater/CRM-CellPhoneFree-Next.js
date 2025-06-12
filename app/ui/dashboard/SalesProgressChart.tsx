@@ -119,7 +119,7 @@ export default function VentasHistoricasChart({ vendedorId }: Props) {
             title: {
               display: true,
               text: 'Ventas vs Objetivo (histórico)',
-              font: { size: 14 },
+              font: { size: 18 },
             },
           },
           scales: {

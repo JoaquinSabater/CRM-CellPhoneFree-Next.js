@@ -51,7 +51,7 @@ export default function GraficoPedidosPorSemana({ data }: Props) {
           title: {
             display: true,
             text: 'Pedidos (últimas 4 semanas)',
-            font: { size: 14 },
+            font: { size: 18 },
           },
         },
         layout: {
