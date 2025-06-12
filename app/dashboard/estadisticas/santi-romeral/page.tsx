@@ -4,6 +4,8 @@ import VentasMesActualChart from '@/app/ui/dashboard/VentasMesActualChart'
 import GraficoPedidosPorSemana from '@/app/ui/dashboard/GraficoPedidosPorSemana'
 import { getPedidosPorSemana } from '@/app/lib/data'
 import EvolucionClientesChart from '@/app/ui/dashboard/GraficoEvolucionClientes'
+import GraficoPorItemListBox from '@/app/ui/dashboard/GraficoPorItemListBox';
+
 
 
 export default async function Page() {
@@ -44,6 +46,9 @@ export default async function Page() {
         </div>
         <div className="w-full">
           <GraficoPedidosPorSemana data={pedidosPorSemana} />
+        </div>
+        <div className="w-full">
+          <GraficoPorItemListBox vendedorId={vendedorId} />
         </div>
       </div>
     </main>

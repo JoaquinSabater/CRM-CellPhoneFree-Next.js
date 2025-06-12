@@ -252,6 +252,26 @@ export async function getTopClientesPorItem(
   return rows;
 }
 
+export async function getGraficoItemPorSemana(item: string, vendedorId: number) {
+  const [raw] = await db.query(
+    `SELECT
+        WEEK(r.fecha_generacion) AS semana,
+        SUM(rd.cantidad) AS total_vendido
+     FROM remitos r
+     JOIN remitos_detalle rd ON r.id = rd.remito_id
+     JOIN articulos a ON rd.articulo_codigo = a.codigo_interno
+     JOIN items i ON a.item_id = i.id
+     JOIN clientes c ON r.cliente_id = c.id
+     WHERE i.nombre LIKE ?
+       AND c.vendedor_id = ?
+       AND r.fecha_generacion >= DATE_SUB(CURDATE(), INTERVAL 4 WEEK)
+     GROUP BY semana
+     ORDER BY semana`,
+    [`%${item}%`, vendedorId]
+  );
+  return raw as { semana: number; total_vendido: number }[];
+}
+
 export async function fetchClientesEnDesgraciaPorVendedor(vendedorId: number) {
   const sql = `
     SELECT 
