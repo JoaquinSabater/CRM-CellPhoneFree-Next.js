@@ -5,6 +5,7 @@ export function generarMensajeAyuda(): string {
     📌 Podés consultar sobre:<br>
     • <b>Clientes inactivos</b><br>
     • <b>Top compradores de un ítem</b><br>
+    • <b>Top compradores de un ítem desde una cantidad de dias</b><br>
     • <b>Clientes que más gastaron en total</b><br>
     • <b>Stock real disponible por modelo</b><br>
     • <b>Gráfico de ventas semanales por ítem</b><br>
@@ -15,6 +16,8 @@ export function generarMensajeAyuda(): string {
     📌 <b>Ejemplos que podés usar:</b><br>
     • Clientes inactivos hace 30 días<br>
     • Top 5 clientes que compraron silky 2.0<br>
+    • Top 5 clientes que compraron silky 2.0 <b>hace 7 días</b><br>
+    • Top clientes que compraron vidrio <b>en los últimos 15 días</b><br>
     • Top 5 clientes<br>
     • Dame el stock de silky 2.0<br>
     • Gráfico de silky 2.0<br>
@@ -23,13 +26,8 @@ export function generarMensajeAyuda(): string {
     • Top 5 clientes que más compran vidrios de A15<br>
     <br>
 
-    📌 <b>Items:</b><br>
-    • vidrio templado 111d 250<br>
-    • vidrio templado 111d 280<br>
-    • vidrio laminado protector para celular - 0,3mm<br>
-    <br>
-
     Escribí cualquiera de esas frases y te voy a responder al instante 🙂
   `
 }
+
 

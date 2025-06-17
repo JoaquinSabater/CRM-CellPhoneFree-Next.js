@@ -7,16 +7,18 @@ import { detectarGraficoItemPorSemana } from './intenciones/grafico_item_semana'
 import { detectarAccesoEstadisticasAvanzadas } from './intenciones/acceso_estadisticas'
 import { detectarListarItems } from './intenciones/listar_items'
 import { detectarTopClientesPorModelo } from './intenciones/top_clientes_por_modelo'
+import { detectarTopClientesPorItemDias } from '@/app/lib/chatbot/intenciones/top_clientes_item_dias'
+
 
 
 export function analizarMensaje(mensaje: string): {
   intent: string;
   entities: Record<string, any>;
 } {
-  // Aca comente detectarConsultaStockPorItem porque todavia no lo resolvi con cacha
   const detectores = [
-    detectarGraficoItemPorSemana,
+    detectarTopClientesPorItemDias,
     detectarTopClientesPorItem,
+    detectarGraficoItemPorSemana,
     detectarClientesInactivos,
     detectarConsultaStockPorItem,
     detectarTopClientesPorModelo,

@@ -10,6 +10,7 @@ import { handleGraficoItemPorSemana } from '@/app/lib/chatbot/handlers/grafico_i
 import { handleAccesoEstadisticasAvanzadas } from '@/app/lib/chatbot/handlers/acceso_estadisticas'
 import { handleListarItems } from '@/app/lib/chatbot/handlers/listar_items'
 import { handleTopClientesPorModelo } from '@/app/lib/chatbot/handlers/top_clientes_por_modelo'
+import { handleTopClientesPorItemDias } from '@/app/lib/chatbot/handlers/top_clientes_item_dias'
 
 
 export async function POST(req: Request) {
@@ -33,6 +34,15 @@ switch (intent) {
       respuesta = await handleTopClientesPorItem({ item, limite }, vendedorId);
     } else {
       respuesta = '⚠️ Faltan datos para procesar la consulta de top clientes por item.';
+    }
+    break;
+  }
+  case 'top_clientes_por_item_dias': {
+    const { item, limite, dias } = entities;
+    if (typeof item === 'string' && typeof limite === 'number' && typeof dias === 'number') {
+      respuesta = await handleTopClientesPorItemDias({ item, limite, dias }, vendedorId);
+    } else {
+      respuesta = '⚠️ Faltan datos para procesar la consulta de top clientes por ítem y días.';
     }
     break;
   }
@@ -93,6 +103,7 @@ switch (intent) {
       }
     break
   }
+  
   case 'listar_items':
     respuesta = await handleListarItems()
   break

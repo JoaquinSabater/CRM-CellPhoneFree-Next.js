@@ -34,4 +34,3 @@ export async function handleTopClientesPorItem(
 
   return `✅ <b>Top clientes para "${item}":</b><br>${html}`
 }
-
