@@ -8,6 +8,7 @@ import { detectarAccesoEstadisticasAvanzadas } from './intenciones/acceso_estadi
 import { detectarListarItems } from './intenciones/listar_items'
 import { detectarTopClientesPorModelo } from './intenciones/top_clientes_por_modelo'
 import { detectarTopClientesPorItemDias } from '@/app/lib/chatbot/intenciones/top_clientes_item_dias'
+import { detectarProvinciaTopClientes } from './intenciones/provincia_top_clientes';
 
 
 
@@ -20,6 +21,7 @@ export function analizarMensaje(mensaje: string): {
     detectarTopClientesPorItem,
     detectarGraficoItemPorSemana,
     detectarClientesInactivos,
+    detectarProvinciaTopClientes,
     detectarConsultaStockPorItem,
     detectarTopClientesPorModelo,
     detectarTopClientesPorMonto,

@@ -15,5 +15,5 @@ export async function handleAccesoEstadisticasAvanzadas(
     `
   }
 
-  return null // no responder a otros vendedores
+  return null
 }

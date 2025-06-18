@@ -11,6 +11,7 @@ import { handleAccesoEstadisticasAvanzadas } from '@/app/lib/chatbot/handlers/ac
 import { handleListarItems } from '@/app/lib/chatbot/handlers/listar_items'
 import { handleTopClientesPorModelo } from '@/app/lib/chatbot/handlers/top_clientes_por_modelo'
 import { handleTopClientesPorItemDias } from '@/app/lib/chatbot/handlers/top_clientes_item_dias'
+import { handleProvinciaTopClientes } from '@/app/lib/chatbot/handlers/provincia_top_clientes';
 
 
 export async function POST(req: Request) {
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
   const vendedorId = session?.user?.vendedor_id
   const rol = session?.user?.rol
 
-  if (!vendedorId) {
+  if (!vendedorId && rol !== 'captador') {
     return NextResponse.json({ respuesta: '⚠️ No se pudo identificar tu vendedor_id.' }, { status: 401 })
   }
 
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
 switch (intent) {
   case 'top_clientes_por_item': {
     const { item, limite } = entities;
-    if (typeof item === 'string' && typeof limite === 'number') {
+    if (typeof item === 'string' && typeof limite === 'number' && typeof vendedorId === 'number') {
       respuesta = await handleTopClientesPorItem({ item, limite }, vendedorId);
     } else {
       respuesta = '⚠️ Faltan datos para procesar la consulta de top clientes por item.';
@@ -39,7 +40,7 @@ switch (intent) {
   }
   case 'top_clientes_por_item_dias': {
     const { item, limite, dias } = entities;
-    if (typeof item === 'string' && typeof limite === 'number' && typeof dias === 'number') {
+    if (typeof item === 'string' && typeof limite === 'number' && typeof dias === 'number' && typeof vendedorId === 'number') {
       respuesta = await handleTopClientesPorItemDias({ item, limite, dias }, vendedorId);
     } else {
       respuesta = '⚠️ Faltan datos para procesar la consulta de top clientes por ítem y días.';
@@ -48,7 +49,7 @@ switch (intent) {
   }
   case 'clientes_inactivos': {
     const { dias, limite } = entities;
-    if (typeof dias === 'number' && typeof limite === 'number') {
+    if (typeof dias === 'number' && typeof limite === 'number' && typeof vendedorId === 'number') {
       respuesta = await handleClientesInactivos({ dias, limite }, vendedorId);
     } else {
       respuesta = '⚠️ Faltan datos para procesar la consulta de clientes inactivos.';
@@ -69,7 +70,7 @@ switch (intent) {
   break
   case 'top_clientes_por_monto': {
     const { limite } = entities;
-    if (typeof limite === 'number') {
+    if (typeof limite === 'number' && typeof vendedorId === 'number') {
       respuesta = await handleTopClientesPorMonto({ limite }, vendedorId);
     } else {
       respuesta = '⚠️ Faltan datos para procesar la consulta de top clientes por monto.';
@@ -78,7 +79,7 @@ switch (intent) {
   }
   case 'grafico_item_por_semana': {
     const { item } = entities;
-    if (typeof item === 'string') {
+    if (typeof item === 'string' && typeof vendedorId === 'number') {
       respuesta = await handleGraficoItemPorSemana({ item }, vendedorId);
     } else {
       respuesta = '⚠️ Faltan datos para procesar la consulta del gráfico de ventas por semana.';
@@ -86,22 +87,35 @@ switch (intent) {
     break;
   }
   case 'acceso_estadisticas_avanzadas': {
-    const res = await handleAccesoEstadisticasAvanzadas(entities, vendedorId)
-    if (res) {
-      respuesta = res
+    if (typeof vendedorId === 'number') {
+      const res = await handleAccesoEstadisticasAvanzadas(entities, vendedorId)
+      if (res) {
+        respuesta = res
+      } else {
+        return new Response(null, { status: 204 }) // No se responde nada
+      }
     } else {
-      return new Response(null, { status: 204 }) // No se responde nada
+      respuesta = '⚠️ No se pudo identificar tu vendedor_id para acceder a estadísticas avanzadas.';
     }
     break
   }
     case 'top_clientes_por_modelo': {
       const { modelo, tipo, limite } = entities;
-      if (typeof modelo === 'string' && typeof limite === 'number') {
+      if (typeof modelo === 'string' && typeof limite === 'number' && typeof vendedorId === 'number') {
         respuesta = await handleTopClientesPorModelo({ modelo, tipo, limite }, vendedorId);
       } else {
         respuesta = '⚠️ Faltan datos para procesar la consulta de top clientes por modelo.';
       }
     break
+  }
+  case 'provincia_top_clientes': {
+    const { provincia } = entities;
+    if (typeof provincia === 'string' && provincia.length > 0) {
+      respuesta = await handleProvinciaTopClientes({ provincia }, rol ?? '');
+    } else {
+      respuesta = '⚠️ Debes indicar una provincia argentina para obtener los datos.';
+    }
+    break;
   }
   
   case 'listar_items':

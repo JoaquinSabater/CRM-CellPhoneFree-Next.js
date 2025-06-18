@@ -17,7 +17,6 @@ export function generarMensajeAyuda(): string {
     • Clientes inactivos hace 30 días<br>
     • Top 5 clientes que compraron silky 2.0<br>
     • Top 5 clientes que compraron silky 2.0 <b>hace 7 días</b><br>
-    • Top clientes que compraron vidrio <b>en los últimos 15 días</b><br>
     • Top 5 clientes<br>
     • Dame el stock de silky 2.0<br>
     • Gráfico de silky 2.0<br>
