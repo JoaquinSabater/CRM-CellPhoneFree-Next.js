@@ -50,8 +50,24 @@ export async function handleProvinciaTopClientes(
      ) AS subconsulta`,
     [provincia]
   );
-
   const cantidadInactivos = inactivos[0]?.cantidad ?? 0;
 
-  return `✅ <b>Top 10 clientes de la provincia de "${provincia[0].toUpperCase() + provincia.slice(1)}":</b><br>${clientesHtml}<br><br>Clientes inactivos en la provincia: <b>${cantidadInactivos}</b>`;
+  // Cantidad de clientes activos (compraron en los últimos 60 días)
+  const [activos]: any[] = await db.query(
+    `SELECT COUNT(*) AS cantidad
+     FROM (
+       SELECT c.id
+       FROM clientes c
+       JOIN remitos r ON c.id = r.cliente_id
+       JOIN localidad l ON c.localidad_id = l.id
+       JOIN provincia p ON l.provincia_id = p.id
+       WHERE LOWER(p.nombre) = ?
+       GROUP BY c.id
+       HAVING MAX(r.fecha_generacion) >= DATE_SUB(CURDATE(), INTERVAL 60 DAY)
+     ) AS subconsulta`,
+    [provincia]
+  );
+  const cantidadActivos = activos[0]?.cantidad ?? 0;
+
+  return `✅ <b>Top 10 clientes de la provincia de "${provincia[0].toUpperCase() + provincia.slice(1)}":</b><br>${clientesHtml}<br><br>Clientes activos en la provincia: <b>${cantidadActivos}</b><br>Clientes inactivos en la provincia: <b>${cantidadInactivos}</b>`;
 }

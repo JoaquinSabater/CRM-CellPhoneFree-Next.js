@@ -6,7 +6,7 @@ import {
   fetchFilteredProspects
 } from '@/app/lib/data';
 import { UpdateCliente } from '@/app/ui/invoices/buttons';
-import { cliente, prospecto } from '@/app/lib/definitions';
+import { prospecto } from '@/app/lib/definitions';
 import { ClientProspectosTable } from '@/app/ui/invoices/prospects/ClientProspectosTable';
 
 export default async function Table({ query }: { query: string }) {
