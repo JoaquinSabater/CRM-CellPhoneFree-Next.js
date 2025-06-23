@@ -8,63 +8,6 @@ import bcrypt from 'bcryptjs';
 import {db} from "../lib/mysql";
 
 
-const botToken = process.env.TELEGRAM_BOT_TOKEN;
-
-// 🔔 Envío de recordatorios
-async function enviarRecordatoriosPendientes() {
-  console.log('📤 Verificando recordatorios pendientes al iniciar sesión...');
-
-  if (!botToken) {
-    console.error('❌ BOT_TOKEN no definido en el entorno.');
-    return;
-  }
-
-  const now = new Date();
-
-  try {
-    const [recordatorios]: any = await db.query(
-      `SELECT id, mensaje, chat_id 
-       FROM recordatorios 
-       WHERE enviado = false AND fecha_envio <= ?`,
-      [now]
-    );
-
-    if (!recordatorios || recordatorios.length === 0) {
-      console.log('✅ No hay recordatorios para enviar.');
-      return;
-    }
-
-    for (const r of recordatorios) {
-      const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-      const payload = {
-        chat_id: r.chat_id,
-        text: `🔔 Recordatorio:\n${r.mensaje}`,
-      };
-
-      try {
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(`Telegram API error: ${errorText}`);
-        }
-
-        // ✅ Marcar como enviado
-        await db.query(`UPDATE recordatorios SET enviado = true WHERE id = ?`, [r.id]);
-        console.log(`✅ Enviado a chat_id ${r.chat_id}: "${r.mensaje}"`);
-      } catch (err: any) {
-        console.error(`❌ Error al enviar a ${r.chat_id}: ${err.message}`);
-      }
-    }
-  } catch (error) {
-    console.error('❌ Error general al procesar recordatorios:', error);
-  }
-}
-
 async function getUsuario(id: string): Promise<usuario | null> {
   try {
     const sql = 'SELECT * FROM usuarios WHERE id = ?';
@@ -101,8 +44,6 @@ export const { auth, signIn, signOut } = NextAuth({
 
         const passwordsMatch = await bcrypt.compare(password, hashNormalizado);
         if (!passwordsMatch) return null;
-        
-        await enviarRecordatoriosPendientes();
 
         return usuario as any;
       },
