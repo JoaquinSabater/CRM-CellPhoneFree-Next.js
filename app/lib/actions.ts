@@ -114,7 +114,8 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
         cuit_dni,
         observaciones,
         vendedor_id,
-        fecha_creacion
+        fecha_creacion,
+        prospecto_id       -- <-- la nueva columna
       )
       SELECT 
         nombre,
@@ -124,7 +125,8 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
         cuit,
         anotaciones,
         ?,
-        CURDATE()
+        CURDATE(),
+        id                 -- <-- el id del prospecto
       FROM prospectos 
       WHERE id = ?`,
       [vendedorId, prospectoId]
