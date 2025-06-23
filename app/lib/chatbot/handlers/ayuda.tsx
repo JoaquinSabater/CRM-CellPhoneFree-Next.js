@@ -11,12 +11,15 @@ export function generarMensajeAyuda(): string {
     • <b>Gráfico de ventas semanales por ítem</b><br>
     • <b>Top clientes por modelo de celular</b><br>
     • <b>Ver lista de ítems cargados</b><br>
+    • <b>Ítems disponibles para un modelo</b><br>
     <br>
 
     📌 <b>Ejemplos que podés usar:</b><br>
     • Clientes inactivos hace 30 días<br>
     • Top 5 clientes que compraron silky 2.0<br>
     • Top 5 clientes que compraron silky 2.0 <b>hace 7 días</b><br>
+    • Qué items hay para el modelo Samsung A15<br>
+    • Stock disponible de items para A15<br>
     • Top 5 clientes<br>
     • Dame el stock de silky 2.0<br>
     • Gráfico de silky 2.0<br>
@@ -28,5 +31,6 @@ export function generarMensajeAyuda(): string {
     Escribí cualquiera de esas frases y te voy a responder al instante 🙂
   `
 }
+
 
 

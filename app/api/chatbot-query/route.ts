@@ -12,6 +12,7 @@ import { handleListarItems } from '@/app/lib/chatbot/handlers/listar_items'
 import { handleTopClientesPorModelo } from '@/app/lib/chatbot/handlers/top_clientes_por_modelo'
 import { handleTopClientesPorItemDias } from '@/app/lib/chatbot/handlers/top_clientes_item_dias'
 import { handleProvinciaTopClientes } from '@/app/lib/chatbot/handlers/provincia_top_clientes';
+import { handleItemsDisponiblesPorModelo } from '@/app/lib/chatbot/handlers/items_disponibles_modelo';
 
 
 export async function POST(req: Request) {
@@ -114,6 +115,15 @@ switch (intent) {
       respuesta = await handleProvinciaTopClientes({ provincia }, rol ?? '');
     } else {
       respuesta = '⚠️ Debes indicar una provincia argentina para obtener los datos.';
+    }
+    break;
+  }
+  case 'items_disponibles_por_modelo': {
+    const { modelo } = entities;
+    if (typeof modelo === 'string' && modelo.length > 0) {
+      respuesta = await handleItemsDisponiblesPorModelo({ modelo });
+    } else {
+      respuesta = '⚠️ Debes indicar un modelo para obtener los ítems disponibles.';
     }
     break;
   }
