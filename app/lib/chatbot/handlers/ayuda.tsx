@@ -18,7 +18,6 @@ export function generarMensajeAyuda(): string {
     • Clientes inactivos hace 30 días<br>
     • Top 5 clientes que compraron silky 2.0<br>
     • Top 5 clientes que compraron silky 2.0 <b>hace 7 días</b><br>
-    • Qué items hay para el modelo Samsung A15<br>
     • Stock disponible de items para A15<br>
     • Top 5 clientes<br>
     • Dame el stock de silky 2.0<br>
@@ -26,6 +25,7 @@ export function generarMensajeAyuda(): string {
     • Ver los ítems<br>
     • Top 5 clientes que más compran fundas de A15<br>
     • Top 5 clientes que más compran vidrios de A15<br>
+
     <br>
 
     Escribí cualquiera de esas frases y te voy a responder al instante 🙂
