@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import GraficoItemPorSemanaChart from '@/app/ui/dashboard/GraficoItemPorSemanaChart'
+import GraficoItemPorSemanaChart from '@/app/ui/dashboard/home/GraficoItemPorSemanaChart'
 
 type Message = { from: 'user' | 'bot'; text: string }
 

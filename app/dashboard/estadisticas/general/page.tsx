@@ -1,5 +1,5 @@
 // app/page.tsx
-import GraficoEvolucionVendedores from "@/app/ui/dashboard/GraficoEvolucionVendedores";
+import GraficoEvolucionVendedores from "@/app/ui/dashboard/home/GraficoEvolucionVendedores";
 
 async function getVendedores() {
   const res = await fetch(

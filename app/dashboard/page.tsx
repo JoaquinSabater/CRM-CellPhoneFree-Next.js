@@ -1,11 +1,11 @@
-import { CardWrapper } from '@/app/ui/dashboard/cards';
+import { CardWrapper } from '@/app/ui/dashboard/home/cards';
 import Sellerpic from '../ui/sellerpic';
-import NotasPersonales from '@/app/ui/dashboard/notas';
+import NotasPersonales from '@/app/ui/dashboard/home/notas';
 import { auth } from '@/app/lib/auth';
-import DonutClientesPorVendedor from '@/app/ui/dashboard/DonutClientesPorVendedor';
-import VentasMensualesPorVendedor from '@/app/ui/dashboard/SalesProgressChart';
-import VentasMesActualChart from '@/app/ui/dashboard/VentasMesActualChart';
-import ClientesPorCaerEnDesgracia from '@/app/ui/dashboard/ClientesPorCaerEnDesgracia';
+import DonutClientesPorVendedor from '@/app/ui/dashboard/home/DonutClientesPorVendedor';
+import VentasMensualesPorVendedor from '@/app/ui/dashboard/estadisticas/SalesProgressChart';
+import VentasMesActualChart from '@/app/ui/dashboard/estadisticas/VentasMesActualChart';
+import ClientesPorCaerEnDesgracia from '@/app/ui/dashboard/home/ClientesPorCaerEnDesgracia';
 
 
 export default async function Page() {

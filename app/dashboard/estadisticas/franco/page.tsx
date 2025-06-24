@@ -1,10 +1,10 @@
 import Image from "next/image";
-import VentasMensualesPorVendedor from '@/app/ui/dashboard/SalesProgressChart'
-import VentasMesActualChart from '@/app/ui/dashboard/VentasMesActualChart'
-import GraficoPedidosPorSemana from '@/app/ui/dashboard/GraficoPedidosPorSemana'
+import VentasMensualesPorVendedor from '@/app/ui/dashboard/estadisticas/SalesProgressChart'
+import VentasMesActualChart from '@/app/ui/dashboard/estadisticas/VentasMesActualChart'
+import GraficoPedidosPorSemana from '@/app/ui/dashboard/estadisticas/GraficoPedidosPorSemana'
 import { getPedidosPorSemana } from '@/app/lib/data'
-import EvolucionClientesChart from '@/app/ui/dashboard/GraficoEvolucionClientes'
-import GraficoPorItemListBox from '@/app/ui/dashboard/GraficoPorItemListBox';
+import EvolucionClientesChart from '@/app/ui/dashboard/estadisticas/GraficoEvolucionClientes'
+import GraficoPorItemListBox from '@/app/ui/dashboard/estadisticas/GraficoPorItemListBox';
 
 export default async function Page() {
   const vendedorId = 9

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import GraficoItemPorSemanaChart from '@/app/ui/dashboard/GraficoItemPorSemanaChart';
+import GraficoItemPorSemanaChart from '@/app/ui/dashboard/home/GraficoItemPorSemanaChart';
 
 type Item = { id: number; nombre: string };
 
