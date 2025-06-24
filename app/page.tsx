@@ -4,6 +4,7 @@ import { lusitana } from '@/app/ui/fonts';
 import Image from 'next/image';
 import  CellPhoneFreeLogo  from '@/app/ui/cellphonefree-logo';
 
+export const dynamic = "force-dynamic";
 
 export default function Page() {
   return (
