@@ -5,7 +5,7 @@ export async function handleAccesoEstadisticasAvanzadas(
   if (vendedorId === 1 || vendedorId === 3) {
     return `
     📊 <b>Estadísticas disponibles:</b><br><br>
-    • <a href="/dashboard/estadisticas/general" target="_blank">Estadísticas generales</a><br>
+    • <a href="/dashboard/estadisticas/general" target="_blank">Estadísticas Generales</a><br>
     • <a href="/dashboard/estadisticas/santi-sala" target="_blank">Estadísticas Santi Sala</a><br>
     • <a href="/dashboard/estadisticas/joel" target="_blank">Estadísticas Joel</a><br>
     • <a href="/dashboard/estadisticas/santi-romeral" target="_blank">Estadísticas Santi Romeral</a><br>

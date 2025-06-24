@@ -25,6 +25,26 @@ export async function getCantidadPedidosDelMes(vendedorId: number) {
   return Number(rows[0]?.count ?? 0);
 }
 
+export async function getVentasDelDiaPorVendedor() {
+  const [rows]: any[] = await db.query(`
+    SELECT 
+      c.vendedor_id,
+      v.nombre AS vendedor_nombre,
+      COALESCE(SUM(
+        r.total - (r.total * (r.porcentaje_descuento / 100))
+      ), 0) AS total_hoy
+    FROM remitos r
+    JOIN clientes c ON r.cliente_id = c.id
+    JOIN vendedores v ON c.vendedor_id = v.id
+    WHERE DATE(r.fecha_generacion) = CURDATE()
+      AND r.estado IN ('generado', 'entregado', 'facturado')
+    GROUP BY c.vendedor_id, v.nombre
+    ORDER BY total_hoy DESC
+
+  `);
+  return rows;
+}
+
 export async function getPedidosPorSemana(vendedorId: number) {
   const [rows]: any = await db.query(
     `SELECT 

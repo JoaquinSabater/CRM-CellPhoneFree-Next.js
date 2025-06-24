@@ -1,5 +1,6 @@
 // app/page.tsx
 import GraficoEvolucionVendedores from "@/app/ui/dashboard/home/GraficoEvolucionVendedores";
+import { getVentasDelDiaPorVendedor } from "@/app/lib/data";
 
 async function getVendedores() {
   const res = await fetch(
@@ -18,6 +19,7 @@ function getPercentColor(percent: number) {
 }
 
 export default async function Page() {
+  const ventasDelDia = await getVentasDelDiaPorVendedor();
   const vendedores = await getVendedores();
 
   // Totales
@@ -98,6 +100,26 @@ export default async function Page() {
             Clientes inactivos
           </div>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-6 gap-5 mb-10">
+        {ventasDelDia.map((v: any) => (
+          <div
+            key={v.vendedor_id}
+            className="bg-white rounded-xl shadow-md p-5 flex flex-col items-center max-w-[220px] w-full"
+          >
+            <span className="text-2xl mb-1">💵</span>
+            <div className="text-xs font-semibold text-gray-500 mb-1 uppercase text-center">
+              {v.vendedor_nombre}
+            </div>
+            <div className="text-2xl font-extrabold text-blue-600 mb-1 text-center">
+              ${Number(v.total_hoy).toLocaleString("es-AR", { minimumFractionDigits: 2 })}
+            </div>
+            <div className="text-xs text-gray-400 text-center">
+              Dinero generado hoy
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Tabla */}
