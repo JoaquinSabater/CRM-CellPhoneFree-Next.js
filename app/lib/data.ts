@@ -1,10 +1,8 @@
-import { formatCurrency } from './utils';
-import { vendedor } from '@/app/lib/definitions'; // adaptá si tu ruta es distinta
-import { cliente } from './definitions'; // Asegurate de importar tu tipo
+import { vendedor } from '@/app/lib/definitions';
+import { cliente } from './definitions';
 import {db} from "../lib/mysql";
 import { RowDataPacket } from 'mysql2';
 
-//Funciona
 export async function getCantidadClientesPorVendedor(vendedorId: number) {
   const [rows]: any = await db.query(
     'SELECT COUNT(*) AS count FROM clientes WHERE vendedor_id = ?',
@@ -112,24 +110,6 @@ export async function fetchFilteredProspects(query: string, captadorId: number) 
 }
 
 //Funciona
-export async function fetchFiltrosPorVendedor(vendedorId: number) {
-  const sql = `
-    SELECT 
-      fc.cliente_id,
-      f.nombre,
-      fc.valor
-    FROM filtros_clientes fc
-    JOIN filtros f ON fc.filtro_id = f.id
-    JOIN clientes c ON c.id = fc.cliente_id
-    WHERE c.vendedor_id = ?
-      AND (f.vendedor_id = ? OR f.vendedor_id IS NULL)
-  `;
-
-  const [rows]: any = await db.query(sql, [vendedorId, vendedorId]);
-  return rows;
-}
-
-//Funciona
 export async function fetchClienteById(id: string) {
   try {
     const sql = `
@@ -149,31 +129,6 @@ export async function fetchClienteById(id: string) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch cliente.');
   }
-}
-
-export async function updateClienteFiltros(clienteId: number, filtros: { filtro_id: number, valor: string }[]) {
-  // Borra los filtros actuales del cliente
-  await db.query('DELETE FROM cliente_filtro WHERE cliente_id = ?', [clienteId]);
-
-  // Inserta los nuevos filtros
-  if (filtros.length > 0) {
-    const values = filtros.map(f => [clienteId, f.filtro_id, f.valor]);
-    await db.query(
-      'INSERT INTO cliente_filtro (cliente_id, filtro_id, valor) VALUES ?',
-      [values]
-    );
-  }
-}
-
-//Funciona
-export async function getEtiquetasGlobales(vendedorId: number) {
-  const sql = `
-    SELECT id, nombre FROM filtros
-    WHERE vendedor_id = ? OR vendedor_id IS NULL
-    ORDER BY nombre;
-  `;
-  const [rows] = await db.query(sql, [vendedorId]);
-  return rows;
 }
 
 export async function getVendedores() {
@@ -230,28 +185,6 @@ export async function fetchPedidosPorMes(clienteId: number) {
   return rows;
 }
 
-export async function getTopClientesPorItem(
-  nombreItem: string,
-  vendedorId: number,
-  limite: number
-) {
-  const sql = `
-    SELECT c.id, c.razon_social, SUM(rd.cantidad) AS total_comprado
-    FROM remitos r
-    JOIN remitos_detalle rd ON r.id = rd.remito_id
-    JOIN articulos a ON rd.articulo_codigo = a.codigo_interno
-    JOIN items i ON a.item_id = i.id
-    JOIN clientes c ON r.cliente_id = c.id
-    WHERE i.nombre LIKE ? AND c.vendedor_id = ?
-    GROUP BY c.id
-    ORDER BY total_comprado DESC
-    LIMIT ?
-  `;
-
-  const [rows] = await db.query(sql, [`%${nombreItem}%`, vendedorId, limite]);
-  return rows;
-}
-
 export async function getGraficoItemPorSemana(item: string, vendedorId: number) {
   const [raw] = await db.query(
     `SELECT
@@ -288,46 +221,6 @@ export async function fetchClientesEnDesgraciaPorVendedor(vendedorId: number) {
     ORDER BY ultima_compra ASC
   `;
   const [rows]: any[] = await db.query(sql, [vendedorId]);
-  return rows;
-}
-
-
-export async function getClientesInactivosPorVendedor(
-  vendedorId: number,
-  limite: number,
-  fecha?: string
-) {
-  let sql = `
-    SELECT 
-      c.id,
-      c.razon_social,
-      MAX(p.fecha_creacion) AS ultima_compra
-    FROM clientes c
-    INNER JOIN pedidos p ON c.id = p.cliente_id
-    WHERE c.vendedor_id = ?
-  `;
-  const params: any[] = [vendedorId];
-
-  if (fecha) {
-    sql += `
-      AND p.fecha_creacion < ?
-      AND c.id NOT IN (
-        SELECT cliente_id
-        FROM pedidos
-        WHERE fecha_creacion >= ?
-      )
-    `;
-    params.push(fecha, fecha);
-  }
-
-  sql += `
-    GROUP BY c.id
-    ORDER BY ultima_compra ${fecha ? 'DESC' : 'ASC'}
-    LIMIT ?
-  `;
-  params.push(limite);
-
-  const [rows] = await db.query(sql, params);
   return rows;
 }
 
@@ -480,7 +373,6 @@ export async function getVendedorById(id: number | string): Promise<(vendedor & 
 }
 
 
-//YA LO CAMBIE
 export async function getCaptadorById(id: number) {
 
   const sql = `
@@ -494,34 +386,6 @@ export async function getCaptadorById(id: number) {
   return rows[0];
 }
 
-//YA LO CAMBIE
-export async function fetchProspectos() {
-  try {
-    const sql = `
-      SELECT 
-        p.id,
-        p.nombre,
-        p.email,
-        p.telefono,
-        p.fecha_contacto,
-        prov.nombre AS provincia,
-        loc.nombre AS ciudad
-      FROM prospectos p
-      LEFT JOIN provincia prov ON p.provincia_id = prov.id
-      LEFT JOIN localidad loc ON p.localidad_id = loc.id
-      WHERE p.activo = true
-      ORDER BY p.fecha_contacto DESC;
-    `;
-
-    const [rows] = await db.query(sql);
-    return rows;
-  } catch (error) {
-    console.error('Error al obtener prospectos:', error);
-    throw new Error('No se pudieron obtener los prospectos.');
-  }
-}
-
-//YA LO CAMBIE
 export async function getProspectoById(id: number) {
   try {
 

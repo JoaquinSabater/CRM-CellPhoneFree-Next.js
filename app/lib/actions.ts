@@ -1,7 +1,5 @@
 'use server';
 
-import { z } from 'zod';
-import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { signIn } from '@/app/lib/auth';
@@ -10,28 +8,6 @@ import { auth } from '@/app/lib/auth';
 import {db} from "../lib/mysql";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-
-
-const FormSchema = z.object({
-    id: z.string(),
-    customerId: z.string(),
-    amount: z.coerce.number(),
-    status: z.enum(['pending', 'paid']),
-    date: z.string(),
-  });
- 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
-
-const UpdateInvoice = FormSchema.omit({ id: true, date: true });
-
-const ClienteFormSchema = z.object({
-  id: z.string(),
-  razon_social: z.string().min(1, 'La razón social es obligatoria'),
-  modalidad_de_pago: z.string().min(1, 'La modalidad de pago es obligatoria'),
-  contactar: z.boolean(),
-});
-
-const UpdateCliente = ClienteFormSchema.omit({ id: true });
 
 export async function createRecordatorio(formData: FormData) {
   const session = await auth();
@@ -87,16 +63,6 @@ export async function createRecordatorio(formData: FormData) {
   return { success: true };
 }
 
-
-export async function deleteFiltroById(id: number) {
-  try {
-    await db.query('DELETE FROM filtros WHERE id = ?', [id]);
-  } catch (error) {
-    console.error('Error al eliminar el filtro:', error);
-    throw error;
-  }
-}
-
 export async function altaCliente(prospectoId: number, formData: FormData) {
   const vendedorId = formData.get('vendedor_id');
 
@@ -115,7 +81,7 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
         observaciones,
         vendedor_id,
         fecha_creacion,
-        prospecto_id       -- <-- la nueva columna
+        prospecto_id
       )
       SELECT 
         nombre,
@@ -126,7 +92,7 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
         anotaciones,
         ?,
         CURDATE(),
-        id                 -- <-- el id del prospecto
+        id
       FROM prospectos 
       WHERE id = ?`,
       [vendedorId, prospectoId]
@@ -148,20 +114,6 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
     throw err;
   }
 }
-
-export async function updateClienteFiltros(clienteId: number, filtros: { filtro_id: number, valor: string }[]) {
-  await db.query('DELETE FROM filtros_clientes WHERE cliente_id = ?', [clienteId]);
-
-  // Inserta los nuevos filtros
-  if (filtros.length > 0) {
-    const values = filtros.map(f => [clienteId, f.filtro_id, f.valor]);
-    await db.query(
-      'INSERT INTO filtros_clientes (cliente_id, filtro_id, valor) VALUES ?',
-      [values]
-    );
-  }
-}
-
 
 export async function updateCliente(id: string, formData: FormData, filtrosDisponibles?: any[]) {
   const observaciones = formData.get('observaciones') as string | null;
@@ -196,33 +148,6 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
 }
-
-
-
-export async function createEtiqueta(formData: FormData) {
-  const nombre = formData.get('nombre')?.toString().trim();
-  const session = await auth();
-  const vendedorId = session?.user?.vendedor_id;
-
-  if (!nombre) {
-    throw new Error('El nombre de la etiqueta es requerido.');
-  }
-  if (!vendedorId) {
-    throw new Error('No se pudo determinar el vendedor.');
-  }
-
-  try {
-    await db.query(
-      'INSERT INTO filtros (nombre, vendedor_id) VALUES (?, ?)',
-      [nombre, vendedorId]
-    );
-    revalidatePath('/dashboard/invoices');
-  } catch (error) {
-    console.error('Error creando la etiqueta:', error);
-    throw new Error('No se pudo crear la etiqueta.');
-  }
-}
-
 
 //YA CAMBIE ESTA 
 export async function updateProspecto(id: number, formData: FormData) {

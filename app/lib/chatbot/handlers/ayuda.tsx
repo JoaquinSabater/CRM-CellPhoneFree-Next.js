@@ -21,8 +21,8 @@ export function generarMensajeAyuda(): string {
     • Stock disponible de items para A15<br>
     • Top 5 clientes<br>
     • Dame el stock de silky 2.0<br>
-    • Gráfico de silky 2.0<br>
-    • Ver los ítems<br>
+    • Grafico de silky 2.0<br>
+    • Items<br>
     • Top 5 clientes que más compran fundas de A15<br>
     • Top 5 clientes que más compran vidrios de A15<br>
 

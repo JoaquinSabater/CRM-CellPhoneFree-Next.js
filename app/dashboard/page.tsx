@@ -17,12 +17,11 @@ export default async function Page() {
   return (
     <main className="w-full px-4 py-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto items-stretch h-full">
-        {/* Columna 1 - Foto */}
+        
         <div className="flex flex-col h-full min-h-[220px]">
           <Sellerpic />
         </div>
 
-        {/* Columna 2 - Cards */}
         <div className="flex flex-col h-full gap-6 min-h-[220px]">
           <CardWrapper />
         </div>
