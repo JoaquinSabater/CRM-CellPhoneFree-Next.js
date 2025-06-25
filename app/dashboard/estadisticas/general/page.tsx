@@ -116,7 +116,7 @@ export default async function Page() {
               ${Number(v.total_hoy).toLocaleString("es-AR", { minimumFractionDigits: 2 })}
             </div>
             <div className="text-xs text-gray-400 text-center">
-              Dinero generado hoy
+              Remitos generados hoy
             </div>
           </div>
         ))}
