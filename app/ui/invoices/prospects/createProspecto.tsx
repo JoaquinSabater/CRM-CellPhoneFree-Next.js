@@ -11,6 +11,7 @@ export default function CreateProspectoForm({
   provincias: any[];
   localidades: any[];
 }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const [error, setError] = useState('');
   const [provinciaId, setProvinciaId] = useState('');
@@ -26,6 +27,7 @@ export default function CreateProspectoForm({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
 
     try {
@@ -34,6 +36,7 @@ export default function CreateProspectoForm({
     } catch (err) {
       console.error('❌ Error al crear prospecto:', err);
       setError('Ocurrió un error al crear el prospecto.');
+      setIsSubmitting(false); // Permite reintentar si hay error
     }
   };
 
@@ -106,6 +109,7 @@ export default function CreateProspectoForm({
       <button
         type="submit"
         className="mt-4 rounded bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
+        disabled={isSubmitting}
       >
         Guardar
       </button>

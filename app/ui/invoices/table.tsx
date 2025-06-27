@@ -9,7 +9,7 @@ import { UpdateCliente } from '@/app/ui/invoices/buttons';
 import { prospecto } from '@/app/lib/definitions';
 import { ClientProspectosTable } from '@/app/ui/invoices/prospects/ClientProspectosTable';
 
-export default async function Table({ query }: { query: string }) {
+export default async function Table({ query, filtrosSeleccionados }: { query: string, filtrosSeleccionados: { [cat: string]: number } }) {
   const session = await auth();
   const vendedorId = session?.user?.vendedor_id;
   const rol = session?.user?.rol;
@@ -39,6 +39,16 @@ export default async function Table({ query }: { query: string }) {
       }
     });
 
+    // 💡 Filtrar clientes según los filtros seleccionados
+    const clientesFiltrados = clientes.filter(cliente => {
+      // Si no hay filtros activos, mostrar todos
+      const filtroIds = Object.values(filtrosSeleccionados).filter(Boolean);
+      if (filtroIds.length === 0) return true;
+      // El cliente debe tener TODOS los filtros seleccionados activos
+      const filtrosCliente = filtrosPorCliente.get(cliente.id) || new Set();
+      return filtroIds.every(filtroId => filtrosCliente.has(filtroId));
+    });
+
     return (
       <div className="mt-6 w-full overflow-x-auto">
         <table className="min-w-full text-sm text-gray-900 border rounded-lg overflow-hidden">
@@ -52,7 +62,7 @@ export default async function Table({ query }: { query: string }) {
             </tr>
           </thead>
           <tbody className="bg-white">
-            {clientes.map((cliente) => {
+            {clientesFiltrados.map((cliente) => {
               const etiquetasActivas = filtrosFijos.filter(f =>
                 filtrosPorCliente.get(cliente.id)?.has(f.id)
               );
