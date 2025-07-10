@@ -45,13 +45,29 @@ export default function PedidosDelCliente({ pedidos }: Props) {
                 <span><strong>Consolidado:</strong> {p.consolidado_id ?? '—'}</span>
                 <span>
                   <strong>Armado:</strong>{' '}
-                  {p.hora_inicio_armado ? new Date(p.hora_inicio_armado).toLocaleTimeString() : '—'} →{' '}
-                  {p.hora_fin_armado ? new Date(p.hora_fin_armado).toLocaleTimeString() : '—'}
+                  {p.hora_inicio_armado
+                    ? (typeof p.hora_inicio_armado === "string"
+                        ? p.hora_inicio_armado.substring(11, 19)
+                        : new Date(p.hora_inicio_armado).toLocaleTimeString())
+                    : '—'} →{' '}
+                  {p.hora_fin_armado
+                    ? (typeof p.hora_fin_armado === "string"
+                        ? p.hora_fin_armado.substring(11, 19)
+                        : new Date(p.hora_fin_armado).toLocaleTimeString())
+                    : '—'}
                 </span>
                 <span>
                   <strong>Control:</strong>{' '}
-                  {p.hora_inicio_control ? new Date(p.hora_inicio_control).toLocaleTimeString() : '—'} →{' '}
-                  {p.hora_fin_control ? new Date(p.hora_fin_control).toLocaleTimeString() : '—'}
+                  {p.hora_inicio_control
+                    ? (typeof p.hora_inicio_control === "string"
+                        ? p.hora_inicio_control.substring(11, 19)
+                        : new Date(p.hora_inicio_control).toLocaleTimeString())
+                    : '—'} →{' '}
+                  {p.hora_fin_control
+                    ? (typeof p.hora_fin_control === "string"
+                        ? p.hora_fin_control.substring(11, 19)
+                        : new Date(p.hora_fin_control).toLocaleTimeString())
+                    : '—'}
                 </span>
                 <button
                   className="ml-2 px-2 py-1 bg-orange-500 text-white rounded text-xs"
