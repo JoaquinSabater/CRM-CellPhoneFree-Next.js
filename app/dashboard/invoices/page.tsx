@@ -4,8 +4,9 @@ import Table from '@/app/ui/invoices/table';
 import LoadingSpinner from '@/app/ui/loading';
 import {CrearProspecto} from '@/app/ui/invoices/buttons';
 import { auth } from '@/app/lib/auth';
-import FiltrosPorCategoriaListbox from '@/app/ui/invoices/FiltrosPorCategoriaListbox';
 import { fetchFiltrosFijos } from '@/app/lib/data';
+import FiltrosDrawer from '@/app/ui/invoices/FiltrosPorCategoriaListbox';
+
 
 
 export default async function Page(props: { searchParams: Promise<{ query?: string; page?: string }> }) {
@@ -33,7 +34,7 @@ export default async function Page(props: { searchParams: Promise<{ query?: stri
       </div>
       <div className="flex flex-row items-start justify-between mb-6 gap-4">
         <div className="flex flex-row gap-4">
-          <FiltrosPorCategoriaListbox filtros={filtrosFijos} />
+          <FiltrosDrawer filtros={filtrosFijos} />
         </div>
       </div>
       <Suspense fallback={<LoadingSpinner />}>
