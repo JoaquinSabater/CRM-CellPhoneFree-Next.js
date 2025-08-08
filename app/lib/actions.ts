@@ -65,40 +65,83 @@ export async function createRecordatorio(formData: FormData) {
 
 export async function altaCliente(prospectoId: number, formData: FormData) {
   const vendedorId = formData.get('vendedor_id');
+  const mantenerExistente = formData.get('mantener_existente');
 
   if (!vendedorId) {
     throw new Error('Debe seleccionar un vendedor.');
   }
 
   try {
-    await db.query(
-      `INSERT INTO clientes (
-        nombre,
-        email,
-        telefono,
-        localidad_id,
-        cuit_dni,
-        observaciones,
-        vendedor_id,
-        fecha_creacion,
-        prospecto_id
-      )
-      SELECT 
-        nombre,
-        email,
-        telefono,
-        localidad_id,
-        cuit,
-        anotaciones,
-        ?,
-        CURDATE(),
-        id
-      FROM prospectos 
-      WHERE id = ?`,
-      [vendedorId, prospectoId]
+    // Obtener datos del prospecto
+    const [prospecto]: any = await db.query(
+      'SELECT * FROM prospectos WHERE id = ?',
+      [prospectoId]
     );
 
-    // Elimina los recordatorios asociados a este prospecto
+    if (!prospecto[0]) {
+      throw new Error('Prospecto no encontrado');
+    }
+
+    const prospectoData = prospecto[0];
+
+    // Verificar si ya existe un cliente con el mismo CUIT
+    const [clienteExistente]: any = await db.query(
+      'SELECT id FROM clientes WHERE cuit_dni = ?',
+      [prospectoData.cuit]
+    );
+
+    if (clienteExistente[0]) {
+      // Cliente ya existe - ACTUALIZAR solo vendedor_id y prospecto_id
+      if (mantenerExistente === 'true') {
+        // Solo agregar el prospecto_id, mantener el vendedor actual
+        await db.query(
+          'UPDATE clientes SET prospecto_id = ? WHERE cuit_dni = ?',
+          [prospectoId, prospectoData.cuit]
+        );
+      } else {
+        // Actualizar cliente existente SOLO con nuevo vendedor y prospecto_id
+        await db.query(
+          `UPDATE clientes SET
+            vendedor_id = ?,
+            prospecto_id = ?
+          WHERE cuit_dni = ?`,
+          [
+            vendedorId,
+            prospectoId,
+            prospectoData.cuit
+          ]
+        );
+      }
+    } else {
+      // Cliente NO existe - CREAR nuevo cliente
+      await db.query(
+        `INSERT INTO clientes (
+          razon_social,
+          nombre,
+          email,
+          telefono,
+          localidad_id,
+          cuit_dni,
+          observaciones,
+          vendedor_id,
+          fecha_creacion,
+          prospecto_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?)`,
+        [
+          prospectoData.nombre, // razon_social = nombre
+          prospectoData.nombre,
+          prospectoData.email,
+          prospectoData.telefono,
+          prospectoData.localidad_id,
+          prospectoData.cuit,
+          prospectoData.anotaciones,
+          vendedorId,
+          prospectoId
+        ]
+      );
+    }
+
+    // Eliminar recordatorios y marcar prospecto como convertido
     await db.query(
       `DELETE FROM recordatorios WHERE prospecto_id = ?`,
       [prospectoId]
@@ -112,6 +155,40 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
   } catch (err) {
     console.error('❌ Error al dar de alta cliente:', err);
     throw err;
+  }
+}
+
+// Nueva función para verificar si existe un cliente con el mismo CUIT
+export async function verificarClienteExistente(prospectoId: number) {
+  try {
+    const [prospecto]: any = await db.query(
+      'SELECT cuit FROM prospectos WHERE id = ?',
+      [prospectoId]
+    );
+
+    if (!prospecto[0]?.cuit) {
+      return { existe: false };
+    }
+
+    const [cliente]: any = await db.query(
+      `SELECT c.id, c.razon_social, v.nombre as vendedor_nombre, v.id as vendedor_id
+       FROM clientes c 
+       LEFT JOIN vendedores v ON c.vendedor_id = v.id
+       WHERE c.cuit_dni = ?`,
+      [prospecto[0].cuit]
+    );
+
+    if (cliente[0]) {
+      return {
+        existe: true,
+        cliente: cliente[0]
+      };
+    }
+
+    return { existe: false };
+  } catch (error) {
+    console.error('❌ Error al verificar cliente existente:', error);
+    return { existe: false };
   }
 }
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { redirect, useRouter } from 'next/navigation';
-import { updateProspecto,altaCliente } from '@/app/lib/actions';
+import { updateProspecto, altaCliente, verificarClienteExistente } from '@/app/lib/actions';
 import { Button } from '@/app/ui/button';
 import Link from 'next/link';
 
@@ -10,6 +10,8 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
   const router = useRouter();
   const updateWithId = updateProspecto.bind(null, prospecto.id);
   const [successMessage, setSuccessMessage] = useState<string>('');
+  const [clienteExistente, setClienteExistente] = useState<any>(null);
+  const [mostrarAlerta, setMostrarAlerta] = useState(false);
 
   const [provinciaId, setProvinciaId] = useState<string>(prospecto.provincia_id?.toString() || '');
   const [localidadesFiltradas, setLocalidadesFiltradas] = useState<any[]>([]);
@@ -20,6 +22,69 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
   const redireccion = () => {
     setSuccessMessage('✅ Dado de alta correctamente. Tocá Cancelar o Customers para volver atrás.');
   }
+
+  // Verificar cliente existente antes de dar de alta
+  const verificarCliente = async () => {
+    const vendedorSelect = document.getElementById('vendedor_id') as HTMLSelectElement;
+    if (!vendedorSelect.value) {
+      alert('Debe seleccionar un vendedor');
+      return;
+    }
+
+    const resultado = await verificarClienteExistente(prospecto.id);
+    if (resultado.existe) {
+      setClienteExistente(resultado.cliente);
+      setMostrarAlerta(true);
+    } else {
+      // Si no existe, proceder con alta de cliente nuevo
+      const formData = new FormData();
+      formData.append('vendedor_id', vendedorSelect.value);
+      formData.append('mantener_existente', 'false');
+      
+      try {
+        await altaCliente(prospecto.id, formData);
+        redireccion();
+      } catch (error) {
+        console.error('Error al crear cliente nuevo:', error);
+      }
+    }
+  };
+
+  // Mantener cliente existente
+  const mantenerClienteExistente = async () => {
+    const formData = new FormData();
+    formData.append('vendedor_id', clienteExistente.vendedor_id);
+    formData.append('mantener_existente', 'true');
+    
+    try {
+      await altaCliente(prospecto.id, formData);
+      redireccion();
+      setMostrarAlerta(false);
+    } catch (error) {
+      console.error('Error al mantener cliente existente:', error);
+    }
+  };
+
+  // Continuar con alta normal (actualizar cliente existente con nuevo vendedor)
+  const continuarAltaNormal = async () => {
+    const vendedorSelect = document.getElementById('vendedor_id') as HTMLSelectElement;
+    if (!vendedorSelect.value) {
+      alert('Debe seleccionar un vendedor');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('vendedor_id', vendedorSelect.value);
+    formData.append('mantener_existente', 'false');
+    
+    try {
+      await altaCliente(prospecto.id, formData);
+      redireccion();
+      setMostrarAlerta(false);
+    } catch (error) {
+      console.error('Error al actualizar cliente:', error);
+    }
+  };
 
   // Filtra las localidades cuando cambia la provincia
   useEffect(() => {
@@ -44,6 +109,47 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
 
   return (
     <>
+      {/* Alerta de cliente existente */}
+      {mostrarAlerta && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-red-600 mb-4">
+              ⚠️ Cliente ya existe
+            </h3>
+            <p className="text-gray-700 mb-4">
+              Ya existe un cliente con el CUIT <strong>{prospecto.cuit}</strong>
+            </p>
+            <p className="text-gray-700 mb-4">
+              <strong>Cliente:</strong> {clienteExistente?.razon_social}<br/>
+              <strong>Vendedor asignado:</strong> {clienteExistente?.vendedor_nombre}
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={mantenerClienteExistente}
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+              >
+                Mantener
+              </button>
+              <button
+                type="button"
+                onClick={continuarAltaNormal}
+                className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+              >
+                Alta nuevo
+              </button>
+              <button
+                type="button"
+                onClick={() => setMostrarAlerta(false)}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Form principal para editar el prospecto */}
       <form action={updateWithId}>
         <div className="rounded-md bg-gray-50 p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -77,8 +183,6 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
               <option value="email">Email</option>
             </select>
           </div>
-
-
 
           <div>
             <label htmlFor="nombre" className="block text-sm font-medium mb-1">Nombre</label>
@@ -203,11 +307,8 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
         </div>
       </form>
 
-      {/* Form separado para dar de alta como cliente */}
-      <form
-        action={altaCliente.bind(null, prospecto.id)}
-        className="md:col-span-2 border-t pt-6 mt-10 space-y-4"
-      >
+      {/* Sección para dar de alta como cliente */}
+      <div className="md:col-span-2 border-t pt-6 mt-10 space-y-4">
         <label htmlFor="vendedor_id" className="block text-sm font-medium">
           Asignar a Vendedor
         </label>
@@ -220,7 +321,7 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
         </select>
 
         <div className="flex items-center gap-6 justify-start mt-4">
-          <Button type="submit" onClick={redireccion}>
+          <Button type="button" onClick={verificarCliente}>
             Alta
           </Button>
 
@@ -230,10 +331,7 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
             </div>
           )}
         </div>
-
-      </form>
+      </div>
     </>
   );
 }
-
-
