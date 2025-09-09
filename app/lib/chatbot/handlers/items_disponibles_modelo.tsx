@@ -43,9 +43,7 @@ export async function handleItemsDisponiblesPorModelo(
             • iPhone 15<br>
             • Samsung A15<br>
             • Motorola G54<br>
-            • Xiaomi Redmi Note 13<br>
-            • TCL 40 SE<br>
-            • Huawei P30 Lite<br>`;
+            • Xiaomi Redmi Note 13<br>`;
   }
 
   interface ItemDisponible {
