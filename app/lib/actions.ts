@@ -128,7 +128,7 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
           prospecto_id
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?)`,
         [
-          prospectoData.nombre, // razon_social = nombre
+          prospectoData.nombre,
           prospectoData.nombre,
           prospectoData.email,
           prospectoData.telefono,
