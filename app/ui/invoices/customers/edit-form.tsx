@@ -79,8 +79,8 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
           </div>
         </div>
 
-        {/* Observaciones - Único campo editable del cliente */}
-        <div className="md:col-span-2">
+        {/* Observaciones - Campo editable del cliente */}
+        <div className="mt-4">
           <label htmlFor="observaciones" className="block text-sm font-medium mb-1">
             Observaciones
           </label>
@@ -94,8 +94,30 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
           />
         </div>
 
-        {/* Filtros dinámicos */}
-{/* Filtros dinámicos agrupados por categoría */}
+        {/* Habilitar Carrito - Nueva opción */}
+        <div className="mt-6 p-4 bg-white rounded-lg border">
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              id="habilitado"
+              name="habilitado"
+              value="1"
+              defaultChecked={cliente.habilitado === 1}
+              className="h-5 w-5 rounded border-2 border-orange-500 focus:ring-2 focus:ring-orange-300 transition-all duration-150"
+              style={{ accentColor: '#F97316' }}
+            />
+            <label htmlFor="habilitado" className="flex items-center cursor-pointer">
+              <span className="text-sm font-semibold text-gray-700">
+                🛒 Habilitar Carrito de Compras
+              </span>
+            </label>
+          </div>
+          <p className="mt-2 text-xs text-gray-500 ml-8">
+            Permitir que este cliente acceda y use el carrito de compras en la plataforma
+          </p>
+        </div>
+
+        {/* Filtros dinámicos agrupados por categoría */}
         <div className="mt-8">
           <h3 className="text-md font-semibold text-gray-800 mb-4">Filtros / Etiquetas</h3>
           {filtrosDisponibles.length === 0 ? (
@@ -138,7 +160,6 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
             })()
           )}
         </div>
-
 
         {/* Top Artículos */}  
         <div className="mt-8">

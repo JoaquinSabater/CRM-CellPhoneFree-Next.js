@@ -194,8 +194,14 @@ export async function verificarClienteExistente(prospectoId: number) {
 
 export async function updateCliente(id: string, formData: FormData, filtrosDisponibles?: any[]) {
   const observaciones = formData.get('observaciones') as string | null;
+    const habilitado = formData.get('habilitado') ? 1 : 0; // Nueva línea
 
   // 1. Actualizar campo fijo
+    await db.query(
+      'UPDATE clientes SET observaciones = ?, habilitado = ? WHERE id = ?',
+      [observaciones, habilitado, id]
+    );
+
   await db.query(
     'UPDATE clientes SET observaciones = ? WHERE id = ?',
     [observaciones, id]
