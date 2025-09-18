@@ -6,7 +6,7 @@ import DonutClientesPorVendedor from '@/app/ui/dashboard/home/DonutClientesPorVe
 import VentasMensualesPorVendedor from '@/app/ui/dashboard/estadisticas/SalesProgressChart';
 import VentasMesActualChart from '@/app/ui/dashboard/estadisticas/VentasMesActualChart';
 import ClientesPorCaerEnDesgracia from '@/app/ui/dashboard/home/ClientesPorCaerEnDesgracia';
-
+import PedidosPreliminares from '@/app/ui/dashboard/home/PedidosPreliminares';
 
 export default async function Page() {
   const session = await auth();
@@ -34,27 +34,19 @@ export default async function Page() {
 
       </div>
 
-      <div className="max-w-7xl mx-auto mt-8">
-          {userId && (
-            <div className="w-full">
-              <NotasPersonales userId={Number(userId)} />
-            </div>
-          )}
-        <div className="w-full">
-            {rol === 'vendedor' && typeof vendedorId === 'number' && (
-              <ClientesPorCaerEnDesgracia vendedorId={vendedorId} />
-            )}
-        </div>
-        <div className="w-full">
-            {rol === 'vendedor' && typeof vendedorId === 'number' && (
-              <VentasMensualesPorVendedor vendedorId={vendedorId} />
-            )}
-        </div>
-        <div className="w-full">
-            {rol === 'vendedor' && typeof vendedorId === 'number' && (
-              <VentasMesActualChart vendedorId={vendedorId} />
-            )}
-        </div>
+      <div className="max-w-7xl mx-auto mt-8 space-y-8">
+        {userId && (
+          <NotasPersonales userId={Number(userId)} />
+        )}
+        
+        {rol === 'vendedor' && typeof vendedorId === 'number' && (
+          <>
+            <PedidosPreliminares vendedorId={vendedorId} />
+            <ClientesPorCaerEnDesgracia vendedorId={vendedorId} />
+            <VentasMensualesPorVendedor vendedorId={vendedorId} />
+            <VentasMesActualChart vendedorId={vendedorId} />
+          </>
+        )}
       </div>
     </main>
   );

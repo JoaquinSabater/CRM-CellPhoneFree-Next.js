@@ -129,6 +129,75 @@ export async function fetchFilteredProspects(query: string, captadorId: number) 
   return rows;
 }
 
+// ...existing code...
+
+export async function getPedidosPreliminaresPorVendedor(vendedorId: number) {
+  const sql = `
+    SELECT 
+      pp.id,
+      pp.fecha_creacion,
+      pp.estado,
+      pp.observaciones_generales,
+      c.id AS cliente_id,
+      c.razon_social AS cliente_nombre,
+      COUNT(ppd.id) AS total_items,
+      SUM(ppd.cantidad_solicitada * COALESCE(ppd.precio_unitario, 0)) AS valor_estimado
+    FROM pedido_preliminar pp
+    JOIN clientes c ON pp.cliente_id = c.id
+    LEFT JOIN pedido_preliminar_detalle ppd ON pp.id = ppd.pedido_preliminar_id
+    WHERE c.vendedor_id = ? 
+      AND pp.estado IN ('borrador', 'enviado')
+    GROUP BY pp.id, pp.fecha_creacion, pp.estado, pp.observaciones_generales, c.id, c.razon_social
+    ORDER BY pp.fecha_creacion DESC
+    LIMIT 10
+  `;
+  
+  const [rows] = await db.query(sql, [vendedorId]);
+  return rows as {
+    id: number;
+    fecha_creacion: string;
+    estado: string;
+    observaciones_generales: string;
+    cliente_id: number;
+    cliente_nombre: string;
+    total_items: number;
+    valor_estimado: number;
+  }[];
+}
+
+export async function getDetallePedidoPreliminar(pedidoId: number) {
+  const sql = `
+    SELECT 
+      ppd.id,
+      ppd.articulo_codigo_interno,
+      i.nombre AS item_nombre,
+      a.modelo,
+      m.nombre AS marca_nombre,
+      ppd.cantidad_solicitada,
+      ppd.precio_unitario,
+      pps.sugerencia
+    FROM pedido_preliminar_detalle ppd
+    JOIN articulos a ON ppd.articulo_codigo_interno = a.codigo_interno
+    JOIN items i ON a.item_id = i.id
+    JOIN marcas m ON a.marca_id = m.id
+    LEFT JOIN pedido_preliminar_detalle_sugerencias pps ON ppd.id = pps.pedido_preliminar_detalle_id
+    WHERE ppd.pedido_preliminar_id = ?
+    ORDER BY i.nombre, a.modelo
+  `;
+  
+  const [rows] = await db.query(sql, [pedidoId]);
+  return rows as {
+    id: number;
+    articulo_codigo_interno: string;
+    item_nombre: string;
+    modelo: string;
+    marca_nombre: string;
+    cantidad_solicitada: number;
+    precio_unitario: number;
+    sugerencia?: string;
+  }[];
+}
+
 //Funciona
 export async function fetchClienteById(id: string) {
   try {
