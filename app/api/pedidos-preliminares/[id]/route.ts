@@ -2,22 +2,25 @@ import { getDetallePedidoPreliminar } from '@/app/lib/data';
 import { NextRequest, NextResponse } from 'next/server';
 
 interface RouteContext {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function GET(
   request: NextRequest,
   { params }: RouteContext
 ) {
-  console.log('🔍 API llamada - ID del pedido:', params.id);
-  
   try {
-    const pedidoId = parseInt(params.id);
+    // Await params antes de usar sus propiedades
+    const { id } = await params;
+    
+    console.log('🔍 API llamada - ID del pedido:', id);
+    
+    const pedidoId = parseInt(id);
     
     if (isNaN(pedidoId)) {
-      console.error('❌ ID de pedido inválido:', params.id);
+      console.error('❌ ID de pedido inválido:', id);
       return NextResponse.json(
         { error: 'ID de pedido inválido' },
         { status: 400 }
