@@ -329,6 +329,38 @@ export async function getCantidadProspectosConvertidosPorCaptador(captadorId: nu
   return Number(rows[0]?.count ?? 0);
 }
 
+export async function getTopItemsVendidos(topN: number, ultimosDias: number) {
+  console.log(`🔍 Buscando top ${topN} items en últimos ${ultimosDias} días de toda la empresa`);
+  
+  const sql = `
+    SELECT 
+      i.nombre AS item_nombre,
+      SUM(rd.cantidad) AS total_vendido,
+      COUNT(DISTINCT r.cliente_id) AS clientes_distintos,
+      COUNT(DISTINCT c.vendedor_id) AS vendedores_distintos,
+      ROUND(AVG(rd.precio_unitario), 2) AS precio_promedio
+    FROM remitos r
+    JOIN remitos_detalle rd ON r.id = rd.remito_id
+    JOIN articulos a ON rd.articulo_codigo = a.codigo_interno
+    JOIN items i ON a.item_id = i.id
+    JOIN clientes c ON r.cliente_id = c.id
+    WHERE r.fecha_generacion >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+      AND r.estado IN ('generado', 'entregado', 'facturado')
+    GROUP BY i.id, i.nombre
+    ORDER BY total_vendido DESC
+    LIMIT ?
+  `;
+  
+  const [rows] = await db.query(sql, [ultimosDias, topN]);
+  return rows as {
+    item_nombre: string;
+    total_vendido: number;
+    clientes_distintos: number;
+    vendedores_distintos: number;
+    precio_promedio: number;
+  }[];
+}
+
 export async function getTopItemsByCliente(clienteId: string): Promise<any[]> {
   const sql = `
     SELECT 

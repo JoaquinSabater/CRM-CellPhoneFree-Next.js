@@ -12,6 +12,7 @@ export function generarMensajeAyuda(): string {
     • <b>Top clientes por modelo de celular</b><br>
     • <b>Ver lista de ítems cargados</b><br>
     • <b>Ítems disponibles para un modelo</b><br>
+    • <b>Top productos más vendidos de la empresa</b><br>
     <br>
 
     📌 <b>Ejemplos que podés usar:</b><br>
@@ -25,12 +26,10 @@ export function generarMensajeAyuda(): string {
     • Items<br>
     • Top 5 clientes que más compran fundas de A15<br>
     • Top 5 clientes que más compran vidrios de A15<br>
+    • <b>Top 10 productos más vendidos en los últimos 30 días</b><br>
 
     <br>
 
     Escribí cualquiera de esas frases y te voy a responder al instante 🙂
   `
 }
-
-
-

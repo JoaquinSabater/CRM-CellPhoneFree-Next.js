@@ -12,10 +12,8 @@ export async function GET(
   { params }: RouteContext
 ) {
   try {
-    // Await params antes de usar sus propiedades
     const { id } = await params;
     
-    console.log('🔍 API llamada - ID del pedido:', id);
     
     const pedidoId = parseInt(id);
     
@@ -27,14 +25,11 @@ export async function GET(
       );
     }
 
-    console.log('🔍 Buscando detalle para pedido ID:', pedidoId);
     const detalle = await getDetallePedidoPreliminar(pedidoId);
     
-    console.log('✅ Detalle encontrado:', detalle.length, 'items');
     return NextResponse.json(detalle);
     
   } catch (error) {
-    console.error('❌ Error en API route:', error);
     return NextResponse.json(
       { 
         error: 'Error al obtener detalle del pedido',

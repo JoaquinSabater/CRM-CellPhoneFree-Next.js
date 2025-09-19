@@ -13,6 +13,7 @@ import { handleTopClientesPorModelo } from '@/app/lib/chatbot/handlers/top_clien
 import { handleTopClientesPorItemDias } from '@/app/lib/chatbot/handlers/top_clientes_item_dias'
 import { handleProvinciaTopClientes } from '@/app/lib/chatbot/handlers/provincia_top_clientes';
 import { handleItemsDisponiblesPorModelo } from '@/app/lib/chatbot/handlers/items_disponibles_modelo';
+import { handleTopItemsVendidos } from '@/app/lib/chatbot/handlers/top_items_vendidos'
 
 
 export async function POST(req: Request) {
@@ -30,6 +31,16 @@ export async function POST(req: Request) {
   let respuesta = '🤔 No entendí tu pregunta. Probá con: ¿Quiénes compraron más fundas?'
 
 switch (intent) {
+    case 'top_items_vendidos': {
+      const { topN, ultimosDias } = entities;
+      if (typeof topN === 'number' && typeof ultimosDias === 'number') {
+        respuesta = await handleTopItemsVendidos({ topN, ultimosDias });
+      } else {
+        respuesta = '⚠️ Faltan datos para procesar la consulta de top items vendidos.';
+      }
+      break;
+    }
+  
   case 'top_clientes_por_item': {
     const { item, limite } = entities;
     if (typeof item === 'string' && typeof limite === 'number' && typeof vendedorId === 'number') {
@@ -127,7 +138,6 @@ switch (intent) {
     }
     break;
   }
-  
   case 'listar_items':
     respuesta = await handleListarItems()
   break

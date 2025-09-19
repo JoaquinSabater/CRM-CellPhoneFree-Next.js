@@ -10,6 +10,7 @@ import { detectarTopClientesPorModelo } from './intenciones/top_clientes_por_mod
 import { detectarTopClientesPorItemDias } from '@/app/lib/chatbot/intenciones/top_clientes_item_dias'
 import { detectarProvinciaTopClientes } from './intenciones/provincia_top_clientes';
 import { detectarItemsDisponiblesPorModelo } from './intenciones/items_disponibles_modelo';
+import { detectarTopItemsVendidos } from './intenciones/top_items_vendidos'
 
 
 
@@ -18,6 +19,7 @@ export function analizarMensaje(mensaje: string): {
   entities: Record<string, any>;
 } {
   const detectores = [
+    detectarTopItemsVendidos,
     detectarTopClientesPorItemDias,
     detectarItemsDisponiblesPorModelo,
     detectarTopClientesPorItem,

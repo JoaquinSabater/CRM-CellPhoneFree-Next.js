@@ -7,7 +7,6 @@ import type { usuario } from '@/app/lib/definitions';
 import bcrypt from 'bcryptjs';
 import {db} from "../lib/mysql";
 
-
 async function getUsuario(id: string): Promise<usuario | null> {
   try {
     const sql = 'SELECT * FROM usuarios WHERE id = ?';
