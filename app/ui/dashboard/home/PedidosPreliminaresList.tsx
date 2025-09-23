@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useHybridNotifications } from '@/app/hooks/useHybridNotifications';
 
 interface PedidoPreliminar {
   id: number;
@@ -24,10 +25,58 @@ interface DetallePedido {
   sugerencia?: string;
 }
 
-export default function PedidosPreliminaresList({ pedidos }: { pedidos: PedidoPreliminar[] }) {
+export default function PedidosPreliminaresList({ 
+  pedidosIniciales, 
+  vendedorId 
+}: { 
+  pedidosIniciales: PedidoPreliminar[];
+  vendedorId: number;
+}) {
+  const [pedidos, setPedidos] = useState<PedidoPreliminar[]>(pedidosIniciales);
   const [pedidoExpandido, setPedidoExpandido] = useState<number | null>(null);
   const [detalleCargando, setDetalleCargando] = useState(false);
   const [detalleItems, setDetalleItems] = useState<DetallePedido[]>([]);
+
+  // Callback para manejar nuevos pedidos (se ejecuta via SSE)
+  const handleNewPedido = useCallback((nuevoPedido: PedidoPreliminar) => {
+    console.log('🆕 Nuevo pedido recibido via SSE:', nuevoPedido);
+    
+    setPedidos(prevPedidos => {
+      const exists = prevPedidos.some(p => p.id === nuevoPedido.id);
+      if (exists) return prevPedidos;
+      
+      return [nuevoPedido, ...prevPedidos].slice(0, 10);
+    });
+  }, []);
+
+  // Hook híbrido para SSE + Web Push
+  const { isWebPushSupported, isWebPushSubscribed, isSSEConnected } = 
+    useHybridNotifications(vendedorId, handleNewPedido);
+
+  // Función de prueba
+  const testNotification = async () => {
+    try {
+      const response = await fetch('/api/pedidos-preliminares/crear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cliente_id: 1,
+          cliente_nombre: 'Cliente Test ' + Date.now(),
+          vendedorId: vendedorId,
+          items: [{ nombre: 'Item Test' }],
+          valor_estimado: Math.floor(Math.random() * 5000) + 1000,
+          observaciones: 'Pedido de prueba automático'
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Pedido test creado:', result);
+      }
+    } catch (error) {
+      console.error('❌ Error creando pedido test:', error);
+    }
+  };
 
   const formatearFecha = (fecha: string) => {
     return new Date(fecha).toLocaleDateString('es-AR', {
@@ -90,10 +139,41 @@ export default function PedidosPreliminaresList({ pedidos }: { pedidos: PedidoPr
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
           📋 Pedidos Preliminares Activos
+          {/* Indicador de conexión SSE */}
+          <span 
+            className={`w-2 h-2 rounded-full ${isSSEConnected ? 'bg-green-500' : 'bg-red-500'}`}
+            title={isSSEConnected ? 'Tiempo real conectado' : 'Tiempo real desconectado'}
+          />
         </h2>
-        <span className="text-sm text-gray-500">
-          {pedidos.length} pedido{pedidos.length !== 1 ? 's' : ''}
-        </span>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={testNotification}
+            className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+          >
+            🧪 Test Híbrido
+          </button>
+          
+          {/* Indicadores de estado */}
+          {isSSEConnected && (
+            <span className="text-xs text-green-600 flex items-center gap-1">
+              ⚡ Tiempo real
+            </span>
+          )}
+          {isWebPushSubscribed && (
+            <span className="text-xs text-blue-600 flex items-center gap-1">
+              🔔 Push activo
+            </span>
+          )}
+          {!isWebPushSupported && (
+            <span className="text-xs text-red-600 flex items-center gap-1">
+              ❌ Push no soportado
+            </span>
+          )}
+          
+          <span className="text-sm text-gray-500">
+            {pedidos.length} pedido{pedidos.length !== 1 ? 's' : ''}
+          </span>
+        </div>
       </div>
 
       {pedidos.length === 0 ? (
@@ -132,7 +212,6 @@ export default function PedidosPreliminaresList({ pedidos }: { pedidos: PedidoPr
               key={pedido.id}
               className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
             >
-              {/* Información básica del pedido */}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
@@ -170,7 +249,6 @@ export default function PedidosPreliminaresList({ pedidos }: { pedidos: PedidoPr
                 </div>
               )}
 
-              {/* Botón Ver Detalle */}
               <div className="flex justify-center">
                 <button
                   onClick={() => handleVerDetalle(pedido.id)}
@@ -198,7 +276,6 @@ export default function PedidosPreliminaresList({ pedidos }: { pedidos: PedidoPr
                 </button>
               </div>
 
-              {/* Detalle expandible */}
               {pedidoExpandido === pedido.id && detalleItems.length > 0 && (
                 <div className="mt-4 border-t pt-4 bg-gray-50 rounded-lg p-3">
                   <h4 className="font-medium text-gray-800 mb-3 text-sm">Detalle del pedido:</h4>

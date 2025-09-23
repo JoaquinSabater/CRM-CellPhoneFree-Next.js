@@ -19,7 +19,6 @@ export async function handleTopItemsVendidos(
       return new Intl.NumberFormat('es-AR').format(num);
     };
 
-    // Generar el HTML de respuesta SIMPLIFICADO
     const itemsHTML = items.map((item, index) => {
       const posicion = index + 1;
       const emoji = posicion === 1 ? '🥇' : posicion === 2 ? '🥈' : posicion === 3 ? '🥉' : '📦';
