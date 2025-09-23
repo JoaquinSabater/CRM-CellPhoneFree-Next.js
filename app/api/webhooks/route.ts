@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
       valor: nuevoPedido.valor_estimado
     });
 
+    
     notifySSENewPedido(vendedorId, nuevoPedido);
     console.log('📡 SSE enviado para pedido del carrito');
     
