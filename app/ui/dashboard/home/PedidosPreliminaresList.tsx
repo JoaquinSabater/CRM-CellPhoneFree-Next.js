@@ -145,35 +145,6 @@ export default function PedidosPreliminaresList({
             title={isSSEConnected ? 'Tiempo real conectado' : 'Tiempo real desconectado'}
           />
         </h2>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={testNotification}
-            className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
-          >
-            🧪 Test Híbrido
-          </button>
-          
-          {/* Indicadores de estado */}
-          {isSSEConnected && (
-            <span className="text-xs text-green-600 flex items-center gap-1">
-              ⚡ Tiempo real
-            </span>
-          )}
-          {isWebPushSubscribed && (
-            <span className="text-xs text-blue-600 flex items-center gap-1">
-              🔔 Push activo
-            </span>
-          )}
-          {!isWebPushSupported && (
-            <span className="text-xs text-red-600 flex items-center gap-1">
-              ❌ Push no soportado
-            </span>
-          )}
-          
-          <span className="text-sm text-gray-500">
-            {pedidos.length} pedido{pedidos.length !== 1 ? 's' : ''}
-          </span>
-        </div>
       </div>
 
       {pedidos.length === 0 ? (
