@@ -1,7 +1,6 @@
+// app/api/realtime/sse/route.ts
 import { NextRequest } from 'next/server';
-
-// Mapa para conexiones SSE por vendedor
-const sseConnectionsByVendedor = new Map<number, Set<ReadableStreamDefaultController>>();
+import { addSSEConnection, removeSSEConnection } from '@/app/lib/sse';
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
@@ -11,26 +10,42 @@ export async function GET(request: NextRequest) {
     return new Response('Vendedor ID requerido', { status: 400 });
   }
 
+  console.log(`🚀 Iniciando SSE para vendedor ${vendedorId}`);
+
   const stream = new ReadableStream({
     start(controller) {
-      // Agregar conexión SSE por vendedor
-      if (!sseConnectionsByVendedor.has(vendedorId)) {
-        sseConnectionsByVendedor.set(vendedorId, new Set());
-      }
-      sseConnectionsByVendedor.get(vendedorId)!.add(controller);
+      // Agregar conexión SSE
+      addSSEConnection(vendedorId, controller);
       
-      controller.enqueue(`data: ${JSON.stringify({ type: 'connected', vendedorId })}\n\n`);
-      console.log(`🔗 SSE conectado para vendedor ${vendedorId}`);
+      // Enviar confirmación de conexión
+      controller.enqueue(`data: ${JSON.stringify({ 
+        type: 'connected', 
+        vendedorId,
+        timestamp: new Date().toISOString()
+      })}\n\n`);
       
+      // Configurar limpieza cuando se desconecte
       request.signal.addEventListener('abort', () => {
-        const connections = sseConnectionsByVendedor.get(vendedorId);
-        if (connections) {
-          connections.delete(controller);
-          if (connections.size === 0) {
-            sseConnectionsByVendedor.delete(vendedorId);
-          }
+        removeSSEConnection(vendedorId, controller);
+      });
+
+      // Heartbeat cada 30 segundos para mantener conexión viva
+      const heartbeat = setInterval(() => {
+        try {
+          controller.enqueue(`data: ${JSON.stringify({ 
+            type: 'heartbeat', 
+            timestamp: new Date().toISOString() 
+          })}\n\n`);
+        } catch (error) {
+          console.error('❌ Error en heartbeat SSE:', error);
+          clearInterval(heartbeat);
+          removeSSEConnection(vendedorId, controller);
         }
-        console.log(`❌ SSE desconectado para vendedor ${vendedorId}`);
+      }, 30000);
+
+      // Limpiar heartbeat si se desconecta
+      request.signal.addEventListener('abort', () => {
+        clearInterval(heartbeat);
       });
     },
   });
@@ -41,32 +56,7 @@ export async function GET(request: NextRequest) {
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive',
       'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Cache-Control',
     },
-  });
-}
-
-// Función para notificar via SSE (actualiza UI inmediatamente)
-export function notifySSENewPedido(vendedorId: number, pedido: any) {
-  console.log(`📡 Enviando SSE a vendedor ${vendedorId}:`, pedido);
-  
-  const connections = sseConnectionsByVendedor.get(vendedorId);
-  if (!connections || connections.size === 0) {
-    console.log(`⚠️ No hay conexiones SSE para vendedor ${vendedorId}`);
-    return;
-  }
-
-  const message = JSON.stringify({
-    type: 'new_pedido_preliminar',
-    data: pedido
-  });
-
-  connections.forEach(controller => {
-    try {
-      controller.enqueue(`data: ${message}\n\n`);
-      console.log(`✅ SSE enviado a vendedor ${vendedorId}`);
-    } catch (error) {
-      console.error(`❌ Error enviando SSE:`, error);
-      connections.delete(controller);
-    }
   });
 }
