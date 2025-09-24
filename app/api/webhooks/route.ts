@@ -1,11 +1,11 @@
-import { notifySSENewPedido } from '@/app/api/realtime/sse/route';
-import { sendPushNotification } from '@/app/api/notifications/subscribe/route';
+// app/api/webhooks/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { notifySSENewPedido } from '../realtime/sse/route';
+import { sendPushNotification } from '@/app/lib/webpush';
 import { getPedidosPreliminaresPorVendedor } from '@/app/lib/data';
 
 export async function POST(request: NextRequest) {
   try {
-    // Validar autenticación
     const authHeader = request.headers.get('Authorization');
     if (authHeader !== 'Bearer 1234567') {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
@@ -20,10 +20,7 @@ export async function POST(request: NextRequest) {
       source 
     });
 
-    // 1. Obtener todos los pedidos del vendedor (incluye el nuevo)
     const pedidosVendedor = await getPedidosPreliminaresPorVendedor(vendedorId);
-    
-    // 2. Buscar el pedido específico por ID
     const nuevoPedido = pedidosVendedor.find(pedido => pedido.id === pedidoPreliminarId);
     
     if (!nuevoPedido) {
@@ -38,10 +35,11 @@ export async function POST(request: NextRequest) {
       valor: nuevoPedido.valor_estimado
     });
 
-    
+    // SSE para tiempo real
     notifySSENewPedido(vendedorId, nuevoPedido);
     console.log('📡 SSE enviado para pedido del carrito');
     
+    // Web Push (usando BD)
     await sendPushNotification(vendedorId, {
       title: '🛒 Nuevo Pedido desde Carrito',
       body: `Cliente: ${nuevoPedido.cliente_nombre}\nItems: ${nuevoPedido.total_items}\nValor: $${nuevoPedido.valor_estimado?.toLocaleString() || '0'}`,
@@ -57,13 +55,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ 
       success: true, 
-      message: 'Pedido procesado y notificaciones enviadas',
-      pedido: {
-        id: nuevoPedido.id,
-        cliente: nuevoPedido.cliente_nombre,
-        items: nuevoPedido.total_items,
-        valor: nuevoPedido.valor_estimado
-      }
+      message: 'Pedido procesado y notificaciones enviadas'
     });
     
   } catch (error) {
