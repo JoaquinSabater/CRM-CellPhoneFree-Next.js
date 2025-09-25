@@ -1,7 +1,7 @@
+// app/ui/dashboard/home/PedidosPreliminaresList.tsx
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useHybridNotifications } from '@/app/hooks/useHybridNotifications';
+import { useState } from 'react';
 
 interface PedidoPreliminar {
   id: number;
@@ -32,51 +32,10 @@ export default function PedidosPreliminaresList({
   pedidosIniciales: PedidoPreliminar[];
   vendedorId: number;
 }) {
-  const [pedidos, setPedidos] = useState<PedidoPreliminar[]>(pedidosIniciales);
+  const [pedidos] = useState<PedidoPreliminar[]>(pedidosIniciales);
   const [pedidoExpandido, setPedidoExpandido] = useState<number | null>(null);
   const [detalleCargando, setDetalleCargando] = useState(false);
   const [detalleItems, setDetalleItems] = useState<DetallePedido[]>([]);
-
-  // Callback para manejar nuevos pedidos (se ejecuta via SSE)
-  const handleNewPedido = useCallback((nuevoPedido: PedidoPreliminar) => {
-    console.log('🆕 Nuevo pedido recibido via SSE:', nuevoPedido);
-    
-    setPedidos(prevPedidos => {
-      const exists = prevPedidos.some(p => p.id === nuevoPedido.id);
-      if (exists) return prevPedidos;
-      
-      return [nuevoPedido, ...prevPedidos].slice(0, 10);
-    });
-  }, []);
-
-  // Hook híbrido para SSE + Web Push
-  const { isWebPushSupported, isWebPushSubscribed, isSSEConnected } = 
-    useHybridNotifications(vendedorId, handleNewPedido);
-
-  // Función de prueba
-  const testNotification = async () => {
-    try {
-      const response = await fetch('/api/pedidos-preliminares/crear', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cliente_id: 1,
-          cliente_nombre: 'Cliente Test ' + Date.now(),
-          vendedorId: vendedorId,
-          items: [{ nombre: 'Item Test' }],
-          valor_estimado: Math.floor(Math.random() * 5000) + 1000,
-          observaciones: 'Pedido de prueba automático'
-        })
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('✅ Pedido test creado:', result);
-      }
-    } catch (error) {
-      console.error('❌ Error creando pedido test:', error);
-    }
-  };
 
   const formatearFecha = (fecha: string) => {
     return new Date(fecha).toLocaleDateString('es-AR', {
@@ -137,20 +96,24 @@ export default function PedidosPreliminaresList({
   return (
     <div className="bg-white rounded-lg p-6 border shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-gray-800">
           📋 Pedidos Preliminares Activos
-          {/* Indicador de conexión SSE */}
-          <span 
-            className={`w-2 h-2 rounded-full ${isSSEConnected ? 'bg-green-500' : 'bg-red-500'}`}
-            title={isSSEConnected ? 'Tiempo real conectado' : 'Tiempo real desconectado'}
-          />
         </h2>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+        >
+          🔄 Actualizar
+        </button>
       </div>
 
       {pedidos.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           <div className="text-4xl mb-2">📝</div>
           <p className="text-sm">No hay pedidos preliminares activos</p>
+          <p className="text-xs text-gray-400 mt-2">
+            Usa "Actualizar" para ver nuevos pedidos
+          </p>
         </div>
       ) : (
         <div 
@@ -283,6 +246,12 @@ export default function PedidosPreliminaresList({
           ))}
         </div>
       )}
+
+      <div className="mt-4 text-center">
+        <p className="text-xs text-gray-500">
+          💡 Los nuevos pedidos aparecerán al hacer clic en "Actualizar"
+        </p>
+      </div>
     </div>
   );
 }
