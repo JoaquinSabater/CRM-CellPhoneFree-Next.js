@@ -41,8 +41,8 @@ export const { auth, signIn, signOut } = NextAuth({
 
         const hashNormalizado = usuario.password.trim().replace('$2y$', '$2a$');
 
-        //const passwordsMatch = await bcrypt.compare(password, hashNormalizado);
-        //if (!passwordsMatch) return null;
+        const passwordsMatch = await bcrypt.compare(password, hashNormalizado);
+        if (!passwordsMatch) return null;
 
         return usuario as any;
       },

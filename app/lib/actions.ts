@@ -63,6 +63,7 @@ export async function createRecordatorio(formData: FormData) {
   return { success: true };
 }
 
+// app/lib/actions.ts
 export async function altaCliente(prospectoId: number, formData: FormData) {
   const vendedorId = formData.get('vendedor_id');
   const mantenerExistente = formData.get('mantener_existente');
@@ -83,6 +84,7 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
     }
 
     const prospectoData = prospecto[0];
+    let clienteId; // Variable para almacenar el ID del cliente
 
     // Verificar si ya existe un cliente con el mismo CUIT
     const [clienteExistente]: any = await db.query(
@@ -91,9 +93,9 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
     );
 
     if (clienteExistente[0]) {
-      // Cliente ya existe - ACTUALIZAR solo vendedor_id y prospecto_id
+      clienteId = clienteExistente[0].id; // 📝 Guardar el ID del cliente existente
+      
       if (mantenerExistente === 'true') {
-        // Solo agregar el prospecto_id, mantener el vendedor actual
         await db.query(
           'UPDATE clientes SET prospecto_id = ? WHERE cuit_dni = ?',
           [prospectoId, prospectoData.cuit]
@@ -114,7 +116,7 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
       }
     } else {
       // Cliente NO existe - CREAR nuevo cliente
-      await db.query(
+      const [result]: any = await db.query(
         `INSERT INTO clientes (
           razon_social,
           nombre,
@@ -139,7 +141,21 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
           prospectoId
         ]
       );
+      
+      clienteId = result.insertId; // 📝 Guardar el ID del cliente recién creado
     }
+
+    // 🆕 ACTUALIZAR PEDIDOS PRELIMINARES DEL PROSPECTO
+    console.log(`🔄 Actualizando pedidos preliminares del prospecto ${prospectoId} al cliente ${clienteId}`);
+    
+    const [updateResult]: any = await db.query(
+      `UPDATE pedido_preliminar 
+       SET cliente_id = ?, vendedor_id = ? 
+       WHERE prospecto_id = ? AND cliente_id IS NULL AND vendedor_id IS NULL`,
+      [clienteId, vendedorId, prospectoId]
+    );
+    
+    console.log(`✅ ${updateResult.affectedRows} pedidos preliminares actualizados`);
 
     // Eliminar recordatorios y marcar prospecto como convertido
     await db.query(
