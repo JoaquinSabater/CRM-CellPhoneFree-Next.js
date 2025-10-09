@@ -17,5 +17,5 @@ export function generateProspectoToken(): string {
 }
 
 export function generateProspectoTokenExpiry(): Date {
-  return new Date(Date.now() + 4 * 24 * 60 * 60 * 1000); // ✅ 4 DÍAS (96 horas)
+  return new Date(Date.now() + 4 * 24 * 60 * 60 * 1000);
 }
