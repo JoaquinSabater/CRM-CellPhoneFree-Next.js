@@ -129,7 +129,6 @@ export async function fetchFilteredProspects(query: string, captadorId: number) 
   return rows;
 }
 
-// ...existing code...
 
 export async function getPedidosPreliminaresPorVendedor(vendedorId: number) {
   const sql = `
