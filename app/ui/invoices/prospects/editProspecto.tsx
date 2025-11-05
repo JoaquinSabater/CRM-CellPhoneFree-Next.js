@@ -5,6 +5,8 @@ import { redirect, useRouter } from 'next/navigation';
 import { updateProspecto, altaCliente, verificarClienteExistente } from '@/app/lib/actions';
 import { Button } from '@/app/ui/button';
 import Link from 'next/link';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default function EditProspectoForm({ prospecto, provincias, localidades, vendedores }: any) {
   const router = useRouter();
