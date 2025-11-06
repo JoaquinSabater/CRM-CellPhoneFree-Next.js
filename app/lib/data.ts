@@ -507,8 +507,11 @@ export async function getCaptadorById(id: number) {
 }
 
 export async function getProspectoById(id: number) {
+  // 🆕 AGREGAR TIMESTAMP PARA EVITAR CACHE
+  const timestamp = Date.now();
+  console.log(`🔍 [DEBUG ${timestamp}] Consultando prospecto ${id} desde BD...`);
+  
   try {
-
     const sql = `
       SELECT 
         p.id,
@@ -529,13 +532,22 @@ export async function getProspectoById(id: number) {
       FROM prospectos p
       LEFT JOIN provincia prov ON p.provincia_id = prov.id
       LEFT JOIN localidad loc ON p.localidad_id = loc.id
-      WHERE p.id = ?;
+      WHERE p.id = ?
     `;
 
     const [rows]: any = await db.query(sql, [id]);
-    return rows[0] ?? null;
+    const result = rows[0] ?? null;
+    
+    console.log(`✅ [DEBUG ${timestamp}] Prospecto ${id} obtenido:`, {
+      id: result?.id,
+      nombre: result?.nombre,
+      por_donde_llego: result?.por_donde_llego,
+      email: result?.email
+    });
+    
+    return result;
   } catch (error) {
-    console.error('Error al obtener prospecto por ID:', error);
+    console.error(`❌ [DEBUG ${timestamp}] Error al obtener prospecto ${id}:`, error);
     return null;
   }
 }
