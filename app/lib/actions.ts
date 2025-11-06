@@ -249,7 +249,10 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
 }
 
 //YA CAMBIE ESTA 
+// app/lib/actions.ts - updateProspecto completo corregido
 export async function updateProspecto(id: number, formData: FormData) {
+  console.log('🚀 [DEBUG] updateProspecto iniciado:', { id });
+
   const getString = (key: string) => String(formData.get(key) ?? '');
   const getNumberOrNull = (key: string) => {
     const value = formData.get(key);
@@ -270,9 +273,12 @@ export async function updateProspecto(id: number, formData: FormData) {
     anotaciones: getString('anotaciones'),
     fecha_pedido_asesoramiento: getString('fecha_pedido_asesoramiento'),
     url: getString('url'),
-    seguimiento: getString('seguimiento'),
+    seguimiento: getString('seguimiento'), // 🆕 ESTO FALTABA EN TU QUERY
   };
 
+  console.log('📊 [DEBUG] Campos a actualizar:', fields);
+
+  // 🆕 AGREGAR EL CAMPO SEGUIMIENTO AL QUERY
   const updateQuery = `
     UPDATE prospectos SET
       fecha_contacto = ?,
@@ -306,35 +312,48 @@ export async function updateProspecto(id: number, formData: FormData) {
     id,
   ];
 
-  await db.query(updateQuery, values);
+  try {
+    console.log('📝 [DEBUG] Ejecutando query...');
+    const [result]: any = await db.query(updateQuery, values);
+    console.log('✅ [DEBUG] Update exitoso:', result.affectedRows, 'filas afectadas');
 
-  // 🔁 Seguimiento → crear recordatorio
-  if (fields.seguimiento) {
-    let diasExtra = 0;
+    // 🆕 INVALIDAR CACHE MÚLTIPLE
+    revalidatePath('/dashboard/invoices'); 
+    revalidatePath(`/dashboard/invoices/prospects/${id}/edit`); 
+    revalidatePath('/dashboard');
 
-    if (fields.seguimiento === '2') diasExtra = 3;
-    if (fields.seguimiento === '3') diasExtra = 7;
-    if (fields.seguimiento === '4') diasExtra = 15;
+    // Seguimiento → crear recordatorio
+    if (fields.seguimiento && fields.seguimiento !== '') {
+      console.log('🔔 [DEBUG] Procesando seguimiento:', fields.seguimiento);
+      
+      let diasExtra = 0;
+      if (fields.seguimiento === '2') diasExtra = 3;
+      if (fields.seguimiento === '3') diasExtra = 7;
+      if (fields.seguimiento === '4') diasExtra = 15;
 
-    const now = new Date();
-    const fechaEnvio = new Date(now);
-    fechaEnvio.setDate(now.getDate() + diasExtra);
+      const now = new Date();
+      const fechaEnvio = new Date(now);
+      fechaEnvio.setDate(now.getDate() + diasExtra);
+      const fecha = fechaEnvio.toISOString().slice(0, 10);
+      const mensaje = `📌 Seguimiento ${fields.seguimiento} para el prospecto: ${fields.nombre}`;
 
-    const fecha = fechaEnvio.toISOString().slice(0, 10);
+      const recordatorioForm = new FormData();
+      recordatorioForm.append('mensaje', mensaje);
+      recordatorioForm.append('fecha', fecha);
+      recordatorioForm.append('prospecto_id', String(id));
 
-    const mensaje = `📌 Seguimiento ${fields.seguimiento} para el prospecto: ${fields.nombre}`;
+      await createRecordatorio(recordatorioForm);
+      console.log('✅ [DEBUG] Recordatorio creado');
+    }
 
-    const recordatorioForm = new FormData();
-    recordatorioForm.append('mensaje', mensaje);
-    recordatorioForm.append('fecha', fecha);
-
-    await createRecordatorio(recordatorioForm);
+  } catch (error) {
+    console.error('❌ [DEBUG] Error en updateProspecto:', error);
+    throw error;
   }
 
-  revalidatePath('/dashboard/invoices');
+  console.log('🎯 [DEBUG] Redirigiendo...');
   redirect('/dashboard/invoices');
 }
-
 
 //YA CAMBIE ESTA
 export async function desactivarProspecto(id: number) {
