@@ -218,11 +218,6 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
       [observaciones, habilitado, id]
     );
 
-  await db.query(
-    'UPDATE clientes SET observaciones = ? WHERE id = ?',
-    [observaciones, id]
-  );
-
   // 2. Actualizar filtros si vienen disponibles
   if (filtrosDisponibles && Array.isArray(filtrosDisponibles)) {
     // Prepara los filtros seleccionados como checkboxes
@@ -248,8 +243,7 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
   redirect('/dashboard/invoices');
 }
 
-//YA CAMBIE ESTA 
-// app/lib/actions.ts - updateProspecto completo corregido
+// app/lib/actions.ts - Corregir updateProspecto:
 export async function updateProspecto(id: number, formData: FormData) {
   console.log('🚀 [DEBUG] updateProspecto iniciado:', { id });
 
@@ -273,12 +267,12 @@ export async function updateProspecto(id: number, formData: FormData) {
     anotaciones: getString('anotaciones'),
     fecha_pedido_asesoramiento: getString('fecha_pedido_asesoramiento'),
     url: getString('url'),
-    seguimiento: getString('seguimiento'), // 🆕 ESTO FALTABA EN TU QUERY
+    // ❌ ELIMINAR: seguimiento: getString('seguimiento'),
   };
 
   console.log('📊 [DEBUG] Campos a actualizar:', fields);
 
-  // 🆕 AGREGAR EL CAMPO SEGUIMIENTO AL QUERY
+  // ✅ ELIMINAR SEGUIMIENTO DEL QUERY
   const updateQuery = `
     UPDATE prospectos SET
       fecha_contacto = ?,
@@ -309,6 +303,7 @@ export async function updateProspecto(id: number, formData: FormData) {
     fields.anotaciones,
     fields.fecha_pedido_asesoramiento,
     fields.url,
+    // ❌ ELIMINAR: fields.seguimiento,
     id,
   ];
 
@@ -322,20 +317,21 @@ export async function updateProspecto(id: number, formData: FormData) {
     revalidatePath(`/dashboard/invoices/prospects/${id}/edit`); 
     revalidatePath('/dashboard');
 
-    // Seguimiento → crear recordatorio
-    if (fields.seguimiento && fields.seguimiento !== '') {
-      console.log('🔔 [DEBUG] Procesando seguimiento:', fields.seguimiento);
+    // ✅ SEGUIMIENTO → CREAR RECORDATORIO (esto sí funciona)
+    const seguimientoValue = getString('seguimiento');
+    if (seguimientoValue && seguimientoValue !== '') {
+      console.log('🔔 [DEBUG] Procesando seguimiento:', seguimientoValue);
       
       let diasExtra = 0;
-      if (fields.seguimiento === '2') diasExtra = 3;
-      if (fields.seguimiento === '3') diasExtra = 7;
-      if (fields.seguimiento === '4') diasExtra = 15;
+      if (seguimientoValue === '2') diasExtra = 3;
+      if (seguimientoValue === '3') diasExtra = 7;
+      if (seguimientoValue === '4') diasExtra = 15;
 
       const now = new Date();
       const fechaEnvio = new Date(now);
       fechaEnvio.setDate(now.getDate() + diasExtra);
       const fecha = fechaEnvio.toISOString().slice(0, 10);
-      const mensaje = `📌 Seguimiento ${fields.seguimiento} para el prospecto: ${fields.nombre}`;
+      const mensaje = `📌 Seguimiento ${seguimientoValue} para el prospecto: ${fields.nombre}`;
 
       const recordatorioForm = new FormData();
       recordatorioForm.append('mensaje', mensaje);
