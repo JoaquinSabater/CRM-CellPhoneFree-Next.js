@@ -4,6 +4,9 @@ import { Suspense } from 'react';
 import LoadingSpinner from '@/app/ui/loading';
 import { auth } from '@/app/lib/auth';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const session = await auth();

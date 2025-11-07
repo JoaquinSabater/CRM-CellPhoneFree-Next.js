@@ -209,34 +209,54 @@ export async function verificarClienteExistente(prospectoId: number) {
 }
 
 export async function updateCliente(id: string, formData: FormData, filtrosDisponibles?: any[]) {
+  console.log('🚀 [DEBUG] updateCliente iniciado:', { id });
+  
   const observaciones = formData.get('observaciones') as string | null;
-    const habilitado = formData.get('habilitado') ? 1 : 0; // Nueva línea
+  const habilitado = formData.get('habilitado') ? 1 : 0;
+  const contenidoEspecial = formData.get('contenidoEspecial') ? 1 : 0;
 
-  // 1. Actualizar campo fijo
-    await db.query(
-      'UPDATE clientes SET observaciones = ?, habilitado = ? WHERE id = ?',
-      [observaciones, habilitado, id]
+  console.log('📊 [DEBUG] Datos a actualizar:', { 
+    observaciones, 
+    habilitado, 
+    contenidoEspecial
+  });
+
+  try {
+    // ✅ ACTUALIZAR QUERY PARA INCLUIR contenidoEspecial
+    const [result]: any = await db.query(
+      'UPDATE clientes SET observaciones = ?, habilitado = ?, contenidoEspecial = ? WHERE id = ?',
+      [observaciones, habilitado, contenidoEspecial, id] 
     );
+    
+    console.log('✅ [DEBUG] Cliente actualizado:', {
+      affectedRows: result.affectedRows,
+      changedRows: result.changedRows
+    });
 
-  // 2. Actualizar filtros si vienen disponibles
-  if (filtrosDisponibles && Array.isArray(filtrosDisponibles)) {
-    // Prepara los filtros seleccionados como checkboxes
-    const filtros = filtrosDisponibles.map((filtro: any) => ({
-      filtro_id: filtro.id,
-      valor: formData.get(`filtro-${filtro.id}`) === '1' ? '1' : '0',
-    }));
+    if (filtrosDisponibles && Array.isArray(filtrosDisponibles)) {
+      console.log('🔄 [DEBUG] Actualizando filtros...');
+      
+      const filtros = filtrosDisponibles.map((filtro: any) => ({
+        filtro_id: filtro.id,
+        valor: formData.get(`filtro-${filtro.id}`) === '1' ? '1' : '0',
+      }));
 
-    // Borra los filtros actuales del cliente
-    await db.query('DELETE FROM filtros_clientes WHERE cliente_id = ?', [id]);
+      await db.query('DELETE FROM filtros_clientes WHERE cliente_id = ?', [id]);
 
-    // Inserta los nuevos filtros
-    if (filtros.length > 0) {
-      const values = filtros.map(f => [id, f.filtro_id, f.valor]);
-      await db.query(
-        'INSERT INTO filtros_clientes (cliente_id, filtro_id, valor) VALUES ?',
-        [values]
-      );
+      if (filtros.length > 0) {
+        const values = filtros.map(f => [id, f.filtro_id, f.valor]);
+        await db.query(
+          'INSERT INTO filtros_clientes (cliente_id, filtro_id, valor) VALUES ?',
+          [values]
+        );
+      }
+      
+      console.log('✅ [DEBUG] Filtros actualizados');
     }
+
+  } catch (error) {
+    console.error('❌ [DEBUG] Error en updateCliente:', error);
+    throw error;
   }
 
   revalidatePath('/dashboard/invoices');

@@ -117,6 +117,28 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
           </p>
         </div>
 
+        <div className="mt-4 p-4 bg-white rounded-lg border">
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              id="contenidoEspecial"
+              name="contenidoEspecial"
+              value="1"
+              defaultChecked={cliente.contenidoEspecial === 1}
+              className="h-5 w-5 rounded border-2 border-purple-500 focus:ring-2 focus:ring-purple-300 transition-all duration-150"
+              style={{ accentColor: '#8B5CF6' }}
+            />
+            <label htmlFor="contenidoEspecial" className="flex items-center cursor-pointer">
+              <span className="text-sm font-semibold text-gray-700">
+                ⭐ Habilitar Contenido Especial
+              </span>
+            </label>
+          </div>
+          <p className="mt-2 text-xs text-gray-500 ml-8">
+            Permitir que este cliente acceda a contenido premium o exclusivo
+          </p>
+        </div>
+
         {/* Filtros dinámicos agrupados por categoría */}
         <div className="mt-8">
           <h3 className="text-md font-semibold text-gray-800 mb-4">Filtros / Etiquetas</h3>
