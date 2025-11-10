@@ -76,8 +76,18 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
   // Verificar cliente existente antes de dar de alta
   const verificarCliente = async () => {
     const vendedorSelect = document.getElementById('vendedor_id') as HTMLSelectElement;
+    const cuitInput = document.getElementById('cuit') as HTMLInputElement; // 🆕 Obtener input CUIT
+    
+    // ✅ VALIDAR QUE VENDEDOR ESTÉ SELECCIONADO
     if (!vendedorSelect.value) {
       alert('Debe seleccionar un vendedor');
+      return;
+    }
+
+    // 🆕 VALIDAR QUE CUIT NO ESTÉ VACÍO
+    if (!cuitInput.value || cuitInput.value.trim() === '') {
+      alert('⚠️ El campo CUIT es obligatorio para dar de alta el cliente');
+      cuitInput.focus(); // Enfocar el campo CUIT
       return;
     }
 
