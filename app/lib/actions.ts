@@ -208,24 +208,27 @@ export async function verificarClienteExistente(prospectoId: number) {
   }
 }
 
+// app/lib/actions.ts - Modificar updateCliente:
 export async function updateCliente(id: string, formData: FormData, filtrosDisponibles?: any[]) {
   console.log('🚀 [DEBUG] updateCliente iniciado:', { id });
   
   const observaciones = formData.get('observaciones') as string | null;
   const habilitado = formData.get('habilitado') ? 1 : 0;
   const contenidoEspecial = formData.get('contenidoEspecial') ? 1 : 0;
+  const distribuidor = formData.get('Distribuidor') ? 1 : 0; // 🆕 NUEVO CAMPO
 
   console.log('📊 [DEBUG] Datos a actualizar:', { 
     observaciones, 
     habilitado, 
-    contenidoEspecial
+    contenidoEspecial,
+    distribuidor // 🆕 LOG DEL NUEVO CAMPO
   });
 
   try {
-    // ✅ ACTUALIZAR QUERY PARA INCLUIR contenidoEspecial
+    // ✅ ACTUALIZAR QUERY PARA INCLUIR Distribuidor
     const [result]: any = await db.query(
-      'UPDATE clientes SET observaciones = ?, habilitado = ?, contenidoEspecial = ? WHERE id = ?',
-      [observaciones, habilitado, contenidoEspecial, id] 
+      'UPDATE clientes SET observaciones = ?, habilitado = ?, contenidoEspecial = ?, Distribuidor = ? WHERE id = ?',
+      [observaciones, habilitado, contenidoEspecial, distribuidor, id] // 🆕 AGREGAR NUEVO PARÁMETRO
     );
     
     console.log('✅ [DEBUG] Cliente actualizado:', {
@@ -233,6 +236,7 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
       changedRows: result.changedRows
     });
 
+    // Actualizar filtros (sin cambios)
     if (filtrosDisponibles && Array.isArray(filtrosDisponibles)) {
       console.log('🔄 [DEBUG] Actualizando filtros...');
       

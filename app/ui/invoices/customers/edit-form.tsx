@@ -139,6 +139,28 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
           </p>
         </div>
 
+        <div className="mt-4 p-4 bg-white rounded-lg border">
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              id="Distribuidor"
+              name="Distribuidor"
+              value="1"
+              defaultChecked={cliente.Distribuidor === 1}
+              className="h-5 w-5 rounded border-2 border-green-500 focus:ring-2 focus:ring-green-300 transition-all duration-150"
+              style={{ accentColor: '#10B981' }}
+            />
+            <label htmlFor="Distribuidor" className="flex items-center cursor-pointer">
+              <span className="text-sm font-semibold text-gray-700">
+                🏢 Habilitar como Distribuidor
+              </span>
+            </label>
+          </div>
+          <p className="mt-2 text-xs text-gray-500 ml-8">
+            Marcar este cliente como distribuidor autorizado con precios especiales
+          </p>
+        </div>
+
         {/* Filtros dinámicos agrupados por categoría */}
         <div className="mt-8">
           <h3 className="text-md font-semibold text-gray-800 mb-4">Filtros / Etiquetas</h3>
