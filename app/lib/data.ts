@@ -204,10 +204,19 @@ export async function fetchClienteById(id: string) {
       SELECT 
         c.*,
         l.nombre AS localidad_nombre,
-        p.nombre AS provincia_nombre
+        p.nombre AS provincia_nombre,
+        CASE 
+          WHEN ca.cliente_id IS NOT NULL THEN 1 
+          ELSE 0 
+        END as tiene_acceso,
+        ca.id as auth_id,
+        ca.email_verified,
+        ca.failed_login_attempts,
+        ca.locked_until
       FROM clientes c
       LEFT JOIN localidad l ON c.localidad_id = l.id
       LEFT JOIN provincia p ON l.provincia_id = p.id
+      LEFT JOIN clientes_auth ca ON c.id = ca.cliente_id
       WHERE c.id = ?;
     `;
 

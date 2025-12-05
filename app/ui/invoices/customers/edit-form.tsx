@@ -9,13 +9,17 @@ import ClientesDinero from './ClientesDinero';
 import PedidosPorMes from './PedidosPorMes';
 import { useSearchParams } from 'next/navigation';
 import ProductosPorMarca from './ProductoPorMarca';
-import { useRef } from 'react';
+import { useRef, useState  } from 'react';
 
 export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas }: any) {
   const formRef = useRef<HTMLFormElement>(null);
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
   const cancelHref = from === 'dashboard' ? '/dashboard' : '/dashboard/invoices';
+
+  const [mostrarNuevaPassword, setMostrarNuevaPassword] = useState(false);
+  const [mostrarConfirmarPassword, setMostrarConfirmarPassword] = useState(false);
+
 
   const filtrosActivos = new Map<number, string>();
   filtrosCliente.forEach((f: any) => {
@@ -159,6 +163,96 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
           <p className="mt-2 text-xs text-gray-500 ml-8">
             Marcar este cliente como distribuidor autorizado con precios especiales
           </p>
+        </div>
+
+        <div className="mt-8">
+          <h3 className="text-md font-semibold text-gray-800 mb-4">🔐 Gestión de Acceso al Sistema</h3>
+          <div className="p-4 bg-white rounded-lg border">
+            {cliente.tiene_acceso ? (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2 text-green-600">
+                  <span className="text-sm">✅ Este cliente tiene acceso al sistema</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="nueva_password" className="block text-sm font-medium mb-1">
+                      Nueva Contraseña
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="nueva_password"
+                        name="nueva_password"
+                        type={mostrarNuevaPassword ? "text" : "password"}
+                        className="w-full rounded-md border px-3 py-2 pr-10 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                        placeholder="Dejar vacío para mantener actual"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setMostrarNuevaPassword(!mostrarNuevaPassword)}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                      >
+                        {mostrarNuevaPassword ? (
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                          </svg>
+                        ) : (
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="confirmar_password" className="block text-sm font-medium mb-1">
+                      Confirmar Contraseña
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="confirmar_password"
+                        name="confirmar_password"
+                        type={mostrarConfirmarPassword ? "text" : "password"}
+                        className="w-full rounded-md border px-3 py-2 pr-10 text-sm shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                        placeholder="Repetir nueva contraseña"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setMostrarConfirmarPassword(!mostrarConfirmarPassword)}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                      >
+                        {mostrarConfirmarPassword ? (
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                          </svg>
+                        ) : (
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <p className="text-xs text-gray-500">
+                  💡 Si deja los campos vacíos, la contraseña actual se mantendrá sin cambios
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2 text-gray-500">
+                  <span className="text-sm">❌ Este cliente no tiene acceso al sistema</span>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Para darle acceso, debe crearse manualmente en la administración del sistema
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Filtros dinámicos agrupados por categoría */}

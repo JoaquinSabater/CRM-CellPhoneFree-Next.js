@@ -55,7 +55,6 @@ export const { auth, signIn, signOut } = NextAuth({
           }
 
           if (selectedRole === 'vendedor') {
-            // Usuario 21 como vendedor: usar vendedor_id = 18
             return {
               ...usuario,
               rol: 'vendedor',
@@ -63,7 +62,6 @@ export const { auth, signIn, signOut } = NextAuth({
               captador_id: null
             } as any;
           } else if (selectedRole === 'captador') {
-            // Usuario 21 como captador: usar su captador_id normal
             return {
               ...usuario,
               rol: 'captador',
@@ -73,7 +71,6 @@ export const { auth, signIn, signOut } = NextAuth({
           }
         }
 
-        // Para todos los otros usuarios, comportamiento normal
         return usuario as any;
       },
     }),

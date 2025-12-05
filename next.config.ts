@@ -1,10 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  experimental: {
-    ppr: 'incremental',
-  },
+  // No usamos experimental.ppr porque requiere canary
 };
 
 export default nextConfig;
-

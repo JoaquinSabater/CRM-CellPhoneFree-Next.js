@@ -6,6 +6,7 @@ import { signIn } from '@/app/lib/auth';
 import { AuthError } from 'next-auth';
 import { auth } from '@/app/lib/auth';
 import {db} from "../lib/mysql";
+import bcrypt from 'bcryptjs';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -73,7 +74,6 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
   }
 
   try {
-    // Obtener datos del prospecto
     const [prospecto]: any = await db.query(
       'SELECT * FROM prospectos WHERE id = ?',
       [prospectoId]
@@ -84,16 +84,15 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
     }
 
     const prospectoData = prospecto[0];
-    let clienteId; // Variable para almacenar el ID del cliente
+    let clienteId;
 
-    // Verificar si ya existe un cliente con el mismo CUIT
     const [clienteExistente]: any = await db.query(
       'SELECT id FROM clientes WHERE cuit_dni = ?',
       [prospectoData.cuit]
     );
 
     if (clienteExistente[0]) {
-      clienteId = clienteExistente[0].id; // 📝 Guardar el ID del cliente existente
+      clienteId = clienteExistente[0].id; 
       
       if (mantenerExistente === 'true') {
         await db.query(
@@ -101,7 +100,6 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
           [prospectoId, prospectoData.cuit]
         );
       } else {
-        // Actualizar cliente existente SOLO con nuevo vendedor y prospecto_id
         await db.query(
           `UPDATE clientes SET
             vendedor_id = ?,
@@ -115,7 +113,6 @@ export async function altaCliente(prospectoId: number, formData: FormData) {
         );
       }
     } else {
-      // Cliente NO existe - CREAR nuevo cliente
       const [result]: any = await db.query(
         `INSERT INTO clientes (
           razon_social,
@@ -215,20 +212,40 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
   const observaciones = formData.get('observaciones') as string | null;
   const habilitado = formData.get('habilitado') ? 1 : 0;
   const contenidoEspecial = formData.get('contenidoEspecial') ? 1 : 0;
-  const distribuidor = formData.get('Distribuidor') ? 1 : 0; // 🆕 NUEVO CAMPO
+  const distribuidor = formData.get('Distribuidor') ? 1 : 0;
+  
+  // 🆕 CAMPOS DE CONTRASEÑA
+  const nuevaPassword = formData.get('nueva_password') as string;
+  const confirmarPassword = formData.get('confirmar_password') as string;
 
   console.log('📊 [DEBUG] Datos a actualizar:', { 
     observaciones, 
     habilitado, 
     contenidoEspecial,
-    distribuidor // 🆕 LOG DEL NUEVO CAMPO
+    distribuidor,
+    cambiarPassword: !!nuevaPassword
   });
 
+  // 🔒 VALIDAR CONTRASEÑAS SI SE PROPORCIONAN
+  if (nuevaPassword || confirmarPassword) {
+    if (!nuevaPassword || !confirmarPassword) {
+      throw new Error('Debe completar ambos campos de contraseña');
+    }
+    
+    if (nuevaPassword !== confirmarPassword) {
+      throw new Error('Las contraseñas no coinciden');
+    }
+    
+    if (nuevaPassword.length < 6) {
+      throw new Error('La contraseña debe tener al menos 6 caracteres');
+    }
+  }
+
   try {
-    // ✅ ACTUALIZAR QUERY PARA INCLUIR Distribuidor
+    // ✅ ACTUALIZAR CLIENTE
     const [result]: any = await db.query(
       'UPDATE clientes SET observaciones = ?, habilitado = ?, contenidoEspecial = ?, Distribuidor = ? WHERE id = ?',
-      [observaciones, habilitado, contenidoEspecial, distribuidor, id] // 🆕 AGREGAR NUEVO PARÁMETRO
+      [observaciones, habilitado, contenidoEspecial, distribuidor, id]
     );
     
     console.log('✅ [DEBUG] Cliente actualizado:', {
@@ -236,7 +253,35 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
       changedRows: result.changedRows
     });
 
-    // Actualizar filtros (sin cambios)
+    // 🔒 ACTUALIZAR CONTRASEÑA SI SE PROPORCIONÓ
+    if (nuevaPassword) {
+      console.log('🔒 [DEBUG] Actualizando contraseña del cliente...');
+      
+      // Verificar si el cliente tiene acceso al sistema
+      const [clienteAuth]: any = await db.query(
+        'SELECT id FROM clientes_auth WHERE cliente_id = ?',
+        [id]
+      );
+      
+      if (clienteAuth[0]) {
+        // Encriptar la nueva contraseña
+        const saltRounds = 12;
+        const hashedPassword = await bcrypt.hash(nuevaPassword, saltRounds);
+        
+        // Actualizar contraseña en clientes_auth
+        await db.query(
+          'UPDATE clientes_auth SET password_hash = ? WHERE cliente_id = ?',
+          [hashedPassword, id]
+        );
+        
+        console.log('✅ [DEBUG] Contraseña actualizada exitosamente');
+      } else {
+        console.warn('⚠️ [DEBUG] Cliente no tiene acceso al sistema, no se puede actualizar contraseña');
+        throw new Error('Este cliente no tiene acceso al sistema. No se puede cambiar la contraseña.');
+      }
+    }
+
+    // 📋 ACTUALIZAR FILTROS (sin cambios)
     if (filtrosDisponibles && Array.isArray(filtrosDisponibles)) {
       console.log('🔄 [DEBUG] Actualizando filtros...');
       
@@ -267,7 +312,6 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
   redirect('/dashboard/invoices');
 }
 
-// app/lib/actions.ts - Corregir updateProspecto:
 export async function updateProspecto(id: number, formData: FormData) {
   console.log('🚀 [DEBUG] updateProspecto iniciado:', { id });
 
