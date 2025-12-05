@@ -14,7 +14,7 @@
     "clsx": "^2.1.1",
     "mysql2": "^3.14.0",
     "next": "15.4.8",
-    "next-auth": "5.0.0-beta.25",
+    "next-auth": "5.0.0-beta.30",
     "node-cron": "^3.0.3",
     "node-telegram-bot-api": "^0.66.0",
     "postcss": "8.5.1",
@@ -39,7 +39,8 @@
     "overrides": {
       "form-data": "4.0.4",
       "jws": "4.0.1",
-      "glob": "10.5.0"
+      "glob": "10.5.0",
+      "tough-cookie": "4.1.3"
     }
   }
 }
