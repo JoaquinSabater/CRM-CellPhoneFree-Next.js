@@ -34,5 +34,11 @@
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",
     "@types/web-push": "^3.6.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "form-data": "4.0.4",
+      "jws": "4.0.1"
+    }
   }
 }
