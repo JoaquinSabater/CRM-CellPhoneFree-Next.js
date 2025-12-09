@@ -6,6 +6,8 @@ import { getPedidosPorSemana } from '@/app/lib/data'
 import EvolucionClientesChart from '@/app/ui/dashboard/estadisticas/GraficoEvolucionClientes'
 import GraficoPorItemListBox from '@/app/ui/dashboard/estadisticas/GraficoPorItemListBox';
 
+export const dynamic = 'force-dynamic'
+
 export default async function Page() {
   const vendedorId = 9
   const pedidosPorSemana = await getPedidosPorSemana(vendedorId)

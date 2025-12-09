@@ -2,6 +2,8 @@
 import GraficoEvolucionVendedores from "@/app/ui/dashboard/home/GraficoEvolucionVendedores";
 import { getVentasDelDiaPorVendedor } from "@/app/lib/data";
 
+export const dynamic = 'force-dynamic'
+
 async function getVendedores() {
   const res = await fetch(
     "https://cellphonefree.com.ar/accesorios/Sistema/scrphp/api/estadisticas/obtener_performance.php?token=fe3493287c3a953cae08234baa2097ba896033989eb3f61fe6f6402ecbf465a7",
