@@ -22,7 +22,7 @@ const iconMap = {
 export async function CardWrapper() {
   const session = await auth();
   const vendedorId = session?.user?.vendedor_id;
-  const captadorId = 1; //session?.user?.captador_id;
+  const captadorId = session?.user?.captador_id;
   const rol = session?.user?.rol;
 
   if (rol === 'vendedor') {

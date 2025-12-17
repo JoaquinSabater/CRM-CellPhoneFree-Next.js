@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from '@/app/ui/button';
-import { useActionState, useState } from 'react';
+import { useActionState, useState, useEffect } from 'react';
 import { authenticate } from '@/app/lib/actions';
 import { useSearchParams } from 'next/navigation';
  
@@ -24,9 +24,45 @@ export default function LoginForm() {
   
   const [userId, setUserId] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
+  const [availableRoles, setAvailableRoles] = useState<string[]>([]);
+  const [checkingRoles, setCheckingRoles] = useState(false);
 
-  // Mostrar selector de rol solo para usuario 21
-  const showRoleSelection = userId === '21';
+  useEffect(() => {
+    const checkRoles = async () => {
+      if (userId.trim().length > 0) {
+        setCheckingRoles(true);
+        try {
+          const response = await fetch('/api/check-user-roles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId })
+          });
+          const data = await response.json();
+          if (data.roles && data.roles.length > 1) {
+            setAvailableRoles(data.roles);
+            setSelectedRole('');
+          } else {
+            setAvailableRoles([]);
+            setSelectedRole('');
+          }
+        } catch (error) {
+          console.error('Error checking roles:', error);
+          setAvailableRoles([]);
+        } finally {
+          setCheckingRoles(false);
+        }
+      } else {
+        setAvailableRoles([]);
+        setSelectedRole('');
+      }
+    };
+
+    const timeoutId = setTimeout(checkRoles, 500);
+    return () => clearTimeout(timeoutId);
+  }, [userId]);
+
+  // Mostrar selector de rol si hay múltiples roles
+  const showRoleSelection = availableRoles.length > 1;
  
   return (
     <form action={formAction} className="space-y-3">

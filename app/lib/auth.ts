@@ -47,10 +47,12 @@ export const { auth, signIn, signOut } = NextAuth({
         const passwordsMatch = await bcrypt.compare(password, hashNormalizado);
         if (!passwordsMatch) return null;
 
-        // 🎯 LÓGICA ESPECÍFICA PARA USUARIO 21
-        if (id === '21') {
+        // 🔍 VERIFICAR SI EL USUARIO TIENE AMBOS ROLES (vendedor_id Y captador_id)
+        const tieneAmbosRoles = usuario.vendedor_id && usuario.captador_id;
+
+        if (tieneAmbosRoles) {
           if (!selectedRole) {
-            console.log('[authorize] Usuario 21 debe seleccionar rol');
+            console.log('[authorize] Usuario con ambos roles debe seleccionar uno');
             return null;
           }
 
@@ -58,7 +60,7 @@ export const { auth, signIn, signOut } = NextAuth({
             return {
               ...usuario,
               rol: 'vendedor',
-              vendedor_id: 18,
+              vendedor_id: usuario.vendedor_id,
               captador_id: null
             } as any;
           } else if (selectedRole === 'captador') {

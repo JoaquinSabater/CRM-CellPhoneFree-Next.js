@@ -8,7 +8,14 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default function EditProspectoForm({ prospecto, provincias, localidades, vendedores }: any) {
+export default function EditProspectoForm({ 
+  prospecto, 
+  provincias, 
+  localidades, 
+  vendedores, 
+  condicionesIva = [], 
+  condicionesIibb = [] 
+}: any) {
   const router = useRouter();
   const updateWithId = updateProspecto.bind(null, prospecto.id);
   const [successMessage, setSuccessMessage] = useState<string>('');
@@ -22,6 +29,9 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
   const [tokenData, setTokenData] = useState<any>(null);
   const [generatingToken, setGeneratingToken] = useState(false);
   const [tokenError, setTokenError] = useState('');
+  const [origen, setOrigen] = useState<string>(prospecto.origen || '');
+  const [condicionIvaId, setCondicionIvaId] = useState<string>(prospecto.condicion_iva_id?.toString() || '');
+  const [condicionIibbId, setCondicionIibbId] = useState<string>(prospecto.condicion_iibb_id?.toString() || '');
 
   const generateProspectoToken = async () => {
     setGeneratingToken(true);
@@ -76,7 +86,8 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
   // Verificar cliente existente antes de dar de alta
   const verificarCliente = async () => {
     const vendedorSelect = document.getElementById('vendedor_id') as HTMLSelectElement;
-    const cuitInput = document.getElementById('cuit') as HTMLInputElement; // 🆕 Obtener input CUIT
+    const cuitInput = document.getElementById('cuit') as HTMLInputElement;
+    const origenSelect = document.getElementById('origen') as HTMLSelectElement;
     
     // ✅ VALIDAR QUE VENDEDOR ESTÉ SELECCIONADO
     if (!vendedorSelect.value) {
@@ -87,7 +98,14 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
     // 🆕 VALIDAR QUE CUIT NO ESTÉ VACÍO
     if (!cuitInput.value || cuitInput.value.trim() === '') {
       alert('⚠️ El campo CUIT es obligatorio para dar de alta el cliente');
-      cuitInput.focus(); // Enfocar el campo CUIT
+      cuitInput.focus();
+      return;
+    }
+
+    // 🆕 VALIDAR QUE ORIGEN ESTÉ SELECCIONADO
+    if (!origenSelect.value || origenSelect.value.trim() === '') {
+      alert('⚠️ El campo Origen es obligatorio para dar de alta el cliente');
+      origenSelect.focus();
       return;
     }
 
@@ -212,147 +230,452 @@ export default function EditProspectoForm({ prospecto, provincias, localidades, 
 
       {/* Form principal para editar el prospecto */}
       <form action={updateWithId}>
-        <div className="rounded-md bg-gray-50 p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Fecha */}
-          <div>
-            <label htmlFor="fecha_contacto" className="block text-sm font-medium mb-1">Fecha de Contacto</label>
-            <input
-              id="fecha_contacto"
-              name="fecha_contacto"
-              type="date"
-              defaultValue={prospecto.fecha_contacto ? new Date(prospecto.fecha_contacto).toISOString().slice(0, 10) : ''}
-              className={inputBase}
-            />
-          </div>
+        <div className="rounded-md bg-white shadow-sm border border-gray-200 p-6 space-y-6">
+          
+          {/* Sección: Información de Contacto */}
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">📋 Información de Contacto</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="fecha_contacto" className="block text-sm font-medium text-gray-700 mb-1">
+                  Fecha de Contacto
+                </label>
+                <input
+                  id="fecha_contacto"
+                  name="fecha_contacto"
+                  type="date"
+                  defaultValue={prospecto.fecha_contacto ? new Date(prospecto.fecha_contacto).toISOString().slice(0, 10) : ''}
+                  className={inputBase}
+                />
+              </div>
 
-          {/* Por dónde llegó */}
-          <div>
-            <label htmlFor="por_donde_llego" className="block text-sm font-medium mb-1">¿Por dónde llegó?</label>
-            <select
-              id="por_donde_llego"
-              name="por_donde_llego"
-              defaultValue={prospecto.por_donde_llego || ''}
-              className={inputBase}
-              required
-            >
-              <option value="">Selecciona una opción</option>
-              <option value="instagram">Instagram</option>
-              <option value="facebook">Facebook</option>
-              <option value="googleAds">Google Ads</option>
-              <option value="whatsapp">WhatsApp</option>
-              <option value="email">Email</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="nombre" className="block text-sm font-medium mb-1">Nombre</label>
-            <input id="nombre" name="nombre" type="text" defaultValue={prospecto.nombre} className={inputBase} />
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
-            <input id="email" name="email" type="email" defaultValue={prospecto.email} className={inputBase} />
-          </div>
-
-          <div>
-            <label htmlFor="telefono" className="block text-sm font-medium mb-1">Teléfono</label>
-            <input id="telefono" name="telefono" type="text" defaultValue={prospecto.telefono} className={inputBase} />
-          </div>
-
-          <div>
-            <label htmlFor="negocio" className="block text-sm font-medium mb-1">Tipo de Negocio</label>
-            <select
-              id="negocio"
-              name="negocio"
-              defaultValue={prospecto.negocio || ''}
-              className={inputBase}
-            >
-              <option value="">Selecciona una opción</option>
-              <option value="online">Online</option>
-              <option value="fisico">Físico</option>
-              <option value="fisicos y online">Fisicos y online</option>
-              <option value="fisico mas de uno">Físico (mas de uno)</option>
-              <option value="emprendedor">Emprendedor</option>
-            </select>
-          </div>
-
-          {/* Provincia */}
-          <div>
-            <label htmlFor="provincia_id" className="block text-sm font-medium mb-1">Provincia</label>
-            <select
-              name="provincia_id"
-              id="provincia_id"
-              className={inputBase}
-              value={provinciaId}
-              onChange={handleProvinciaChange}
-            >
-              <option value="">Selecciona una provincia</option>
-              {provincias.map((prov: any) => (
-                <option key={prov.id} value={prov.id}>{prov.nombre}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Localidad */}
-          <div>
-            <label htmlFor="localidad_id" className="block text-sm font-medium mb-1">Localidad</label>
-            <select
-              name="localidad_id"
-              id="localidad_id"
-              className={inputBase}
-              value={localidadId}
-              onChange={(e) => setLocalidadId(e.target.value)}
-            >
-              <option value="">Selecciona una localidad</option>
-              {localidadesFiltradas.map((loc: any) => (
-                <option key={loc.id} value={loc.id}>
-                  {`${loc.nombre} - ${loc.codigopostal}`}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="cuit" className="block text-sm font-medium mb-1">CUIT</label>
-            <input id="cuit" name="cuit" type="text" defaultValue={prospecto.cuit} className={inputBase} />
-          </div>
-
-          {/* Seguimientos */}
-          <div className="flex flex-col justify-center mt-1">
-            <label className="block text-sm font-medium mb-1">Seguimientos</label>
-            <div className="flex gap-4">
-              {[2, 3, 4].map((n) => (
-                <div key={n} className="flex items-center gap-1">
-                  <input type="radio" id={`seguimiento_${n}`} name="seguimiento" value={n} />
-                  <label htmlFor={`seguimiento_${n}`} className="text-sm">{n}º contacto</label>
-                </div>
-              ))}
+              <div>
+                <label htmlFor="por_donde_llego" className="block text-sm font-medium text-gray-700 mb-1">
+                  ¿Por dónde llegó?
+                </label>
+                <select
+                  id="por_donde_llego"
+                  name="por_donde_llego"
+                  defaultValue={prospecto.por_donde_llego || ''}
+                  className={inputBase}
+                >
+                  <option value="">Selecciona una opción</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="googleAds">Google Ads</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="email">Email</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <div className="md:col-span-2">
-            <label htmlFor="anotaciones" className="block text-sm font-medium mb-1">Anotaciones</label>
-            <textarea id="anotaciones" name="anotaciones" defaultValue={prospecto.anotaciones} rows={4} className={`${inputBase} resize-none`} />
+          {/* Sección: Datos Personales */}
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">👤 Datos Personales</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="razon_social" className="block text-sm font-medium text-gray-700 mb-1">
+                  Razón Social
+                </label>
+                <input 
+                  id="razon_social" 
+                  name="razon_social" 
+                  type="text" 
+                  defaultValue={prospecto.razon_social} 
+                  className={inputBase}
+                  placeholder="Nombre de la empresa"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre
+                </label>
+                <input 
+                  id="nombre" 
+                  name="nombre" 
+                  type="text" 
+                  defaultValue={prospecto.nombre} 
+                  className={inputBase}
+                  placeholder="Nombre del contacto"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="apellido" className="block text-sm font-medium text-gray-700 mb-1">
+                  Apellido
+                </label>
+                <input 
+                  id="apellido" 
+                  name="apellido" 
+                  type="text" 
+                  defaultValue={prospecto.apellido} 
+                  className={inputBase}
+                  placeholder="Apellido del contacto"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="contacto" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre de Contacto
+                </label>
+                <input 
+                  id="contacto" 
+                  name="contacto" 
+                  type="text" 
+                  defaultValue={prospecto.contacto} 
+                  className={inputBase}
+                  placeholder="Persona de contacto"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="cuit" className="block text-sm font-medium text-gray-700 mb-1">
+                  CUIT <span className="text-red-500">*</span>
+                </label>
+                <input 
+                  id="cuit" 
+                  name="cuit" 
+                  type="text" 
+                  defaultValue={prospecto.cuit} 
+                  className={inputBase}
+                  placeholder="20-12345678-9"
+                />
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label htmlFor="fecha_pedido_asesoramiento" className="block text-sm font-medium mb-1">Fecha Pedido Asesoramiento</label>
-            <input
-              id="fecha_pedido_asesoramiento"
-              name="fecha_pedido_asesoramiento"
-              type="date"
-              defaultValue={
-                prospecto.fecha_pedido_asesoramiento
-                  ? new Date(prospecto.fecha_pedido_asesoramiento).toISOString().slice(0, 10)
-                  : ''
-              }
-              className={inputBase}
-            />
+          {/* Sección: Datos de Contacto */}
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">📞 Medios de Contacto</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input 
+                  id="email" 
+                  name="email" 
+                  type="email" 
+                  defaultValue={prospecto.email} 
+                  className={inputBase}
+                  placeholder="email@ejemplo.com"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-1">
+                  Teléfono
+                </label>
+                <input 
+                  id="telefono" 
+                  name="telefono" 
+                  type="text" 
+                  defaultValue={prospecto.telefono} 
+                  className={inputBase}
+                  placeholder="+54 9 11 1234-5678"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="facebook" className="block text-sm font-medium text-gray-700 mb-1">
+                  Facebook
+                </label>
+                <input 
+                  id="facebook" 
+                  name="facebook" 
+                  type="text" 
+                  defaultValue={prospecto.facebook} 
+                  className={inputBase}
+                  placeholder="facebook.com/perfil"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="instagram" className="block text-sm font-medium text-gray-700 mb-1">
+                  Instagram
+                </label>
+                <input 
+                  id="instagram" 
+                  name="instagram" 
+                  type="text" 
+                  defaultValue={prospecto.instagram} 
+                  className={inputBase}
+                  placeholder="@usuario"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-1">
+                  Sitio Web
+                </label>
+                <input 
+                  id="url" 
+                  name="url" 
+                  type="text" 
+                  defaultValue={prospecto.url} 
+                  className={inputBase}
+                  placeholder="https://www.ejemplo.com"
+                />
+              </div>
+            </div>
           </div>
 
+          {/* Sección: Ubicación y Negocio */}
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">🏢 Ubicación y Negocio</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="domicilio" className="block text-sm font-medium text-gray-700 mb-1">
+                  Domicilio
+                </label>
+                <input 
+                  id="domicilio" 
+                  name="domicilio" 
+                  type="text" 
+                  defaultValue={prospecto.domicilio} 
+                  className={inputBase}
+                  placeholder="Dirección completa"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="provincia_id" className="block text-sm font-medium text-gray-700 mb-1">
+                  Provincia
+                </label>
+                <select
+                  name="provincia_id"
+                  id="provincia_id"
+                  className={inputBase}
+                  value={provinciaId}
+                  onChange={handleProvinciaChange}
+                >
+                  <option value="">Selecciona una provincia</option>
+                  {provincias.map((prov: any) => (
+                    <option key={prov.id} value={prov.id}>{prov.nombre}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="localidad_id" className="block text-sm font-medium text-gray-700 mb-1">
+                  Localidad
+                </label>
+                <select
+                  name="localidad_id"
+                  id="localidad_id"
+                  className={inputBase}
+                  value={localidadId}
+                  onChange={(e) => setLocalidadId(e.target.value)}
+                >
+                  <option value="">Selecciona una localidad</option>
+                  {localidadesFiltradas.map((loc: any) => (
+                    <option key={loc.id} value={loc.id}>
+                      {`${loc.nombre} - ${loc.codigopostal}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="negocio" className="block text-sm font-medium text-gray-700 mb-1">
+                  Tipo de Negocio
+                </label>
+                <select
+                  id="negocio"
+                  name="negocio"
+                  defaultValue={prospecto.negocio || ''}
+                  className={inputBase}
+                >
+                  <option value="">Selecciona una opción</option>
+                  <option value="online">Online</option>
+                  <option value="fisico">Físico</option>
+                  <option value="fisicos y online">Fisicos y online</option>
+                  <option value="fisico mas de uno">Físico (mas de uno)</option>
+                  <option value="emprendedor">Emprendedor</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Sección: Datos Impositivos */}
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">💼 Datos Impositivos</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="condicion_iva_id" className="block text-sm font-medium text-gray-700 mb-1">
+                  Condición IVA
+                </label>
+                <select
+                  id="condicion_iva_id"
+                  name="condicion_iva_id"
+                  value={condicionIvaId}
+                  onChange={(e) => setCondicionIvaId(e.target.value)}
+                  className={inputBase}
+                >
+                  <option value="">Seleccione condición IVA</option>
+                  {condicionesIva.map((condicion: any) => (
+                    <option key={condicion.id} value={condicion.id}>
+                      {condicion.codigo} - {condicion.descripcion}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="condicion_iibb_id" className="block text-sm font-medium text-gray-700 mb-1">
+                  Condición IIBB
+                </label>
+                <select
+                  id="condicion_iibb_id"
+                  name="condicion_iibb_id"
+                  value={condicionIibbId}
+                  onChange={(e) => setCondicionIibbId(e.target.value)}
+                  className={inputBase}
+                >
+                  <option value="">Seleccione condición IIBB</option>
+                  {condicionesIibb.map((condicion: any) => (
+                    <option key={condicion.id} value={condicion.id}>
+                      {condicion.codigo} - {condicion.descripcion}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Sección: Origen del Cliente */}
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">🎯 Origen del Cliente</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="origen" className="block text-sm font-medium text-gray-700 mb-1">
+                  Origen
+                </label>
+                <select
+                  id="origen"
+                  name="origen"
+                  value={origen}
+                  onChange={(e) => setOrigen(e.target.value)}
+                  className={inputBase}
+                >
+                  <option value="">Seleccionar origen...</option>
+                  <option value="campaña">Campaña</option>
+                  <option value="presencial">Presencial</option>
+                  <option value="referido">Referido</option>
+                </select>
+              </div>
+
+              {origen === 'referido' && (
+                <>
+                  <div>
+                    <label htmlFor="referidor_nombre" className="block text-sm font-medium text-gray-700 mb-1">
+                      Nombre del Referidor
+                    </label>
+                    <input 
+                      id="referidor_nombre" 
+                      name="referidor_nombre" 
+                      type="text" 
+                      defaultValue={prospecto.referidor_nombre} 
+                      className={inputBase}
+                      placeholder="¿Quién lo refirió?"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="tipo_venta_referido" className="block text-sm font-medium text-gray-700 mb-1">
+                      Tipo de Venta
+                    </label>
+                    <div className="flex items-center gap-6 mt-2">
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          id="tipo_presencial"
+                          name="tipo_venta_referido"
+                          value="presencial"
+                          defaultChecked={prospecto.tipo_venta_referido === 'presencial'}
+                          className="mr-2"
+                        />
+                        <label htmlFor="tipo_presencial" className="text-sm">Presencial</label>
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          id="tipo_remota"
+                          name="tipo_venta_referido"
+                          value="remota"
+                          defaultChecked={prospecto.tipo_venta_referido === 'remota'}
+                          className="mr-2"
+                        />
+                        <label htmlFor="tipo_remota" className="text-sm">Remota</label>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Sección: Seguimiento */}
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">📅 Seguimiento</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col justify-center">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Seguimientos</label>
+                <div className="flex gap-6">
+                  {[2, 3, 4].map((n) => (
+                    <div key={n} className="flex items-center gap-2">
+                      <input 
+                        type="radio" 
+                        id={`seguimiento_${n}`} 
+                        name="seguimiento" 
+                        value={n}
+                        className="w-4 h-4"
+                      />
+                      <label htmlFor={`seguimiento_${n}`} className="text-sm text-gray-700">
+                        {n}º contacto
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="fecha_pedido_asesoramiento" className="block text-sm font-medium text-gray-700 mb-1">
+                  Fecha Pedido Asesoramiento
+                </label>
+                <input
+                  id="fecha_pedido_asesoramiento"
+                  name="fecha_pedido_asesoramiento"
+                  type="date"
+                  defaultValue={
+                    prospecto.fecha_pedido_asesoramiento
+                      ? new Date(prospecto.fecha_pedido_asesoramiento).toISOString().slice(0, 10)
+                      : ''
+                  }
+                  className={inputBase}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Sección: Anotaciones */}
           <div>
-            <label htmlFor="url" className="block text-sm font-medium mb-1">URL</label>
-            <input id="url" name="url" type="text" defaultValue={prospecto.url} className={inputBase} />
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">📝 Anotaciones</h3>
+            <div>
+              <label htmlFor="anotaciones" className="block text-sm font-medium text-gray-700 mb-1">
+                Observaciones y Notas
+              </label>
+              <textarea 
+                id="anotaciones" 
+                name="anotaciones" 
+                defaultValue={prospecto.anotaciones} 
+                rows={4} 
+                className={`${inputBase} resize-none`}
+                placeholder="Información adicional sobre el prospecto..."
+              />
+            </div>
           </div>
         </div>
 

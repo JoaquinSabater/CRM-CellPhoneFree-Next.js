@@ -15,7 +15,7 @@ export async function getCantidadClientesPorVendedor(vendedorId: number) {
 export async function getCantidadPedidosDelMes(vendedorId: number) {
   const now = new Date();
   const primerDiaDelMes = new Date(now.getFullYear(), now.getMonth(), 1);
-  const fechaISO = primerDiaDelMes.toISOString().slice(0, 19).replace('T', ' '); // MySQL friendly
+  const fechaISO = primerDiaDelMes.toISOString().slice(0, 19).replace('T', ' ');
 
   const [rows]: any = await db.query(
     'SELECT COUNT(*) AS count FROM pedidos WHERE vendedor_id = ? AND fecha_creacion >= ?',
@@ -124,7 +124,6 @@ export async function fetchFilteredProspects(query: string, captadorId: number) 
       )
     ORDER BY p.fecha_contacto DESC
   `;
-
   const [rows] = await db.query(sql, [captadorId, likeQuery, likeQuery, likeQuery, likeQuery]);
   return rows;
 }
@@ -326,6 +325,7 @@ export async function getCantidadProspectosPorCaptador(captadorId: number) {
     'SELECT COUNT(*) AS count FROM prospectos WHERE captador_id = ? AND activo = 1;',
     [captadorId]
   );
+  console.log('Cantidad de prospectos para captador', captadorId, ':', rows[0]?.count ?? 0);
   return Number(rows[0]?.count ?? 0);
 }
 
@@ -337,9 +337,7 @@ export async function getCantidadProspectosConvertidosPorCaptador(captadorId: nu
   return Number(rows[0]?.count ?? 0);
 }
 
-export async function getTopItemsVendidos(topN: number, ultimosDias: number) {
-  console.log(`🔍 Buscando top ${topN} items en últimos ${ultimosDias} días de toda la empresa`);
-  
+export async function getTopItemsVendidos(topN: number, ultimosDias: number) {  
   const sql = `
     SELECT 
       i.nombre AS item_nombre,
@@ -577,8 +575,15 @@ export async function fetchFiltrosDeClientes(clienteIds: number[]) {
   return rows as { cliente_id: number; filtro_id: number; valor: string }[];
 }
 
+export async function getCondicionesIva() {
+  const [rows] = await db.query('SELECT id, codigo, descripcion FROM condiciones_iva ORDER BY descripcion');
+  return rows as { id: number; codigo: string; descripcion: string }[];
+}
 
-
+export async function getCondicionesIibb() {
+  const [rows] = await db.query('SELECT id, codigo, descripcion FROM condiciones_iibb ORDER BY descripcion');
+  return rows as { id: number; codigo: string; descripcion: string }[];
+}
 
 
 
