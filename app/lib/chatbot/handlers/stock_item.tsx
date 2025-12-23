@@ -34,12 +34,7 @@ export async function handleConsultaStockItem(
     return `🛑 No hay stock disponible para "<b>${item}</b>".`
   }
 
-  // Obtener el precio en dólares del primer artículo disponible
-  const precioVentaDolares = disponibles[0]?.precio_venta || 0
   const itemNombre = disponibles[0]?.item_nombre || item
-
-  // Convertir a pesos
-  const precioLista = precioVentaDolares * dolar
 
   // Generar lista de modelos con stock
   const htmlModelosConStock = disponibles
@@ -49,32 +44,38 @@ export async function handleConsultaStockItem(
     )
     .join('<br>')
 
+  // Agrupar artículos por precio
+  const gruposPorPrecio = new Map<number, typeof disponibles>()
+  disponibles.forEach((row) => {
+    if (!gruposPorPrecio.has(row.precio_venta)) {
+      gruposPorPrecio.set(row.precio_venta, [])
+    }
+    gruposPorPrecio.get(row.precio_venta)!.push(row)
+  })
+
+  // Ordenar grupos por precio descendente
+  const gruposOrdenados = Array.from(gruposPorPrecio.entries()).sort((a, b) => b[0] - a[0])
+
   // Generar información de precios con descuentos
   const formatPrecio = (precio: number) => 
     `$ ${precio.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
-  const precio10 = precioLista * 0.9
-  const precio20 = precioLista * 0.8
-  const precio30 = precioLista * 0.7
+  // Crear secciones de precio para cada grupo
+  const seccionesPrecios = gruposOrdenados.map(([precioVentaDolares, articulos], index) => {
+    const precioLista = precioVentaDolares * dolar
+    const precio10 = precioLista * 0.9
+    const precio20 = precioLista * 0.8
+    const precio30 = precioLista * 0.7
 
-  const htmlPrecios = `
-<br><br>
-<b>${itemNombre.toUpperCase()}</b><br>
-<b>PRECIO:</b><br>
-${formatPrecio(precioLista)} - LISTA<br>
-${formatPrecio(precio10)} - 10% off<br>
-${formatPrecio(precio20)} - 20% off<br>
-${formatPrecio(precio30)} - 30% off
-`
+    const modelosDelGrupo = articulos
+      .map(row => `   • <b>${row.modelo || 'Modelo sin nombre'}</b>`)
+      .join('<br>')
 
-  // Generar lista de modelos disponibles (sin cantidad de stock)
-  const htmlModelos = disponibles
-    .map(
-      (row) =>
-        `• <b>${row.modelo || 'Modelo sin nombre'}</b>`
-    )
-    .join('<br>')
+    return `<b>💰 PRECIO ${index + 1}:</b> ${formatPrecio(precioLista)} - LISTA<br>   └ ${formatPrecio(precio10)} <i>(10% off)</i><br>   └ ${formatPrecio(precio20)} <i>(20% off)</i><br>   └ ${formatPrecio(precio30)} <i>(30% off)</i><br>📱 <b>Modelos:</b><br>${modelosDelGrupo}`
+  }).join('<br><br>')
 
-  return `📦 <b>Stock disponible de "${item}":</b><br>${htmlModelosConStock}${htmlPrecios}<br><br><b>Modelos disponibles:</b><br>${htmlModelos}`
+  const separador = `<br>━━━━━━━━━━━━━━━━━━━━━━━━━━<br>`
+
+  return `📦 <b>Stock disponible de "${item}":</b><br>${htmlModelosConStock}${separador}<br>🎯 <b>${itemNombre.toUpperCase()}</b><br><br>${seccionesPrecios}`
 }
 

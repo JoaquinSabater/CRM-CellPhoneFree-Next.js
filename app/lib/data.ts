@@ -524,16 +524,31 @@ export async function getProspectoById(id: number) {
         p.id,
         p.fecha_contacto,
         p.por_donde_llego,
+        p.razon_social,
         p.nombre,
+        p.apellido,
+        p.contacto,
         p.email,
         p.telefono,
+        p.facebook,
+        p.instagram,
+        p.domicilio,
         p.negocio,
         p.provincia_id,
         prov.nombre AS provincia,
         p.localidad_id,
         loc.nombre AS ciudad,
+        p.lat,
+        p.lng,
+        p.condicion_iva_id,
+        p.condicion_iibb_id,
+        p.origen,
+        p.cliente_referidor_id,
+        p.referidor_nombre,
+        p.tipo_venta_referido,
         p.cuit,
         p.anotaciones,
+        p.observaciones,
         p.fecha_pedido_asesoramiento,
         p.url
       FROM prospectos p
@@ -541,7 +556,6 @@ export async function getProspectoById(id: number) {
       LEFT JOIN localidad loc ON p.localidad_id = loc.id
       WHERE p.id = ?
     `;
-
     const [rows]: any = await db.query(sql, [id]);
     const result = rows[0] ?? null;
     
