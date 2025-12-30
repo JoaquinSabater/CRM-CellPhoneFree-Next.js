@@ -203,6 +203,7 @@ export async function fetchClienteById(id: string) {
       SELECT 
         c.*,
         l.nombre AS localidad_nombre,
+        p.id AS provincia_id,
         p.nombre AS provincia_nombre,
         CASE 
           WHEN ca.cliente_id IS NOT NULL THEN 1 
@@ -599,5 +600,6 @@ export async function getCondicionesIibb() {
   return rows as { id: number; codigo: string; descripcion: string }[];
 }
 
-
-
+// Aliases para compatibilidad
+export const getCondicionesIVA = getCondicionesIva;
+export const getCondicionesIIBB = getCondicionesIibb;

@@ -2,7 +2,7 @@ import Search from '@/app/ui/search';
 import { Suspense } from 'react';
 import Table from '@/app/ui/invoices/table';
 import LoadingSpinner from '@/app/ui/loading';
-import {CrearProspecto} from '@/app/ui/invoices/buttons';
+import {CrearProspecto, CrearCliente} from '@/app/ui/invoices/buttons';
 import { auth } from '@/app/lib/auth';
 import { fetchFiltrosFijos } from '@/app/lib/data';
 import FiltrosDrawer from '@/app/ui/invoices/FiltrosPorCategoriaListbox';
@@ -30,7 +30,10 @@ export default async function Page(props: { searchParams: Promise<{ query?: stri
     <div className="w-full">
       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8 mb-4">
         <Search placeholder="Buscar Clientes..." />
-        {rol === 'captador' && <CrearProspecto />}
+        <div className="flex gap-2">
+          {rol === 'captador' && <CrearProspecto />}
+          {rol === 'vendedor' && <CrearCliente />}
+        </div>
       </div>
       <div className="flex flex-row items-start justify-between mb-6 gap-4">
         <div className="flex flex-row gap-4">

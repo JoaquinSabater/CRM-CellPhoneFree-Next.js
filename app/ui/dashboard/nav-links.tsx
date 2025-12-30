@@ -4,6 +4,7 @@ import {
   UserGroupIcon,
   HomeIcon,
   RocketLaunchIcon,
+  MapIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -23,6 +24,11 @@ const links = [
     icon: UserGroupIcon,
   },
   {
+    name: 'Mapa',
+    href: '/dashboard/mapa',
+    icon: MapIcon,
+  },
+  {
     name: 'ChatBot',
     href: '/dashboard/chatbot',
     icon: RocketLaunchIcon,
@@ -40,13 +46,15 @@ export default function NavLinks() {
             key={link.name}
             href={link.href}
             className={clsx(
-              'flex h-[48px] grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-orange-600 md:flex-none md:justify-start md:p-2 md:px-3',
+              'flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors',
               {
-                'bg-sky-100 text-orange-600': pathname === link.href,
+                'bg-orange-700 text-white': pathname === link.href,
+                'text-white hover:bg-orange-500': pathname !== link.href,
               },
-            )}          >
-            <LinkIcon className="w-6" />
-            <p className="hidden md:block">{link.name}</p>
+            )}
+          >
+            <LinkIcon className="w-5 h-5" />
+            <p>{link.name}</p>
           </Link>
         );
       })}

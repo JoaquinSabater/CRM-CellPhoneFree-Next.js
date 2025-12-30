@@ -30,7 +30,6 @@ export const authConfig = {
       return token;
     },
 
-    // ✅ Agregar vendedor_id a session.user
     async session({ session, token }) {
       session.user.id = token.sub as string;
       session.user.vendedor_id = token.vendedor_id;

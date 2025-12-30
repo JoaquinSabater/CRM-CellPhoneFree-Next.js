@@ -10,6 +10,98 @@ import bcrypt from 'bcryptjs';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
+// Nueva función para crear clientes
+export async function createCliente(formData: FormData) {
+  console.log('🚀 [DEBUG] createCliente iniciado');
+
+  // Validar campos obligatorios
+  const lat = parseFloat(formData.get('lat') as string);
+  const lng = parseFloat(formData.get('lng') as string);
+
+  if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
+    throw new Error('❌ La geolocalización (lat/lng) es obligatoria. Por favor, use el mapa para seleccionar la ubicación.');
+  }
+
+  // Extraer datos del formulario
+  const razonSocial = formData.get('razon_social') as string;
+  const email = formData.get('email') as string;
+  const nombre = formData.get('nombre') as string || null;
+  const apellido = formData.get('apellido') as string || null;
+  const telefono = formData.get('telefono') as string || null;
+  const contacto = formData.get('contacto') as string || null;
+  const cuitDni = formData.get('cuit_dni') as string;
+  const domicilio = formData.get('domicilio') as string;
+  const localidadId = parseInt(formData.get('localidad_id') as string);
+  const condicionIvaId = parseInt(formData.get('condicion_iva_id') as string);
+  const condicionIibbId = parseInt(formData.get('condicion_iibb_id') as string);
+  const vendedorId = parseInt(formData.get('vendedor_id') as string);
+  const observaciones = formData.get('observaciones') as string || null;
+  
+  // Campos de origen
+  const origen = formData.get('origen') as string || null;
+  const referidorNombre = formData.get('referidor_nombre') as string || null;
+  const tipoVentaReferido = formData.get('tipo_venta_referido') as string || null;
+
+  try {
+    // Verificar si ya existe un cliente con ese CUIT
+    const [existentes]: any = await db.query(
+      'SELECT id, razon_social FROM clientes WHERE cuit_dni = ?',
+      [cuitDni]
+    );
+
+    if (existentes && existentes.length > 0) {
+      throw new Error(`Ya existe un cliente con CUIT ${cuitDni}: ${existentes[0].razon_social}`);
+    }
+
+    // Insertar el cliente (sin password, habilitado, contenidoEspecial, Distribuidor)
+    const [result]: any = await db.query(
+      `INSERT INTO clientes (
+        razon_social, email, nombre, apellido, telefono, contacto, cuit_dni, 
+        domicilio, localidad_id, condicion_iva_id, condicion_iibb_id, 
+        vendedor_id, observaciones, lat, lng,
+        origen, referidor_nombre, tipo_venta_referido
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        razonSocial, email, nombre, apellido, telefono, contacto, cuitDni,
+        domicilio, localidadId, condicionIvaId, condicionIibbId,
+        vendedorId, observaciones, lat, lng,
+        origen, referidorNombre, tipoVentaReferido
+      ]
+    );
+
+    const clienteId = result.insertId;
+    console.log(`✅ Cliente creado con ID: ${clienteId}`);
+
+    // Procesar direcciones adicionales
+    const direccionesJSON = formData.get('direcciones') as string;
+    if (direccionesJSON) {
+      try {
+        const direcciones = JSON.parse(direccionesJSON);
+        for (const dir of direcciones) {
+          if (dir.direccion && dir.direccion.trim()) {
+            await db.query(
+              `INSERT INTO direcciones (cliente_id, direccion, localidad_id, provincia_id, transporte_id)
+               VALUES (?, ?, ?, ?, ?)`,
+              [clienteId, dir.direccion, dir.localidad_id || null, dir.provincia_id || null, dir.transporte_id || null]
+            );
+          }
+        }
+        console.log(`✅ ${direcciones.length} direcciones adicionales guardadas`);
+      } catch (e) {
+        console.error('Error al guardar direcciones adicionales:', e);
+      }
+    }
+
+  } catch (error: any) {
+    console.error('❌ Error al crear cliente:', error);
+    throw new Error(error.message || 'Error al crear el cliente');
+  }
+
+  revalidatePath('/dashboard/invoices');
+  redirect('/dashboard/invoices');
+}
+
+
 export async function createRecordatorio(formData: FormData) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -231,6 +323,22 @@ export async function verificarClienteExistente(prospectoId: number) {
 export async function updateCliente(id: string, formData: FormData, filtrosDisponibles?: any[]) {
   console.log('🚀 [DEBUG] updateCliente iniciado:', { id });
   
+  // 🆕 NUEVOS CAMPOS EDITABLES
+  const razonSocial = formData.get('razon_social') as string;
+  const email = formData.get('email') as string;
+  const nombre = formData.get('nombre') as string || null;
+  const apellido = formData.get('apellido') as string || null;
+  const telefono = formData.get('telefono') as string || null;
+  const contacto = formData.get('contacto') as string || null;
+  const cuitDni = formData.get('cuit_dni') as string;
+  const domicilio = formData.get('domicilio') as string;
+  const provinciaId = parseInt(formData.get('provincia_id') as string) || null;
+  const localidadId = parseInt(formData.get('localidad_id') as string) || null;
+  
+  // 🆕 GEOLOCALIZACIÓN
+  const lat = parseFloat(formData.get('lat') as string);
+  const lng = parseFloat(formData.get('lng') as string);
+  
   const observaciones = formData.get('observaciones') as string | null;
   const habilitado = formData.get('habilitado') ? 1 : 0;
   const contenidoEspecial = formData.get('contenidoEspecial') ? 1 : 0;
@@ -241,6 +349,10 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
   const confirmarPassword = formData.get('confirmar_password') as string;
 
   console.log('📊 [DEBUG] Datos a actualizar:', { 
+    razonSocial,
+    email,
+    lat,
+    lng,
     observaciones, 
     habilitado, 
     contenidoEspecial,
@@ -264,10 +376,30 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
   }
 
   try {
-    // ✅ ACTUALIZAR CLIENTE
+    // ✅ ACTUALIZAR CLIENTE CON TODOS LOS CAMPOS
     const [result]: any = await db.query(
-      'UPDATE clientes SET observaciones = ?, habilitado = ?, contenidoEspecial = ?, Distribuidor = ? WHERE id = ?',
-      [observaciones, habilitado, contenidoEspecial, distribuidor, id]
+      `UPDATE clientes SET 
+        razon_social = ?, 
+        email = ?, 
+        nombre = ?, 
+        apellido = ?, 
+        telefono = ?, 
+        contacto = ?, 
+        cuit_dni = ?,
+        domicilio = ?,
+        localidad_id = ?,
+        lat = ?,
+        lng = ?,
+        observaciones = ?, 
+        habilitado = ?, 
+        contenidoEspecial = ?, 
+        Distribuidor = ? 
+      WHERE id = ?`,
+      [
+        razonSocial, email, nombre, apellido, telefono, contacto, cuitDni,
+        domicilio, localidadId, lat, lng,
+        observaciones, habilitado, contenidoEspecial, distribuidor, id
+      ]
     );
     
     console.log('✅ [DEBUG] Cliente actualizado:', {

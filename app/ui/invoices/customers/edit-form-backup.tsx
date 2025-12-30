@@ -10,9 +10,8 @@ import PedidosPorMes from './PedidosPorMes';
 import { useSearchParams } from 'next/navigation';
 import ProductosPorMarca from './ProductoPorMarca';
 import { useRef, useState  } from 'react';
-import MapPicker from '@/app/ui/map-picker';
 
-export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas, provincias, localidades }: any) {
+export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas }: any) {
   const formRef = useRef<HTMLFormElement>(null);
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
@@ -20,10 +19,6 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
 
   const [mostrarNuevaPassword, setMostrarNuevaPassword] = useState(false);
   const [mostrarConfirmarPassword, setMostrarConfirmarPassword] = useState(false);
-  const [lat, setLat] = useState<number>(cliente.lat || -34.6037);
-  const [lng, setLng] = useState<number>(cliente.lng || -58.3816);
-  const [direccionCompleta, setDireccionCompleta] = useState('');
-  const [selectedProvinciaId, setSelectedProvinciaId] = useState<number | null>(cliente.provincia_id || null);
 
 
   const filtrosActivos = new Map<number, string>();
@@ -31,100 +26,61 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
     filtrosActivos.set(f.filtro_id, f.valor);
   });
 
-  const localidadesFiltradas = selectedProvinciaId
-    ? localidades?.filter((l: any) => l.provincia_id === selectedProvinciaId)
-    : localidades || [];
-
-  const construirDireccion = () => {
-    const domicilio = (document.getElementById('domicilio') as HTMLInputElement)?.value || '';
-    const provinciaSelect = document.getElementById('provincia_id') as HTMLSelectElement;
-    const localidadSelect = document.getElementById('localidad_id') as HTMLSelectElement;
-    
-    const provinciaNombre = provinciaSelect?.selectedOptions[0]?.text || '';
-    const localidadNombre = localidadSelect?.selectedOptions[0]?.text || '';
-    
-    const direccion = [domicilio, localidadNombre, provinciaNombre, 'Argentina']
-      .filter(Boolean)
-      .join(', ');
-    
-    setDireccionCompleta(direccion);
-  };
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(formRef.current!);
-    formData.set('lat', lat.toString());
-    formData.set('lng', lng.toString());
     await updateCliente(cliente.id, formData, filtrosDisponibles);
   }
 
-  const inputBase = 'peer block w-full rounded-md border py-2 pl-3 text-sm outline-2 placeholder:text-gray-500 focus:border-orange-500 focus:ring-2 focus:ring-orange-200';
-  const selectBase = 'peer block w-full rounded-md border py-2 pl-3 text-sm outline-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-200';
+  const inputBase = 'peer block w-full rounded-md border py-2 pl-3 text-sm outline-2 placeholder:text-gray-500';
+  const readOnlyStyle = 'bg-gray-100 text-gray-500 cursor-not-allowed';
 
   return (
     <form ref={formRef} onSubmit={handleSubmit}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
-        {/* DATOS GENERALES - Ahora editables */}
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">📋 Datos Generales</h3>
+        {/* Grid de dos columnas */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Campos solo lectura */}
           <div>
             <label htmlFor="razon_social" className="block text-sm font-medium mb-1">Razón Social</label>
-            <input id="razon_social" name="razon_social" type="text" defaultValue={cliente.razon_social} className={inputBase} />
+            <input id="razon_social" type="text" defaultValue={cliente.razon_social} readOnly className={`${inputBase} ${readOnlyStyle}`} />
           </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
-            <input id="email" name="email" type="email" defaultValue={cliente.email} className={inputBase} />
+            <input id="email" type="email" defaultValue={cliente.email} readOnly className={`${inputBase} ${readOnlyStyle}`} />
           </div>
           <div>
             <label htmlFor="nombre" className="block text-sm font-medium mb-1">Nombre</label>
-            <input id="nombre" name="nombre" type="text" defaultValue={cliente.nombre} className={inputBase} />
+            <input id="nombre" type="text" defaultValue={cliente.nombre} readOnly className={`${inputBase} ${readOnlyStyle}`} />
           </div>
           <div>
             <label htmlFor="apellido" className="block text-sm font-medium mb-1">Apellido</label>
-            <input id="apellido" name="apellido" type="text" defaultValue={cliente.apellido} className={inputBase} />
+            <input id="apellido" type="text" defaultValue={cliente.apellido} readOnly className={`${inputBase} ${readOnlyStyle}`} />
           </div>
           <div>
             <label htmlFor="telefono" className="block text-sm font-medium mb-1">Teléfono</label>
-            <input id="telefono" name="telefono" type="text" defaultValue={cliente.telefono} className={inputBase} />
+            <input id="telefono" type="text" defaultValue={cliente.telefono} readOnly className={`${inputBase} ${readOnlyStyle}`} />
           </div>
           <div>
             <label htmlFor="contacto" className="block text-sm font-medium mb-1">Contacto</label>
-            <input id="contacto" name="contacto" type="text" defaultValue={cliente.contacto} className={inputBase} />
+            <input id="contacto" type="text" defaultValue={cliente.contacto} readOnly className={`${inputBase} ${readOnlyStyle}`} />
           </div>
-          <div>
-            <label htmlFor="cuit_dni" className="block text-sm font-medium mb-1">CUIT/DNI</label>
-            <input id="cuit_dni" name="cuit_dni" type="text" defaultValue={cliente.cuit_dni} className={inputBase} />
-          </div>
-        </div>
-
-        {/* UBICACIÓN - Ahora editable con mapa */}
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 mt-8">📍 Ubicación</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
             <label htmlFor="domicilio" className="block text-sm font-medium mb-1">Domicilio</label>
-            <input id="domicilio" name="domicilio" type="text" defaultValue={cliente.domicilio} className={inputBase} onChange={construirDireccion} />
+            <input id="domicilio" type="text" defaultValue={cliente.domicilio} readOnly className={`${inputBase} ${readOnlyStyle}`} />
           </div>
           <div>
-            <label htmlFor="provincia_id" className="block text-sm font-medium mb-1">Provincia</label>
-            <select id="provincia_id" name="provincia_id" defaultValue={cliente.provincia_id} className={selectBase} onChange={(e) => { setSelectedProvinciaId(Number(e.target.value)); construirDireccion(); }}>
-              <option value="">Seleccione provincia</option>
-              {provincias?.map((p: any) => (<option key={p.id} value={p.id}>{p.nombre}</option>))}
-            </select>
+            <label htmlFor="cuit_dni" className="block text-sm font-medium mb-1">CUIT / DNI</label>
+            <input id="cuit_dni" type="text" defaultValue={cliente.cuit_dni} readOnly className={`${inputBase} ${readOnlyStyle}`} />
           </div>
           <div>
-            <label htmlFor="localidad_id" className="block text-sm font-medium mb-1">Localidad</label>
-            <select id="localidad_id" name="localidad_id" defaultValue={cliente.localidad_id} className={selectBase} onChange={construirDireccion}>
-              <option value="">Seleccione localidad</option>
-              {localidadesFiltradas?.map((l: any) => (<option key={l.id} value={l.id}>{l.nombre}</option>))}
-            </select>
+            <label htmlFor="provincia" className="block text-sm font-medium mb-1">Provincia</label>
+            <input id="provincia" type="text" defaultValue={cliente.provincia_nombre} readOnly className={`${inputBase} ${readOnlyStyle}`} />
           </div>
-        </div>
-
-        {/* MAPA DE GEOLOCALIZACIÓN */}
-        <div className="mb-6 p-4 bg-white rounded-lg border">
-          <h4 className="text-md font-semibold mb-3">🗺️ Geolocalización</h4>
-          <p className="text-sm text-gray-600 mb-4">Actualice la dirección arriba y busque en el mapa. Puede ajustar la ubicación arrastrando el marcador.</p>
-          <MapPicker initialLat={lat} initialLng={lng} onLocationChange={(newLat, newLng) => { setLat(newLat); setLng(newLng); }} address={direccionCompleta} />
+          <div>
+            <label htmlFor="localidad" className="block text-sm font-medium mb-1">Localidad</label>
+            <input id="localidad" type="text" defaultValue={cliente.localidad_nombre} readOnly className={`${inputBase} ${readOnlyStyle}`} />
+          </div>
         </div>
 
         {/* Observaciones - Campo editable del cliente */}
