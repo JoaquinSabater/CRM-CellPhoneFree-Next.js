@@ -19,3 +19,11 @@ export function generateProspectoToken(): string {
 export function generateProspectoTokenExpiry(): Date {
   return new Date(Date.now() + 4 * 24 * 60 * 60 * 1000);
 }
+
+export function generateClienteToken(): string {
+  return crypto.randomBytes(48).toString('hex'); 
+}
+
+export function generateClienteTokenExpiry(): Date {
+  return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 días
+}

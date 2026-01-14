@@ -24,7 +24,10 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
   const [lng, setLng] = useState<number>(cliente.lng || -58.3816);
   const [direccionCompleta, setDireccionCompleta] = useState('');
   const [selectedProvinciaId, setSelectedProvinciaId] = useState<number | null>(cliente.provincia_id || null);
-
+  
+  const [tokenData, setTokenData] = useState<any>(null);
+  const [generatingToken, setGeneratingToken] = useState(false);
+  const [tokenError, setTokenError] = useState('');
 
   const filtrosActivos = new Map<number, string>();
   filtrosCliente.forEach((f: any) => {
@@ -34,6 +37,50 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
   const localidadesFiltradas = selectedProvinciaId
     ? localidades?.filter((l: any) => l.provincia_id === selectedProvinciaId)
     : localidades || [];
+
+  const generateStockAmbulanteToken = async () => {
+    setGeneratingToken(true);
+    setTokenError('');
+    
+    try {
+      const response = await fetch('/api/clientes/generate-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ clienteId: cliente.id }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setTokenData(data);
+      } else {
+        setTokenError(data.message || 'Error al generar token');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setTokenError('Error al procesar la solicitud');
+    } finally {
+      setGeneratingToken(false);
+    }
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Link copiado al portapapeles');
+    } catch (err) {
+      console.error('Error al copiar:', err);
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Link copiado al portapapeles');
+    }
+  };
 
   const construirDireccion = () => {
     const domicilio = (document.getElementById('domicilio') as HTMLInputElement)?.value || '';
@@ -299,6 +346,68 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
           </div>
         </div>
 
+        {/* Generar Token de Stock Ambulante */}
+        <div className="mt-8">
+          <h3 className="text-md font-semibold text-gray-800 mb-4">📦 Generar Link de Stock Ambulante</h3>
+          <div className="p-4 bg-white rounded-lg border">
+            <p className="text-sm text-gray-600 mb-4">
+              Genera un link único para que el cliente pueda visualizar el stock ambulante disponible.
+            </p>
+            
+            <button
+              type="button"
+              onClick={generateStockAmbulanteToken}
+              disabled={generatingToken}
+              className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            >
+              {generatingToken ? 'Generando...' : '🔑 Generar Token'}
+            </button>
+
+            {tokenError && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600">❌ {tokenError}</p>
+              </div>
+            )}
+
+            {tokenData && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md space-y-3">
+                <div className="flex items-start space-x-2">
+                  <span className="text-green-600 text-xl">✅</span>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-green-800 mb-1">Token generado exitosamente</p>
+                    <p className="text-xs text-gray-600 mb-2">
+                      Expira: {new Date(tokenData.expiresAt).toLocaleDateString('es-AR', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white p-3 rounded border">
+                  <p className="text-xs text-gray-500 mb-1">Token:</p>
+                  <p className="text-xs font-mono text-gray-700 break-all">{tokenData.token}</p>
+                </div>
+
+                <div className="bg-white p-3 rounded border">
+                  <p className="text-xs text-gray-500 mb-1">Link completo:</p>
+                  <p className="text-xs font-mono text-blue-600 break-all mb-2">{tokenData.link}</p>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(tokenData.link)}
+                    className="px-3 py-1.5 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
+                  >
+                    📋 Copiar Link
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Filtros dinámicos agrupados por categoría */}
         <div className="mt-8">
           <h3 className="text-md font-semibold text-gray-800 mb-4">Filtros / Etiquetas</h3>
@@ -343,7 +452,6 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
           )}
         </div>
 
-        {/* Top Artículos */}  
         <div className="mt-8">
           <TopItemsDelCliente items={topArticulos}/>
         </div>
