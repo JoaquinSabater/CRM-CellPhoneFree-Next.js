@@ -1,13 +1,14 @@
 import CreateClienteForm from '@/app/ui/invoices/customers/create-form';
-import { getAllProvincias, getAllLocalidades, getCondicionesIVA, getCondicionesIIBB, getVendedores } from '@/app/lib/data';
+import { getAllProvincias, getAllLocalidades, getCondicionesIVA, getCondicionesIIBB, getVendedores, getTransportes } from '@/app/lib/data';
 
 export default async function Page() {
-  const [provincias, localidades, condicionesIVA, condicionesIIBB, vendedoresData] = await Promise.all([
+  const [provincias, localidades, condicionesIVA, condicionesIIBB, vendedoresData, transportes] = await Promise.all([
     getAllProvincias(),
     getAllLocalidades(),
     getCondicionesIVA(),
     getCondicionesIIBB(),
     getVendedores(),
+    getTransportes(),
   ]);
 
   const vendedores = vendedoresData as { id: number; nombre: string; }[];
@@ -21,6 +22,7 @@ export default async function Page() {
         condicionesIVA={condicionesIVA}
         condicionesIIBB={condicionesIIBB}
         vendedores={vendedores}
+        transportes={transportes}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 import EditClienteForm from '@/app/ui/invoices/customers/edit-form';
-import { fetchClienteById, getPedidosByCliente, fetchFiltrosFijos, getFiltrosDelCliente, getTopItemsByCliente, getMarcasConProductos, getAllProvincias, getAllLocalidades } from '@/app/lib/data';
+import { fetchClienteById, getPedidosByCliente, fetchFiltrosFijos, getFiltrosDelCliente, getTopItemsByCliente, getMarcasConProductos, getAllProvincias, getAllLocalidades, getCondicionesIVA, getCondicionesIIBB, getTransportes } from '@/app/lib/data';
 import { Suspense } from 'react';
 import LoadingSpinner from '@/app/ui/loading';
 import { auth } from '@/app/lib/auth';
@@ -11,7 +11,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const session = await auth();
 
-  const [cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas, provincias, localidades] = await Promise.all([
+  const [cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas, provincias, localidades, condicionesIVA, condicionesIIBB, transportes] = await Promise.all([
     fetchClienteById(id),
     getPedidosByCliente(id),
     fetchFiltrosFijos(),
@@ -20,6 +20,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     getMarcasConProductos(Number(id)),
     getAllProvincias(),
     getAllLocalidades(),
+    getCondicionesIVA(),
+    getCondicionesIIBB(),
+    getTransportes(),
   ]);
 
   if (!cliente) {
@@ -38,6 +41,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           marcas={marcas}
           provincias={provincias}
           localidades={localidades}
+          condicionesIVA={condicionesIVA}
+          condicionesIIBB={condicionesIIBB}
+          transportes={transportes}
         />
       </Suspense>
     </main>

@@ -12,6 +12,7 @@ interface CreateClienteFormProps {
   condicionesIVA: { id: number; codigo: string; descripcion: string }[];
   condicionesIIBB: { id: number; codigo: string; descripcion: string }[];
   vendedores: { id: number; nombre: string }[];
+  transportes: { id: number; nombre: string }[];
 }
 
 export default function CreateClienteForm({ 
@@ -19,7 +20,8 @@ export default function CreateClienteForm({
   localidades, 
   condicionesIVA, 
   condicionesIIBB,
-  vendedores 
+  vendedores,
+  transportes 
 }: CreateClienteFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [selectedProvinciaId, setSelectedProvinciaId] = useState<number | null>(null);
@@ -37,9 +39,9 @@ export default function CreateClienteForm({
     setDirecciones([...direcciones, {
       id: Date.now(),
       direccion: '',
-      localidad_id: null,
-      provincia_id: null,
-      transporte_id: null,
+      localidad_id: '',
+      provincia_id: '',
+      transporte_id: '',
     }]);
   };
 
@@ -48,9 +50,11 @@ export default function CreateClienteForm({
   };
 
   const actualizarDireccion = (id: number, campo: string, valor: any) => {
-    setDirecciones(direcciones.map(d => 
-      d.id === id ? { ...d, [campo]: valor } : d
-    ));
+    setDirecciones(prevDirecciones => 
+      prevDirecciones.map(d => 
+        d.id === id ? { ...d, [campo]: valor || '' } : d
+      )
+    );
   };
 
   // Construir dirección para geocoding
@@ -356,32 +360,97 @@ export default function CreateClienteForm({
         {/* DIRECCIONES ADICIONALES */}
         <h3 className="text-lg font-semibold text-gray-800 mb-4 mt-8">📫 Direcciones Adicionales (Opcional)</h3>
         <div className="space-y-4 mb-6">
-          {direcciones.map((dir, index) => (
-            <div key={dir.id} className="p-4 bg-white rounded-lg border">
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="font-medium">Dirección #{index + 1}</h4>
-                <button
-                  type="button"
-                  onClick={() => eliminarDireccion(dir.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  🗑️ Eliminar
-                </button>
-              </div>
-              <div className="grid grid-cols-1 gap-3">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Dirección</label>
-                  <input
-                    type="text"
-                    value={dir.direccion}
-                    onChange={(e) => actualizarDireccion(dir.id, 'direccion', e.target.value)}
-                    className={inputBase}
-                    placeholder="Calle y número"
-                  />
+          {direcciones.map((dir, index) => {
+            const localidadesFiltradas = dir.provincia_id
+              ? localidades.filter(l => l.provincia_id === Number(dir.provincia_id))
+              : [];
+            
+            return (
+              <div key={dir.id} className="p-4 bg-white rounded-lg border">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-semibold text-gray-700">Dirección #{index + 1}</h4>
+                  <button
+                    type="button"
+                    onClick={() => eliminarDireccion(dir.id)}
+                    className="text-red-500 hover:text-red-700 text-sm font-medium"
+                  >
+                    🗑️ Eliminar
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-1">
+                      Dirección
+                    </label>
+                    <input
+                      type="text"
+                      value={dir.direccion}
+                      onChange={(e) => actualizarDireccion(dir.id, 'direccion', e.target.value)}
+                      className={inputBase}
+                      placeholder="Calle y número"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Provincia
+                    </label>
+                    <select
+                      value={dir.provincia_id || ''}
+                      onChange={(e) => {
+                        actualizarDireccion(dir.id, 'provincia_id', e.target.value);
+                        actualizarDireccion(dir.id, 'localidad_id', '');
+                      }}
+                      className={selectBase}
+                    >
+                      <option value="">Seleccione una provincia</option>
+                      {provincias.map(p => (
+                        <option key={p.id} value={p.id}>{p.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Localidad
+                    </label>
+                    <select
+                      value={dir.localidad_id || ''}
+                      onChange={(e) => {
+                        actualizarDireccion(dir.id, 'localidad_id', e.target.value);
+                      }}
+                      className={selectBase}
+                      disabled={!dir.provincia_id || dir.provincia_id === ''}
+                    >
+                      <option value="">Seleccione una localidad</option>
+                      {localidadesFiltradas.map(l => (
+                        <option key={l.id} value={l.id}>{l.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-1">
+                      Transporte
+                    </label>
+                    <select
+                      value={dir.transporte_id || ''}
+                      onChange={(e) => {
+                        actualizarDireccion(dir.id, 'transporte_id', e.target.value);
+                      }}
+                      className={selectBase}
+                    >
+                      <option value="">Seleccione un transporte</option>
+                      {transportes.map(t => (
+                        <option key={t.id} value={t.id}>{t.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           <button
             type="button"
             onClick={agregarDireccion}

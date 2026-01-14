@@ -600,6 +600,11 @@ export async function getCondicionesIibb() {
   return rows as { id: number; codigo: string; descripcion: string }[];
 }
 
+export async function getTransportes() {
+  const [rows] = await db.query('SELECT id, nombre FROM transportes ORDER BY nombre');
+  return rows as { id: number; nombre: string }[];
+}
+
 // Aliases para compatibilidad
 export const getCondicionesIVA = getCondicionesIva;
 export const getCondicionesIIBB = getCondicionesIibb;

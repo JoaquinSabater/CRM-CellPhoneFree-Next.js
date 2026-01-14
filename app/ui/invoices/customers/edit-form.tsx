@@ -12,7 +12,7 @@ import ProductosPorMarca from './ProductoPorMarca';
 import { useRef, useState  } from 'react';
 import MapPicker from '@/app/ui/map-picker';
 
-export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas, provincias, localidades }: any) {
+export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas, provincias, localidades, condicionesIVA, condicionesIIBB, transportes }: any) {
   const formRef = useRef<HTMLFormElement>(null);
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
@@ -24,6 +24,7 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
   const [lng, setLng] = useState<number>(cliente.lng || -58.3816);
   const [direccionCompleta, setDireccionCompleta] = useState('');
   const [selectedProvinciaId, setSelectedProvinciaId] = useState<number | null>(cliente.provincia_id || null);
+  const [direcciones, setDirecciones] = useState<any[]>([]);
   
   const [tokenData, setTokenData] = useState<any>(null);
   const [generatingToken, setGeneratingToken] = useState(false);
@@ -37,6 +38,28 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
   const localidadesFiltradas = selectedProvinciaId
     ? localidades?.filter((l: any) => l.provincia_id === selectedProvinciaId)
     : localidades || [];
+
+  const agregarDireccion = () => {
+    setDirecciones([...direcciones, {
+      id: Date.now(),
+      direccion: '',
+      localidad_id: '',
+      provincia_id: '',
+      transporte_id: '',
+    }]);
+  };
+
+  const eliminarDireccion = (id: number) => {
+    setDirecciones(direcciones.filter(d => d.id !== id));
+  };
+
+  const actualizarDireccion = (id: number, campo: string, valor: any) => {
+    setDirecciones(prevDirecciones => 
+      prevDirecciones.map(d => 
+        d.id === id ? { ...d, [campo]: valor || '' } : d
+      )
+    );
+  };
 
   const generateStockAmbulanteToken = async () => {
     setGeneratingToken(true);
@@ -144,6 +167,34 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
           </div>
         </div>
 
+        {/* CONDICIONES FISCALES */}
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 mt-8">💼 Condiciones Fiscales</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label htmlFor="condicion_iva_id" className="block text-sm font-medium mb-1">
+              Condición IVA <span className="text-red-500">*</span>
+            </label>
+            <select id="condicion_iva_id" name="condicion_iva_id" defaultValue={cliente.condicion_iva_id} required className={selectBase}>
+              <option value="">Seleccione condición</option>
+              {condicionesIVA?.map((c: any) => (
+                <option key={c.id} value={c.id}>{c.descripcion}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="condicion_iibb_id" className="block text-sm font-medium mb-1">
+              Condición IIBB <span className="text-red-500">*</span>
+            </label>
+            <select id="condicion_iibb_id" name="condicion_iibb_id" defaultValue={cliente.condicion_iibb_id} required className={selectBase}>
+              <option value="">Seleccione condición</option>
+              {condicionesIIBB?.map((c: any) => (
+                <option key={c.id} value={c.id}>{c.descripcion}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         {/* UBICACIÓN - Ahora editable con mapa */}
         <h3 className="text-lg font-semibold text-gray-800 mb-4 mt-8">📍 Ubicación</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -187,6 +238,109 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
             rows={3}
             placeholder="Observaciones generales del cliente..."
           />
+        </div>
+
+        {/* DIRECCIONES ADICIONALES */}
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 mt-8">📫 Direcciones Adicionales (Opcional)</h3>
+        <div className="space-y-4 mb-6">
+          {direcciones.map((dir, index) => {
+            const localidadesFiltradas = dir.provincia_id
+              ? localidades?.filter((l: any) => l.provincia_id === Number(dir.provincia_id))
+              : [];
+            
+            return (
+              <div key={dir.id} className="p-4 bg-white rounded-lg border">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-semibold text-gray-700">Dirección #{index + 1}</h4>
+                  <button
+                    type="button"
+                    onClick={() => eliminarDireccion(dir.id)}
+                    className="text-red-500 hover:text-red-700 text-sm font-medium"
+                  >
+                    🗑️ Eliminar
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-1">
+                      Dirección
+                    </label>
+                    <input
+                      type="text"
+                      value={dir.direccion}
+                      onChange={(e) => actualizarDireccion(dir.id, 'direccion', e.target.value)}
+                      className={inputBase}
+                      placeholder="Calle y número"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Provincia
+                    </label>
+                    <select
+                      value={dir.provincia_id || ''}
+                      onChange={(e) => {
+                        actualizarDireccion(dir.id, 'provincia_id', e.target.value);
+                        actualizarDireccion(dir.id, 'localidad_id', '');
+                      }}
+                      className={selectBase}
+                    >
+                      <option value="">Seleccione una provincia</option>
+                      {provincias?.map((p: any) => (
+                        <option key={p.id} value={p.id}>{p.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Localidad
+                    </label>
+                    <select
+                      value={dir.localidad_id || ''}
+                      onChange={(e) => {
+                        actualizarDireccion(dir.id, 'localidad_id', e.target.value);
+                      }}
+                      className={selectBase}
+                      disabled={!dir.provincia_id || dir.provincia_id === ''}
+                    >
+                      <option value="">Seleccione una localidad</option>
+                      {localidadesFiltradas.map((l: any) => (
+                        <option key={l.id} value={l.id}>{l.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-1">
+                      Transporte
+                    </label>
+                    <select
+                      value={dir.transporte_id || ''}
+                      onChange={(e) => {
+                        actualizarDireccion(dir.id, 'transporte_id', e.target.value);
+                      }}
+                      className={selectBase}
+                    >
+                      <option value="">Seleccione un transporte</option>
+                      {transportes?.map((t: any) => (
+                        <option key={t.id} value={t.id}>{t.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          <button
+            type="button"
+            onClick={agregarDireccion}
+            className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-orange-500 hover:text-orange-500 transition-colors"
+          >
+            ➕ Agregar Dirección Adicional
+          </button>
         </div>
 
         {/* Habilitar Carrito - Nueva opción */}
