@@ -118,13 +118,12 @@ export default function CreateClienteForm({
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-1">
-              Email <span className="text-red-500">*</span>
+              Email
             </label>
             <input 
               id="email" 
               name="email"
               type="email" 
-              required
               className={inputBase}
               placeholder="contacto@empresa.com"
             />
@@ -194,9 +193,9 @@ export default function CreateClienteForm({
 
           <div>
             <label htmlFor="condicion_iibb_id" className="block text-sm font-medium mb-1">
-              Condición IIBB <span className="text-red-500">*</span>
+              Condición IIBB
             </label>
-            <select id="condicion_iibb_id" name="condicion_iibb_id" required className={selectBase}>
+            <select id="condicion_iibb_id" name="condicion_iibb_id" className={selectBase}>
               <option value="">Seleccione condición</option>
               {condicionesIIBB.map(c => (
                 <option key={c.id} value={c.id}>{c.descripcion}</option>
@@ -206,17 +205,16 @@ export default function CreateClienteForm({
         </div>
 
         {/* UBICACIÓN PRINCIPAL */}
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 mt-8">📍 Ubicación Principal (Obligatoria)</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 mt-8">📍 Ubicación Principal</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
             <label htmlFor="domicilio" className="block text-sm font-medium mb-1">
-              Domicilio <span className="text-red-500">*</span>
+              Domicilio
             </label>
             <input 
               id="domicilio" 
               name="domicilio"
               type="text" 
-              required
               className={inputBase}
               placeholder="Calle y número"
               onChange={construirDireccion}
@@ -225,12 +223,11 @@ export default function CreateClienteForm({
 
           <div>
             <label htmlFor="provincia_id" className="block text-sm font-medium mb-1">
-              Provincia <span className="text-red-500">*</span>
+              Provincia
             </label>
             <select 
               id="provincia_id" 
               name="provincia_id" 
-              required
               className={selectBase}
               onChange={(e) => {
                 setSelectedProvinciaId(Number(e.target.value));
@@ -246,12 +243,11 @@ export default function CreateClienteForm({
 
           <div>
             <label htmlFor="localidad_id" className="block text-sm font-medium mb-1">
-              Localidad <span className="text-red-500">*</span>
+              Localidad
             </label>
             <select 
               id="localidad_id" 
               name="localidad_id" 
-              required
               className={selectBase}
               disabled={!selectedProvinciaId}
               onChange={construirDireccion}
@@ -300,11 +296,12 @@ export default function CreateClienteForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
             <label htmlFor="origen" className="block text-sm font-medium mb-1">
-              Origen
+              Origen <span className="text-red-500">*</span>
             </label>
             <select 
               id="origen" 
               name="origen" 
+              required
               className={selectBase}
               onChange={(e) => setOrigenSeleccionado(e.target.value)}
             >

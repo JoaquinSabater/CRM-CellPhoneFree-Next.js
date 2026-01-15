@@ -134,7 +134,6 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
   return (
     <form ref={formRef} onSubmit={handleSubmit}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
-        {/* DATOS GENERALES - Ahora editables */}
         <h3 className="text-lg font-semibold text-gray-800 mb-4">📋 Datos Generales</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -167,7 +166,6 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
           </div>
         </div>
 
-        {/* CONDICIONES FISCALES */}
         <h3 className="text-lg font-semibold text-gray-800 mb-4 mt-8">💼 Condiciones Fiscales</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
@@ -184,9 +182,9 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
 
           <div>
             <label htmlFor="condicion_iibb_id" className="block text-sm font-medium mb-1">
-              Condición IIBB <span className="text-red-500">*</span>
+              Condición IIBB
             </label>
-            <select id="condicion_iibb_id" name="condicion_iibb_id" defaultValue={cliente.condicion_iibb_id} required className={selectBase}>
+            <select id="condicion_iibb_id" name="condicion_iibb_id" defaultValue={cliente.condicion_iibb_id} className={selectBase}>
               <option value="">Seleccione condición</option>
               {condicionesIIBB?.map((c: any) => (
                 <option key={c.id} value={c.id}>{c.descripcion}</option>

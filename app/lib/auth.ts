@@ -47,7 +47,6 @@ export const { auth, signIn, signOut } = NextAuth({
         const passwordsMatch = await bcrypt.compare(password, hashNormalizado);
         if (!passwordsMatch) return null;
 
-        // 🔍 VERIFICAR SI EL USUARIO TIENE AMBOS ROLES (vendedor_id Y captador_id)
         const tieneAmbosRoles = usuario.vendedor_id && usuario.captador_id;
 
         if (tieneAmbosRoles) {
