@@ -12,7 +12,7 @@ import ProductosPorMarca from './ProductoPorMarca';
 import { useRef, useState  } from 'react';
 import MapPicker from '@/app/ui/map-picker';
 
-export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas, provincias, localidades, condicionesIVA, condicionesIIBB, transportes }: any) {
+export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas, provincias, localidades, condicionesIVA, condicionesIIBB, transportes, direccionesExistentes }: any) {
   const formRef = useRef<HTMLFormElement>(null);
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
@@ -24,7 +24,15 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
   const [lng, setLng] = useState<number>(cliente.lng || -58.3816);
   const [direccionCompleta, setDireccionCompleta] = useState('');
   const [selectedProvinciaId, setSelectedProvinciaId] = useState<number | null>(cliente.provincia_id || null);
-  const [direcciones, setDirecciones] = useState<any[]>([]);
+  const [direcciones, setDirecciones] = useState<any[]>(
+    direccionesExistentes?.map((d: any) => ({
+      id: d.id,
+      direccion: d.direccion,
+      localidad_id: d.localidad_id,
+      provincia_id: d.provincia_id,
+      transporte_id: d.transporte_id
+    })) || []
+  );
   
   const [tokenData, setTokenData] = useState<any>(null);
   const [generatingToken, setGeneratingToken] = useState(false);
@@ -125,6 +133,10 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
     const formData = new FormData(formRef.current!);
     formData.set('lat', lat.toString());
     formData.set('lng', lng.toString());
+    
+    // Agregar direcciones adicionales como JSON
+    formData.set('direcciones', JSON.stringify(direcciones));
+    
     await updateCliente(cliente.id, formData, filtrosDisponibles);
   }
 

@@ -457,6 +457,37 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
       console.log('✅ [DEBUG] Filtros actualizados');
     }
 
+    // 📫 ACTUALIZAR DIRECCIONES ADICIONALES
+    const direccionesJSON = formData.get('direcciones') as string;
+    if (direccionesJSON) {
+      try {
+        const direcciones = JSON.parse(direccionesJSON);
+        
+        // Eliminar direcciones existentes
+        await db.query('DELETE FROM direcciones WHERE cliente_id = ?', [id]);
+        
+        // Insertar nuevas direcciones
+        for (const dir of direcciones) {
+          if (dir.direccion && dir.direccion.trim()) {
+            await db.query(
+              `INSERT INTO direcciones (cliente_id, direccion, localidad_id, provincia_id, transporte_id)
+               VALUES (?, ?, ?, ?, ?)`,
+              [
+                id, 
+                dir.direccion, 
+                dir.localidad_id || null, 
+                dir.provincia_id || null, 
+                dir.transporte_id || null
+              ]
+            );
+          }
+        }
+        console.log(`✅ [DEBUG] ${direcciones.length} direcciones actualizadas`);
+      } catch (e) {
+        console.error('❌ Error al actualizar direcciones adicionales:', e);
+      }
+    }
+
   } catch (error) {
     console.error('❌ [DEBUG] Error en updateCliente:', error);
     throw error;

@@ -605,6 +605,25 @@ export async function getTransportes() {
   return rows as { id: number; nombre: string }[];
 }
 
+export async function getDireccionesCliente(clienteId: string) {
+  const sql = `
+    SELECT 
+      d.*,
+      l.nombre AS localidad_nombre,
+      p.id AS provincia_id,
+      p.nombre AS provincia_nombre,
+      t.nombre AS transporte_nombre
+    FROM direcciones d
+    LEFT JOIN localidad l ON d.localidad_id = l.id
+    LEFT JOIN provincia p ON d.provincia_id = p.id
+    LEFT JOIN transportes t ON d.transporte_id = t.id
+    WHERE d.cliente_id = ?
+    ORDER BY d.id
+  `;
+  const [rows] = await db.query(sql, [clienteId]);
+  return rows;
+}
+
 // Aliases para compatibilidad
 export const getCondicionesIVA = getCondicionesIva;
 export const getCondicionesIIBB = getCondicionesIibb;
