@@ -342,7 +342,6 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
   const observaciones = formData.get('observaciones') as string | null;
   const habilitado = formData.get('habilitado') ? 1 : 0;
   const contenidoEspecial = formData.get('contenidoEspecial') ? 1 : 0;
-  const distribuidor = formData.get('Distribuidor') ? 1 : 0;
   
   // 🆕 CAMPOS DE CONTRASEÑA
   const nuevaPassword = formData.get('nueva_password') as string;
@@ -356,7 +355,6 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
     observaciones, 
     habilitado, 
     contenidoEspecial,
-    distribuidor,
     cambiarPassword: !!nuevaPassword
   });
 
@@ -392,13 +390,12 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
         lng = ?,
         observaciones = ?, 
         habilitado = ?, 
-        contenidoEspecial = ?, 
-        Distribuidor = ? 
+        contenidoEspecial = ? 
       WHERE id = ?`,
       [
         razonSocial, email, nombre, apellido, telefono, contacto, cuitDni,
         domicilio, localidadId, lat, lng,
-        observaciones, habilitado, contenidoEspecial, distribuidor, id
+        observaciones, habilitado, contenidoEspecial, id
       ]
     );
     
