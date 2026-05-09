@@ -29,6 +29,9 @@ export default function EditProspectoForm({
   const [tokenData, setTokenData] = useState<any>(null);
   const [generatingToken, setGeneratingToken] = useState(false);
   const [tokenError, setTokenError] = useState('');
+  const [stockTokenData, setStockTokenData] = useState<any>(null);
+  const [generatingStockToken, setGeneratingStockToken] = useState(false);
+  const [stockTokenError, setStockTokenError] = useState('');
   const [origen, setOrigen] = useState<string>(prospecto.origen || '');
   const [condicionIvaId, setCondicionIvaId] = useState<string>(prospecto.condicion_iva_id?.toString() || '');
   const [condicionIibbId, setCondicionIibbId] = useState<string>(prospecto.condicion_iibb_id?.toString() || '');
@@ -58,6 +61,34 @@ export default function EditProspectoForm({
       setTokenError('Error al procesar la solicitud');
     } finally {
       setGeneratingToken(false);
+    }
+  };
+
+  const generateStockAmbulanteToken = async () => {
+    setGeneratingStockToken(true);
+    setStockTokenError('');
+
+    try {
+      const response = await fetch('/api/prospectos/generate-stock-ambulante-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prospectoId: prospecto.id }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setStockTokenData(data);
+      } else {
+        setStockTokenError(data.message || 'Error al generar token');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setStockTokenError('Error al procesar la solicitud');
+    } finally {
+      setGeneratingStockToken(false);
     }
   };
 
@@ -817,6 +848,113 @@ export default function EditProspectoForm({
                   <li>El link expira en <strong>4 días</strong> automáticamente</li>
                   <li>Puede usar el mismo link múltiples veces durante esos 4 días</li>
                   <li>Una vez que haga un pedido real, será convertido en cliente</li>
+                </ul>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="md:col-span-2 border-t pt-6 mt-10 space-y-4">
+        <div className="bg-orange-50 p-4 rounded-lg">
+          <h3 className="text-lg font-semibold text-orange-900 mb-3">
+            📦 Generar Link de Stock Ambulante
+          </h3>
+          <p className="text-orange-800 text-sm mb-4">
+            Genera un link único para que el prospecto pueda visualizar el stock ambulante disponible. (Válido por 30 días)
+          </p>
+
+          {!stockTokenData ? (
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={generateStockAmbulanteToken}
+                disabled={generatingStockToken}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+              >
+                {generatingStockToken ? 'Generando...' : '🔑 Generar Link de Stock Ambulante'}
+              </button>
+
+              {stockTokenError && (
+                <div className="p-3 bg-red-100 border border-red-300 rounded text-red-800 text-sm">
+                  {stockTokenError}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="p-4 bg-white border border-orange-200 rounded-lg">
+                <h4 className="font-medium text-orange-900 mb-2">✅ Link generado exitosamente</h4>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Link de stock ambulante:
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={stockTokenData.link}
+                        readOnly
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm bg-gray-50"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(stockTokenData.link)}
+                        className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded"
+                      >
+                        📋 Copiar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium text-gray-700">Token:</span>
+                      <span className="ml-2 font-mono text-xs break-all">
+                        {stockTokenData.token.substring(0, 20)}...
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Expira:</span>
+                      <span className="ml-2">
+                        {new Date(stockTokenData.expiresAt).toLocaleDateString('es-AR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => window.open(stockTokenData.link, '_blank')}
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm"
+                    >
+                      👁️ Previsualizar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStockTokenData(null)}
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded text-sm"
+                    >
+                      🔄 Generar Nuevo
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-xs text-orange-700 bg-orange-50 p-3 rounded border-l-4 border-orange-400">
+                <strong>💡 Instrucciones:</strong>
+                <ul className="list-disc list-inside mt-1 space-y-1">
+                  <li>Envía este link al prospecto por WhatsApp, email o mensaje</li>
+                  <li>El link incluye el token y el identificador del prospecto</li>
+                  <li>El carrito podrá usar esa información para identificar el contexto del prospecto</li>
+                  <li>Una vez que se defina la ruta final, este link quedará preparado para conectarse con ella</li>
                 </ul>
               </div>
             </div>
