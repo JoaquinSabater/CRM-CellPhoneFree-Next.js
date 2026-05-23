@@ -5,6 +5,7 @@ import {
   HomeIcon,
   RocketLaunchIcon,
   MapIcon,
+  PhotoIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -32,6 +33,11 @@ const links = [
     name: 'ChatBot',
     href: '/dashboard/chatbot',
     icon: RocketLaunchIcon,
+  },
+  {
+    name: 'Fotos por modelo',
+    href: '/dashboard/catalogo-modelo',
+    icon: PhotoIcon,
   },
 ];
 
