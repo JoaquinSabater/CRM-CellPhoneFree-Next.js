@@ -5,7 +5,6 @@ import {
   HomeIcon,
   RocketLaunchIcon,
   MapIcon,
-  PhotoIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -34,15 +33,15 @@ const links = [
     href: '/dashboard/chatbot',
     icon: RocketLaunchIcon,
   },
-  {
-    name: 'Fotos por modelo',
-    href: '/dashboard/catalogo-modelo',
-    icon: PhotoIcon,
-  },
 ];
 
-export default function NavLinks() {
+export default function NavLinks({ rol }: { rol?: string | null }) {
   const pathname = usePathname();
+
+  if (rol === 'administracion') {
+    return null;
+  }
+
   return (
     <>
       {links.map((link) => {

@@ -2,9 +2,12 @@ import Link from 'next/link';
 import NavLinks from '@/app/ui/dashboard/nav-links';
 import { PowerIcon } from '@heroicons/react/24/outline';
 import  CellPhoneFreeLogo  from '@/app/ui/cellphonefree-logo';
-import { signOut } from '@/app/lib/auth';
+import { auth, signOut } from '@/app/lib/auth';
 
-export default function SideNav() {
+export default async function SideNav() {
+  const session = await auth();
+  const rol = session?.user?.rol;
+
   return (
     <div className="flex items-center justify-between px-4 py-2 bg-orange-600 shadow-md">
       <Link
@@ -16,7 +19,7 @@ export default function SideNav() {
         </div>
       </Link>
       <div className="flex items-center space-x-4">
-        <NavLinks />
+        <NavLinks rol={rol} />
         <form action={async () => {
             'use server';
             await signOut({ redirectTo: '/' });
