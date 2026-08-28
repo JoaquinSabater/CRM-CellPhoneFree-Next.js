@@ -1,6 +1,8 @@
 'use client';
 
 import {
+  ClipboardDocumentListIcon,
+  Cog6ToothIcon,
   UserGroupIcon,
   HomeIcon,
   RocketLaunchIcon,
@@ -13,7 +15,7 @@ import clsx from 'clsx';
 // Aca es donde puedo cambiar los inconos de los links
 // Map of links to display in the side navigation.
 // Depending on the size of the application, this would be stored in a database.
-const links = [
+const commercialLinks = [
   { 
     name: 'Home', 
     href: '/dashboard', 
@@ -35,12 +37,29 @@ const links = [
   },
 ];
 
+const administrationLinks = [
+  {
+    name: 'Administración',
+    href: '/dashboard/administracion',
+    icon: Cog6ToothIcon,
+  },
+];
+
+const sharedLinks = [
+  {
+    name: 'Solicitud',
+    href: '/dashboard/solicitud',
+    icon: ClipboardDocumentListIcon,
+  },
+];
+
 export default function NavLinks({ rol }: { rol?: string | null }) {
   const pathname = usePathname();
-
-  if (rol === 'administracion') {
-    return null;
-  }
+  const links = [
+    ...(rol === 'vendedor' || rol === 'captador' ? commercialLinks : []),
+    ...(rol === 'administracion' ? administrationLinks : []),
+    ...sharedLinks,
+  ];
 
   return (
     <>
