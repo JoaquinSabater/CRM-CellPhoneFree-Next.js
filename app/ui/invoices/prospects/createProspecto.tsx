@@ -3,13 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createProspecto } from '@/app/lib/actions';
+import { ESTADOS_PROSPECTO, MOTIVOS_NO_COMPRA, TIPOS_COMERCIO } from '@/app/lib/prospect-options';
 
 export default function CreateProspectoForm({
   provincias,
   localidades,
+  vendedores,
 }: {
   provincias: any[];
   localidades: any[];
+  vendedores: any[];
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -58,6 +61,75 @@ export default function CreateProspectoForm({
         <option value="fisico mas de uno">Físico (mas de uno)</option>
         <option value="emprendedor">Emprendedor</option>
       </select>
+
+      <div className="rounded-md border border-gray-200 p-4">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">Datos comerciales y seguimiento</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label htmlFor="tipo_comercio" className="mb-1 block text-sm font-medium text-gray-700">Tipo de comercio</label>
+            <select id="tipo_comercio" name="tipo_comercio" className={inputBase}>
+              <option value="">Sin especificar</option>
+              {TIPOS_COMERCIO.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="cantidad_puntos_venta" className="mb-1 block text-sm font-medium text-gray-700">Cantidad de puntos de venta</label>
+            <input id="cantidad_puntos_venta" name="cantidad_puntos_venta" type="number" min="0" step="1" className={inputBase} />
+          </div>
+
+          <div>
+            <label htmlFor="codigo_anuncio" className="mb-1 block text-sm font-medium text-gray-700">Código de anuncio</label>
+            <input id="codigo_anuncio" name="codigo_anuncio" type="text" maxLength={100} className={inputBase} />
+          </div>
+
+          <div>
+            <label htmlFor="vendedor_asignado_id" className="mb-1 block text-sm font-medium text-gray-700">Vendedor asignado</label>
+            <select id="vendedor_asignado_id" name="vendedor_asignado_id" className={inputBase}>
+              <option value="">Sin asignar</option>
+              {vendedores.map((vendedor: any) => (
+                <option key={vendedor.id} value={vendedor.id}>{vendedor.nombre}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="fecha_compra" className="mb-1 block text-sm font-medium text-gray-700">Fecha de compra</label>
+            <input id="fecha_compra" name="fecha_compra" type="date" className={inputBase} />
+          </div>
+
+          <div>
+            <label htmlFor="monto_primera_compra" className="mb-1 block text-sm font-medium text-gray-700">Monto de primera compra</label>
+            <input id="monto_primera_compra" name="monto_primera_compra" type="number" min="0" step="0.01" className={inputBase} />
+          </div>
+
+          <div>
+            <label htmlFor="motivo_no_compra" className="mb-1 block text-sm font-medium text-gray-700">Motivo de no compra</label>
+            <select id="motivo_no_compra" name="motivo_no_compra" className={inputBase}>
+              <option value="">Sin especificar</option>
+              {MOTIVOS_NO_COMPRA.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="fecha_ultima_gestion" className="mb-1 block text-sm font-medium text-gray-700">Fecha de última gestión</label>
+            <input id="fecha_ultima_gestion" name="fecha_ultima_gestion" type="datetime-local" className={inputBase} />
+          </div>
+
+          <div>
+            <label htmlFor="estado_prospecto" className="mb-1 block text-sm font-medium text-gray-700">Estado del prospecto</label>
+            <select id="estado_prospecto" name="estado_prospecto" defaultValue="nuevo" className={inputBase}>
+              {ESTADOS_PROSPECTO.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
 
       <select name="por_donde_llego" className={inputBase} required>
         <option value="">¿Por dónde llegó?</option>

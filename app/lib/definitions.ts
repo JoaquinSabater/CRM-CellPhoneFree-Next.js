@@ -82,6 +82,16 @@ export type prospecto = {
   localidad_nombre: string;
   negocio: string;
   fecha_contacto: Date;
+  tipo_comercio: string | null;
+  cantidad_puntos_venta: number | null;
+  codigo_anuncio: string | null;
+  vendedor_asignado_id: number | null;
+  vendedor_asignado_nombre?: string | null;
+  fecha_compra: string | null;
+  monto_primera_compra: number | null;
+  motivo_no_compra: string | null;
+  fecha_ultima_gestion: string | null;
+  estado_prospecto: string;
 };
 
 export type clienteForm = {

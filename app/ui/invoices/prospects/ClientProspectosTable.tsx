@@ -5,6 +5,7 @@ import { TrashIcon } from '@heroicons/react/24/outline';
 import { desactivarProspecto } from '@/app/lib/actions';
 import { UpdateProspecto } from '@/app/ui/invoices/buttons';
 import { prospecto } from '@/app/lib/definitions';
+import { ESTADOS_PROSPECTO, TIPOS_COMERCIO } from '@/app/lib/prospect-options';
 
 export function ClientProspectosTable({
   initialProspectos
@@ -33,6 +34,8 @@ export function ClientProspectosTable({
                 <th className="px-2 py-5 font-medium">Teléfono</th>
                 <th className="px-2 py-5 font-medium">Ciudad</th>
                 <th className="px-2 py-5 font-medium">Negocio</th>
+                <th className="px-2 py-5 font-medium">Tipo de comercio</th>
+                <th className="px-2 py-5 font-medium">Estado</th>
                 <th className="px-2 py-5 font-medium">Fecha Contacto</th>
                 <th className="px-2 py-5 font-medium"></th>
                 <th className="px-2 py-5 font-medium"></th>
@@ -45,6 +48,12 @@ export function ClientProspectosTable({
               <td className="whitespace-nowrap px-2 py-3">{p.telefono}</td>
               <td className="whitespace-nowrap px-2 py-3">{p.localidad_nombre}</td>
               <td className="whitespace-nowrap px-2 py-3">{p.negocio}</td>
+              <td className="whitespace-nowrap px-2 py-3">
+                {TIPOS_COMERCIO.find(({ value }) => value === p.tipo_comercio)?.label || '-'}
+              </td>
+              <td className="whitespace-nowrap px-2 py-3">
+                {ESTADOS_PROSPECTO.find(({ value }) => value === p.estado_prospecto)?.label || p.estado_prospecto}
+              </td>
               <td className="whitespace-nowrap px-2 py-3">
                 {p.fecha_contacto ? new Date(p.fecha_contacto).toISOString().slice(0, 10) : ''}
               </td>

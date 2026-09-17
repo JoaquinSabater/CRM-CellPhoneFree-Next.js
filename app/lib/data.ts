@@ -108,6 +108,9 @@ export async function fetchFilteredProspects(query: string, captadorId: number) 
         p.email,
         p.telefono,
         p.negocio,
+        p.tipo_comercio,
+        p.estado_prospecto,
+        p.fecha_ultima_gestion,
         prov.nombre AS provincia_nombre,
         loc.nombre AS localidad_nombre,
         p.fecha_contacto
@@ -551,7 +554,16 @@ export async function getProspectoById(id: number) {
         p.anotaciones,
         p.observaciones,
         p.fecha_pedido_asesoramiento,
-        p.url
+        p.url,
+        p.tipo_comercio,
+        p.cantidad_puntos_venta,
+        p.codigo_anuncio,
+        p.vendedor_asignado_id,
+        p.fecha_compra,
+        p.monto_primera_compra,
+        p.motivo_no_compra,
+        p.fecha_ultima_gestion,
+        p.estado_prospecto
       FROM prospectos p
       LEFT JOIN provincia prov ON p.provincia_id = prov.id
       LEFT JOIN localidad loc ON p.localidad_id = loc.id

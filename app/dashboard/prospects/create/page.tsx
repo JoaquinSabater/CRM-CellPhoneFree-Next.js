@@ -1,17 +1,18 @@
 // app/dashboard/prospects/create/page.tsx
 import CreateProspectoForm from '@/app/ui/invoices/prospects/createProspecto';
-import { getAllProvincias, getAllLocalidades } from '@/app/lib/data';
+import { getAllProvincias, getAllLocalidades, getVendedores } from '@/app/lib/data';
 
 export default async function Page() {
-  const [provincias, localidades] = await Promise.all([
+  const [provincias, localidades, vendedores] = await Promise.all([
     getAllProvincias(),
     getAllLocalidades(),
+    getVendedores(),
   ]);
 
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="text-2xl font-semibold mb-6">Crear nuevo prospecto</h1>
-      <CreateProspectoForm provincias={provincias} localidades={localidades} />
+      <CreateProspectoForm provincias={provincias} localidades={localidades} vendedores={vendedores} />
     </div>
   );
 }

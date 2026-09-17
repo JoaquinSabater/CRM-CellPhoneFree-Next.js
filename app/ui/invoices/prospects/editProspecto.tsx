@@ -5,8 +5,19 @@ import { redirect, useRouter } from 'next/navigation';
 import { updateProspecto, altaCliente, verificarClienteExistente } from '@/app/lib/actions';
 import { Button } from '@/app/ui/button';
 import Link from 'next/link';
+import { ESTADOS_PROSPECTO, MOTIVOS_NO_COMPRA, TIPOS_COMERCIO } from '@/app/lib/prospect-options';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+function toDateInputValue(value: string | Date | null | undefined, includeTime = false) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  const pad = (part: number) => String(part).padStart(2, '0');
+  const datePart = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return includeTime ? `${datePart}T${pad(date.getHours())}:${pad(date.getMinutes())}` : datePart;
+}
 
 export default function EditProspectoForm({ 
   prospecto, 
@@ -645,6 +656,76 @@ export default function EditProspectoForm({
                   </div>
                 </>
               )}
+            </div>
+          </div>
+
+          {/* Sección: Seguimiento */}
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Datos comerciales y estado</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="tipo_comercio" className="block text-sm font-medium text-gray-700 mb-1">Tipo de comercio</label>
+                <select id="tipo_comercio" name="tipo_comercio" defaultValue={prospecto.tipo_comercio || ''} className={inputBase}>
+                  <option value="">Sin especificar</option>
+                  {TIPOS_COMERCIO.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="cantidad_puntos_venta" className="block text-sm font-medium text-gray-700 mb-1">Cantidad de puntos de venta</label>
+                <input id="cantidad_puntos_venta" name="cantidad_puntos_venta" type="number" min="0" step="1" defaultValue={prospecto.cantidad_puntos_venta ?? ''} className={inputBase} />
+              </div>
+
+              <div>
+                <label htmlFor="codigo_anuncio" className="block text-sm font-medium text-gray-700 mb-1">Código de anuncio</label>
+                <input id="codigo_anuncio" name="codigo_anuncio" type="text" maxLength={100} defaultValue={prospecto.codigo_anuncio || ''} className={inputBase} />
+              </div>
+
+              <div>
+                <label htmlFor="vendedor_asignado_id" className="block text-sm font-medium text-gray-700 mb-1">Vendedor asignado</label>
+                <select id="vendedor_asignado_id" name="vendedor_asignado_id" defaultValue={prospecto.vendedor_asignado_id ?? ''} className={inputBase}>
+                  <option value="">Sin asignar</option>
+                  {vendedores.map((vendedor: any) => (
+                    <option key={vendedor.id} value={vendedor.id}>{vendedor.nombre}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="fecha_compra" className="block text-sm font-medium text-gray-700 mb-1">Fecha de compra</label>
+                <input id="fecha_compra" name="fecha_compra" type="date" defaultValue={toDateInputValue(prospecto.fecha_compra)} className={inputBase} />
+              </div>
+
+              <div>
+                <label htmlFor="monto_primera_compra" className="block text-sm font-medium text-gray-700 mb-1">Monto de primera compra</label>
+                <input id="monto_primera_compra" name="monto_primera_compra" type="number" min="0" step="0.01" defaultValue={prospecto.monto_primera_compra ?? ''} className={inputBase} />
+              </div>
+
+              <div>
+                <label htmlFor="motivo_no_compra" className="block text-sm font-medium text-gray-700 mb-1">Motivo de no compra</label>
+                <select id="motivo_no_compra" name="motivo_no_compra" defaultValue={prospecto.motivo_no_compra || ''} className={inputBase}>
+                  <option value="">Sin especificar</option>
+                  {MOTIVOS_NO_COMPRA.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="fecha_ultima_gestion" className="block text-sm font-medium text-gray-700 mb-1">Fecha de última gestión</label>
+                <input id="fecha_ultima_gestion" name="fecha_ultima_gestion" type="datetime-local" defaultValue={toDateInputValue(prospecto.fecha_ultima_gestion, true)} className={inputBase} />
+              </div>
+
+              <div>
+                <label htmlFor="estado_prospecto" className="block text-sm font-medium text-gray-700 mb-1">Estado del prospecto</label>
+                <select id="estado_prospecto" name="estado_prospecto" defaultValue={prospecto.estado_prospecto || 'nuevo'} className={inputBase}>
+                  {ESTADOS_PROSPECTO.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 

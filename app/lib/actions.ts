@@ -7,6 +7,7 @@ import { AuthError } from 'next-auth';
 import { auth } from '@/app/lib/auth';
 import {db} from "../lib/mysql";
 import bcrypt from 'bcryptjs';
+import { ESTADOS_PROSPECTO, MOTIVOS_NO_COMPRA, TIPOS_COMERCIO } from './prospect-options';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -503,6 +504,21 @@ export async function updateProspecto(id: number, formData: FormData) {
     const parsed = Number(value);
     return !value || parsed === 0 || isNaN(parsed) ? null : parsed;
   };
+  const getNonNegativeNumberOrNull = (key: string) => {
+    const value = getString(key).trim();
+    if (!value) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  };
+  const getNonNegativeIntegerOrNull = (key: string) => {
+    const parsed = getNonNegativeNumberOrNull(key);
+    return parsed !== null && Number.isInteger(parsed) ? parsed : null;
+  };
+  const getNullableString = (key: string) => getString(key).trim() || null;
+  const getEnumOrNull = <T extends string>(key: string, allowed: readonly T[]) => {
+    const value = getString(key) as T;
+    return allowed.includes(value) ? value : null;
+  };
 
   const fields = {
     fecha_contacto: getString('fecha_contacto'),
@@ -528,6 +544,15 @@ export async function updateProspecto(id: number, formData: FormData) {
     anotaciones: getString('anotaciones'),
     fecha_pedido_asesoramiento: getString('fecha_pedido_asesoramiento'),
     url: getString('url'),
+    tipo_comercio: getEnumOrNull('tipo_comercio', TIPOS_COMERCIO.map(({ value }) => value)),
+    cantidad_puntos_venta: getNonNegativeIntegerOrNull('cantidad_puntos_venta'),
+    codigo_anuncio: getNullableString('codigo_anuncio'),
+    vendedor_asignado_id: getNumberOrNull('vendedor_asignado_id'),
+    fecha_compra: getNullableString('fecha_compra'),
+    monto_primera_compra: getNonNegativeNumberOrNull('monto_primera_compra'),
+    motivo_no_compra: getEnumOrNull('motivo_no_compra', MOTIVOS_NO_COMPRA.map(({ value }) => value)),
+    fecha_ultima_gestion: getNullableString('fecha_ultima_gestion')?.replace('T', ' ') ?? null,
+    estado_prospecto: getEnumOrNull('estado_prospecto', ESTADOS_PROSPECTO.map(({ value }) => value)) ?? 'nuevo',
   };
 
   console.log('📊 [DEBUG] Campos a actualizar:', fields);
@@ -556,7 +581,16 @@ export async function updateProspecto(id: number, formData: FormData) {
       tipo_venta_referido = ?,
       anotaciones = ?,
       fecha_pedido_asesoramiento = ?,
-      url = ?
+      url = ?,
+      tipo_comercio = ?,
+      cantidad_puntos_venta = ?,
+      codigo_anuncio = ?,
+      vendedor_asignado_id = ?,
+      fecha_compra = ?,
+      monto_primera_compra = ?,
+      motivo_no_compra = ?,
+      fecha_ultima_gestion = ?,
+      estado_prospecto = ?
     WHERE id = ?
   `;
 
@@ -584,6 +618,15 @@ export async function updateProspecto(id: number, formData: FormData) {
     fields.anotaciones,
     fields.fecha_pedido_asesoramiento,
     fields.url,
+    fields.tipo_comercio,
+    fields.cantidad_puntos_venta,
+    fields.codigo_anuncio,
+    fields.vendedor_asignado_id,
+    fields.fecha_compra,
+    fields.monto_primera_compra,
+    fields.motivo_no_compra,
+    fields.fecha_ultima_gestion,
+    fields.estado_prospecto,
     id,
   ];
 
@@ -636,7 +679,7 @@ export async function desactivarProspecto(id: number) {
   try {
     const query = `
       UPDATE prospectos
-      SET activo = false
+      SET activo = false, estado_prospecto = 'inactivo'
       WHERE id = ?
     `;
     await db.query(query, [id]);
@@ -653,6 +696,17 @@ export async function desactivarProspecto(id: number) {
 export async function createProspecto(formData: FormData) {
   const session = await auth();
   const captadorId = session?.user?.captador_id;
+
+  const enumOrNull = <T extends string>(key: string, allowed: readonly T[]) => {
+    const value = formData.get(key)?.toString() as T | undefined;
+    return value && allowed.includes(value) ? value : null;
+  };
+  const numberOrNull = (key: string, integer = false) => {
+    const value = formData.get(key)?.toString();
+    if (!value) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed >= 0 && (!integer || Number.isInteger(parsed)) ? parsed : null;
+  };
 
   const fields = {
     fecha_contacto: formData.get('fecha_contacto')?.toString() || null,
@@ -679,6 +733,15 @@ export async function createProspecto(formData: FormData) {
     fecha_pedido_asesoramiento: formData.get('fecha_pedido_asesoramiento')?.toString() || null,
     url: formData.get('url')?.toString() || null,
     captador_id: captadorId || null,
+    tipo_comercio: enumOrNull('tipo_comercio', TIPOS_COMERCIO.map(({ value }) => value)),
+    cantidad_puntos_venta: numberOrNull('cantidad_puntos_venta', true),
+    codigo_anuncio: formData.get('codigo_anuncio')?.toString().trim() || null,
+    vendedor_asignado_id: numberOrNull('vendedor_asignado_id', true),
+    fecha_compra: formData.get('fecha_compra')?.toString() || null,
+    monto_primera_compra: numberOrNull('monto_primera_compra'),
+    motivo_no_compra: enumOrNull('motivo_no_compra', MOTIVOS_NO_COMPRA.map(({ value }) => value)),
+    fecha_ultima_gestion: formData.get('fecha_ultima_gestion')?.toString().replace('T', ' ') || null,
+    estado_prospecto: enumOrNull('estado_prospecto', ESTADOS_PROSPECTO.map(({ value }) => value)) ?? 'nuevo',
   };
 
   try {
@@ -707,8 +770,17 @@ export async function createProspecto(formData: FormData) {
         anotaciones,
         fecha_pedido_asesoramiento,
         url,
-        captador_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        captador_id,
+        tipo_comercio,
+        cantidad_puntos_venta,
+        codigo_anuncio,
+        vendedor_asignado_id,
+        fecha_compra,
+        monto_primera_compra,
+        motivo_no_compra,
+        fecha_ultima_gestion,
+        estado_prospecto
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const values = [
       fields.fecha_contacto,
@@ -735,6 +807,15 @@ export async function createProspecto(formData: FormData) {
       fields.fecha_pedido_asesoramiento,
       fields.url,
       fields.captador_id,
+      fields.tipo_comercio,
+      fields.cantidad_puntos_venta,
+      fields.codigo_anuncio,
+      fields.vendedor_asignado_id,
+      fields.fecha_compra,
+      fields.monto_primera_compra,
+      fields.motivo_no_compra,
+      fields.fecha_ultima_gestion,
+      fields.estado_prospecto,
     ];
 
     const [result]: any = await db.query(query, values);
