@@ -2,9 +2,10 @@ import { db } from "@/app/lib/mysql";
 
 export async function handleTopClientesPorModelo(
   entities: { modelo: string; tipo?: string; limite: number },
-  vendedorId: number
+  vendedorId: number | null
 ): Promise<string> {
   const { modelo, tipo, limite } = entities
+  const filtrarPorVendedor = Boolean(vendedorId)
 
   let filtroTipo = '%'
   if (tipo === 'fundas') filtroTipo = 'Protector Diseño%'
@@ -22,11 +23,13 @@ export async function handleTopClientesPorModelo(
     JOIN clientes c ON r.cliente_id = c.id
     WHERE a.modelo LIKE ?
       AND i.nombre LIKE ?
-      AND c.vendedor_id = ?
+      ${filtrarPorVendedor ? 'AND c.vendedor_id = ?' : ''}
     GROUP BY c.id
     ORDER BY total DESC
     LIMIT ?`,
-    [`%${modelo}%`, filtroTipo, vendedorId, limite]
+    filtrarPorVendedor
+      ? [`%${modelo}%`, filtroTipo, vendedorId, limite]
+      : [`%${modelo}%`, filtroTipo, limite]
   )
 
   if (!rows.length) {

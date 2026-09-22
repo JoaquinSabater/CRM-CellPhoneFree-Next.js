@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/lib/auth';
 import { db } from '@/app/lib/mysql';
+import { puedeAdministrar } from '@/app/lib/roles';
 import { jsonError, type VacationBalance, type VacationRequest } from '@/app/lib/vacaciones';
 
 export async function PATCH(
@@ -8,13 +9,14 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  const adminId = Number(session?.user?.id);
+  // El super usuario no existe en la tabla usuarios: se registra como NULL
+  const adminId = Number.isInteger(Number(session?.user?.id)) ? Number(session?.user?.id) : null;
 
-  if (!adminId) {
+  if (!session?.user?.id) {
     return jsonError('No autenticado', 401);
   }
 
-  if (session?.user?.rol !== 'administracion') {
+  if (!puedeAdministrar(session?.user?.rol)) {
     return jsonError('No autorizado', 403);
   }
 

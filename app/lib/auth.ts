@@ -6,6 +6,41 @@ import { z } from 'zod';
 import type { usuario } from '@/app/lib/definitions';
 import bcrypt from 'bcryptjs';
 import {db} from "../lib/mysql";
+import { ROL_ADMIN } from '@/app/lib/roles';
+
+/** Id del super usuario. No existe en la tabla usuarios. */
+export const SUPER_ADMIN_ID = 'admin';
+
+const superAdminUser = {
+  id: SUPER_ADMIN_ID,
+  username: SUPER_ADMIN_ID,
+  email: '',
+  rol: ROL_ADMIN,
+  vendedor_id: null,
+  captador_id: null,
+};
+
+/**
+ * Valida la contraseña del super usuario contra el entorno.
+ * Se usa ADMIN_PASSWORD_HASH (bcrypt) y, si no está, ADMIN_PASSWORD (texto plano).
+ * Sin ninguna de las dos configuradas el login de 'admin' queda deshabilitado.
+ */
+async function validarSuperAdmin(password: string): Promise<boolean> {
+  const hash = process.env.ADMIN_PASSWORD_HASH?.trim();
+
+  if (hash) {
+    return bcrypt.compare(password, hash.replace('$2y$', '$2a$'));
+  }
+
+  const plano = process.env.ADMIN_PASSWORD;
+
+  if (!plano) {
+    console.error('[authorize] El usuario admin no tiene ADMIN_PASSWORD ni ADMIN_PASSWORD_HASH configurados.');
+    return false;
+  }
+
+  return password === plano;
+}
 
 async function getUsuario(id: string): Promise<usuario | null> {
   try {
@@ -38,6 +73,19 @@ export const { auth, signIn, signOut } = NextAuth({
         }
 
         const { id, password, selectedRole } = parsedCredentials.data;
+
+        // 🔑 Super usuario: no está en la base, se valida contra el entorno
+        if (id.trim().toLowerCase() === SUPER_ADMIN_ID) {
+          const passwordValida = await validarSuperAdmin(password);
+
+          if (!passwordValida) {
+            console.log('[authorize] Password inválida para el super usuario');
+            return null;
+          }
+
+          return superAdminUser as any;
+        }
+
         const usuario = await getUsuario(id);
         console.log('[authorize] Usuario desde DB:', usuario);
 

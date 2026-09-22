@@ -11,6 +11,7 @@ import {
   getCantidadProspectosConvertidosPorCaptador,
 } from '@/app/lib/data';
 import { auth } from '@/app/lib/auth';
+import { esSuperAdmin } from '@/app/lib/roles';
 
 const iconMap = {
   clientes: UserGroupIcon,
@@ -24,6 +25,30 @@ export async function CardWrapper() {
   const vendedorId = session?.user?.vendedor_id;
   const captadorId = session?.user?.captador_id;
   const rol = session?.user?.rol;
+
+  // 🛡️ Super usuario: totales de toda la empresa
+  if (esSuperAdmin(rol)) {
+    const [cantidadClientes, cantidadPedidosMes, cantidadProspectos, cantidadProspectosConvertidos] =
+      await Promise.all([
+        getCantidadClientesPorVendedor(null),
+        getCantidadPedidosDelMes(null),
+        getCantidadProspectosPorCaptador(null),
+        getCantidadProspectosConvertidosPorCaptador(null),
+      ]);
+
+    return (
+      <div className="flex flex-col gap-4">
+        <Card title="Clientes (todos)" value={cantidadClientes} type="clientes" />
+        <Card title="Pedidos del Mes (todos)" value={cantidadPedidosMes} type="pedidos" />
+        <Card title="Prospectos (todos)" value={cantidadProspectos} type="prospectos" />
+        <Card
+          title="Prospectos Convertidos (todos)"
+          value={cantidadProspectosConvertidos}
+          type="prospectosConvertidos"
+        />
+      </div>
+    );
+  }
 
   if (rol === 'vendedor') {
     if (!vendedorId) return null;

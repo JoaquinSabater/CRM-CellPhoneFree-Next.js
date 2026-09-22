@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { lusitana } from '@/app/ui/fonts';
 import { auth } from '../lib/auth';
 import { getVendedorById,getCaptadorById } from '../lib/data';
+import { esSuperAdmin } from '@/app/lib/roles';
 
 export default async function SellerPic() {
   const session = await auth();
@@ -11,7 +12,7 @@ export default async function SellerPic() {
     return <div className="text-red-500">No se pudo determinar el rol del usuario.</div>;
   }
 
-  if (rol === 'administracion') {
+  if (rol === 'administracion' || esSuperAdmin(rol)) {
     return (
       <div className="bg-white p-4 rounded-lg shadow-md w-full h-full max-w-sm flex flex-col items-center justify-center text-center">
         <Image
@@ -24,7 +25,9 @@ export default async function SellerPic() {
         <h2 className="text-lg font-semibold mt-3 text-gray-800">
           Usuario {session?.user?.id}
         </h2>
-        <p className="text-sm text-gray-500 capitalize">{rol}</p>
+        <p className="text-sm text-gray-500 capitalize">
+          {esSuperAdmin(rol) ? 'Super usuario' : rol}
+        </p>
       </div>
     );
   }

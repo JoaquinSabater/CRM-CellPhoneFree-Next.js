@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/app/lib/auth'
+import { esSuperAdmin } from '@/app/lib/roles'
 import { handleAccesoEstadisticasAvanzadas } from '@/app/lib/chatbot/handlers/acceso_estadisticas'
 import { generarMensajeAyuda } from '@/app/lib/chatbot/handlers/ayuda'
 import { handleClientesInactivos } from '@/app/lib/chatbot/handlers/clientes_inactivos'
@@ -268,7 +269,7 @@ async function createResponse(mensaje: string): Promise<OpenAIResponse> {
 async function executeTool(
   name: string,
   args: Record<string, unknown>,
-  vendedorId: number,
+  vendedorId: number | null,
   rol: string,
 ): Promise<string> {
   switch (name) {
@@ -356,8 +357,9 @@ export async function POST(req: Request) {
     }
 
     const session = await auth()
-    const vendedorId = session?.user?.vendedor_id || 1
     const rol = session?.user?.rol || ''
+    // El super usuario consulta sin filtrar por vendedor
+    const vendedorId = esSuperAdmin(rol) ? null : (session?.user?.vendedor_id || 1)
     const response = await createResponse(mensaje.trim())
     const toolCall = response.output?.find((item) => item.type === 'function_call')
 

@@ -10,7 +10,8 @@ export async function GET(request: NextRequest) {
 
     console.log('🗺️ [API Mapa] Solicitud recibida para vendedor:', vendedorId, 'mostrarTodos:', mostrarTodos);
 
-    if (!vendedorId) {
+    // Con mostrar_todos no hace falta vendedor_id (lo usa el super usuario)
+    if (!vendedorId && !mostrarTodos) {
       return NextResponse.json(
         { error: 'vendedor_id es requerido' },
         { status: 400 }

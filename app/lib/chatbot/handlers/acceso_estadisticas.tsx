@@ -1,8 +1,9 @@
 export async function handleAccesoEstadisticasAvanzadas(
   _: {},
-  vendedorId: number
+  vendedorId: number | null
 ): Promise<string | null> {
-  if (vendedorId === 1 || vendedorId === 3) {
+  // vendedorId en null = super usuario (ve todo)
+  if (vendedorId === null || vendedorId === 1 || vendedorId === 3) {
     return `
     📊 <b>Estadísticas disponibles:</b><br><br>
     • <a href="/dashboard/estadisticas/general" target="_blank">Estadísticas Generales</a><br>

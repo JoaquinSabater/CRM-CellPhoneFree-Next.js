@@ -36,7 +36,7 @@ export default async function Page() {
 
       <div className="max-w-7xl mx-auto mt-8 space-y-8">
         {userId && (
-          <NotasPersonales userId={Number(userId)} />
+          <NotasPersonales userId={userId} />
         )}
         
         {rol === 'vendedor' && typeof vendedorId === 'number' && (

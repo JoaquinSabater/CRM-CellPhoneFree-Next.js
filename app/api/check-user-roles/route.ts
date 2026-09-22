@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/app/lib/mysql';
 import { RowDataPacket } from 'mysql2';
+import { SUPER_ADMIN_ID } from '@/app/lib/auth';
+import { ROL_ADMIN } from '@/app/lib/roles';
 
 interface Usuario extends RowDataPacket {
   id: number;
@@ -19,6 +21,14 @@ export async function POST(request: NextRequest) {
         { error: 'userId es requerido' },
         { status: 400 }
       );
+    }
+
+    // El super usuario no está en la base de datos y tiene un único rol
+    if (String(userId).trim().toLowerCase() === SUPER_ADMIN_ID) {
+      return NextResponse.json({
+        roles: [ROL_ADMIN],
+        userId: SUPER_ADMIN_ID,
+      });
     }
 
     // Buscar el usuario en la base de datos

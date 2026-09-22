@@ -3,24 +3,30 @@ import { cliente } from './definitions';
 import {db} from "../lib/mysql";
 import { RowDataPacket } from 'mysql2';
 
-export async function getCantidadClientesPorVendedor(vendedorId: number) {
-  const [rows]: any = await db.query(
-    'SELECT COUNT(*) AS count FROM clientes WHERE vendedor_id = ?',
-    [vendedorId]
-  );
+// En todas estas funciones, pasar null en vendedorId / captadorId significa
+// "sin filtrar": es lo que usa el super usuario para ver toda la cartera.
+export async function getCantidadClientesPorVendedor(vendedorId: number | null) {
+  const [rows]: any = vendedorId
+    ? await db.query('SELECT COUNT(*) AS count FROM clientes WHERE vendedor_id = ?', [vendedorId])
+    : await db.query('SELECT COUNT(*) AS count FROM clientes');
 
   return Number(rows[0]?.count ?? 0);
 }
 
-export async function getCantidadPedidosDelMes(vendedorId: number) {
+export async function getCantidadPedidosDelMes(vendedorId: number | null) {
   const now = new Date();
   const primerDiaDelMes = new Date(now.getFullYear(), now.getMonth(), 1);
   const fechaISO = primerDiaDelMes.toISOString().slice(0, 19).replace('T', ' ');
 
-  const [rows]: any = await db.query(
-    'SELECT COUNT(*) AS count FROM pedidos WHERE vendedor_id = ? AND fecha_creacion >= ?',
-    [vendedorId, fechaISO]
-  );
+  const [rows]: any = vendedorId
+    ? await db.query(
+        'SELECT COUNT(*) AS count FROM pedidos WHERE vendedor_id = ? AND fecha_creacion >= ?',
+        [vendedorId, fechaISO]
+      )
+    : await db.query(
+        'SELECT COUNT(*) AS count FROM pedidos WHERE fecha_creacion >= ?',
+        [fechaISO]
+      );
 
   return Number(rows[0]?.count ?? 0);
 }
@@ -61,22 +67,29 @@ export async function getPedidosPorSemana(vendedorId: number) {
   return rows as { semana: number; cantidad: number }[]
 }
 
-export async function fetchFilteredClientes(query: string, vendedorId: number) {
+/** Límite de filas cuando se listan clientes/prospectos de toda la empresa. */
+export const LIMITE_VISTA_GLOBAL = 500;
+
+export async function fetchFilteredClientes(query: string, vendedorId: number | null) {
   const likeQuery = `%${query}%`;
+  const filtrarPorVendedor = Boolean(vendedorId);
 
   const sql = `
-    SELECT 
+    SELECT
       c.id,
       c.razon_social,
+      c.vendedor_id,
+      v.nombre AS vendedor_nombre,
       p.nombre AS provincia_nombre,
       l.nombre AS localidad_nombre
     FROM clientes c
+    LEFT JOIN vendedores v ON c.vendedor_id = v.id
     LEFT JOIN localidad l ON c.localidad_id = l.id
     LEFT JOIN provincia p ON l.provincia_id = p.id
     LEFT JOIN filtros_clientes fc ON c.id = fc.cliente_id
     LEFT JOIN filtros f ON fc.filtro_id = f.id
-    WHERE c.vendedor_id = ?
-      AND (
+    WHERE ${filtrarPorVendedor ? 'c.vendedor_id = ? AND' : ''}
+      (
         LOWER(c.razon_social) LIKE LOWER(?) OR
         LOWER(p.nombre) LIKE LOWER(?) OR
         LOWER(l.nombre) LIKE LOWER(?) OR
@@ -84,22 +97,22 @@ export async function fetchFilteredClientes(query: string, vendedorId: number) {
       )
     GROUP BY c.id
     ORDER BY c.razon_social ASC
+    ${filtrarPorVendedor ? '' : 'LIMIT ?'}
   `;
 
-  const [rows]: any = await db.query(sql, [
-    vendedorId,
-    likeQuery,
-    likeQuery,
-    likeQuery,
-    likeQuery,
-  ]);
+  const params: any[] = filtrarPorVendedor ? [vendedorId] : [];
+  params.push(likeQuery, likeQuery, likeQuery, likeQuery);
+  if (!filtrarPorVendedor) params.push(LIMITE_VISTA_GLOBAL);
+
+  const [rows]: any = await db.query(sql, params);
 
   return rows as cliente[];
 }
 
 //YA LO CAMBIE
-export async function fetchFilteredProspects(query: string, captadorId: number) {
+export async function fetchFilteredProspects(query: string, captadorId: number | null) {
   const likeQuery = `%${query}%`;
+  const filtrarPorCaptador = Boolean(captadorId);
 
   const sql = `
     SELECT 
@@ -118,7 +131,7 @@ export async function fetchFilteredProspects(query: string, captadorId: number) 
     LEFT JOIN provincia prov ON p.provincia_id = prov.id
     LEFT JOIN localidad loc ON p.localidad_id = loc.id
     WHERE p.activo = true
-      AND p.captador_id = ?
+      ${filtrarPorCaptador ? 'AND p.captador_id = ?' : ''}
       AND (
         LOWER(loc.nombre) LIKE LOWER(?) OR
         LOWER(p.nombre) LIKE LOWER(?) OR
@@ -126,8 +139,14 @@ export async function fetchFilteredProspects(query: string, captadorId: number) 
         LOWER(p.telefono) LIKE LOWER(?)
       )
     ORDER BY p.fecha_contacto DESC
+    ${filtrarPorCaptador ? '' : 'LIMIT ?'}
   `;
-  const [rows] = await db.query(sql, [captadorId, likeQuery, likeQuery, likeQuery, likeQuery]);
+
+  const params: any[] = filtrarPorCaptador ? [captadorId] : [];
+  params.push(likeQuery, likeQuery, likeQuery, likeQuery);
+  if (!filtrarPorCaptador) params.push(LIMITE_VISTA_GLOBAL);
+
+  const [rows] = await db.query(sql, params);
   return rows;
 }
 
@@ -324,20 +343,26 @@ export async function fetchClientesEnDesgraciaPorVendedor(vendedorId: number) {
   return rows;
 }
 
-export async function getCantidadProspectosPorCaptador(captadorId: number) {
-  const [rows]: any = await db.query(
-    'SELECT COUNT(*) AS count FROM prospectos WHERE captador_id = ? AND activo = 1;',
-    [captadorId]
-  );
+export async function getCantidadProspectosPorCaptador(captadorId: number | null) {
+  const [rows]: any = captadorId
+    ? await db.query(
+        'SELECT COUNT(*) AS count FROM prospectos WHERE captador_id = ? AND activo = 1;',
+        [captadorId]
+      )
+    : await db.query('SELECT COUNT(*) AS count FROM prospectos WHERE activo = 1;');
+
   console.log('Cantidad de prospectos para captador', captadorId, ':', rows[0]?.count ?? 0);
   return Number(rows[0]?.count ?? 0);
 }
 
-export async function getCantidadProspectosConvertidosPorCaptador(captadorId: number) {
-  const [rows]: any = await db.query(
-    'SELECT COUNT(*) AS count FROM prospectos WHERE captador_id = ? AND convertido = 1;',
-    [captadorId]
-  );
+export async function getCantidadProspectosConvertidosPorCaptador(captadorId: number | null) {
+  const [rows]: any = captadorId
+    ? await db.query(
+        'SELECT COUNT(*) AS count FROM prospectos WHERE captador_id = ? AND convertido = 1;',
+        [captadorId]
+      )
+    : await db.query('SELECT COUNT(*) AS count FROM prospectos WHERE convertido = 1;');
+
   return Number(rows[0]?.count ?? 0);
 }
 

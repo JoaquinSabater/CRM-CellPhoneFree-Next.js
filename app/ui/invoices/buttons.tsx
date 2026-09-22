@@ -3,12 +3,13 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { desactivarProspecto } from '@/app/lib/actions';
 import LoadingSpinner from '@/app/ui/loading';
+import { buttonVariants } from '@/app/ui/button';
 
 export function CrearCliente() {
   return (
       <Link
         href="/dashboard/invoices/create"
-        className="flex h-10 items-center rounded-lg bg-orange-600 px-4 text-sm font-medium text-white transition-colors hover:bg-orange-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+        className={buttonVariants({ variant: 'primary' })}
       >
         <span className="hidden md:block">✨ Crear Cliente</span>{' '}
         <PlusIcon className="h-5 md:ml-4" />
@@ -32,7 +33,7 @@ export function CrearProspecto() {
   return (
       <Link
         href="/dashboard/prospects/create"
-        className="flex h-10 items-center rounded-lg bg-orange-600 px-4 text-sm font-medium text-white transition-colors hover:bg-orange-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+        className={buttonVariants({ variant: 'primary' })}
       >
         <span className="hidden md:block">Crear Prospecto</span>{' '}
         <PlusIcon className="h-5 md:ml-4" />
@@ -54,8 +55,8 @@ export function UpdateProspecto({ id }: { id: number }) {
   return (
       <Link
         href={`/dashboard/prospects/${id}/edit`}
-        className="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 transition">
-        <PencilIcon className="w-5 h-5 text-gray-600" />
+        className={buttonVariants({ variant: 'icon' })}>
+        <PencilIcon className="w-5 h-5" />
       </Link>
   );
 }

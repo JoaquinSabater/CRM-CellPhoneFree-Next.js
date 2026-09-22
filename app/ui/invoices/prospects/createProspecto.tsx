@@ -4,6 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createProspecto } from '@/app/lib/actions';
 import { ESTADOS_PROSPECTO, MOTIVOS_NO_COMPRA, TIPOS_COMERCIO } from '@/app/lib/prospect-options';
+import { Card, CardHeader, CardTitle } from '@/app/ui/components/Card';
+import { Input } from '@/app/ui/components/Input';
+import { Select } from '@/app/ui/components/Select';
+import { Textarea } from '@/app/ui/components/Textarea';
+import { Button } from '@/app/ui/button';
 
 export default function CreateProspectoForm({
   provincias,
@@ -43,119 +48,88 @@ export default function CreateProspectoForm({
     }
   };
 
-  const inputBase =
-    'peer block w-full rounded-md border py-2 pl-3 text-sm outline-2 placeholder:text-gray-500';
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Campos de texto */}
-      <input type="text" name="nombre" placeholder="Nombre" className={inputBase} />
-      <input type="email" name="email" placeholder="Email" className={inputBase} />
-      <input type="text" name="telefono" placeholder="Teléfono" className={inputBase} />
+      <Input type="text" name="nombre" placeholder="Nombre" />
+      <Input type="email" name="email" placeholder="Email" />
+      <Input type="text" name="telefono" placeholder="Teléfono" />
 
-      <select name="negocio" className={inputBase}>
+      <Select name="negocio">
         <option value="">Selecciona una opción</option>
         <option value="online">Online</option>
         <option value="fisico">Físico</option>
         <option value="fisicos y online">Fisicos y online</option>
         <option value="fisico mas de uno">Físico (mas de uno)</option>
         <option value="emprendedor">Emprendedor</option>
-      </select>
+      </Select>
 
-      <div className="rounded-md border border-gray-200 p-4">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Datos comerciales y seguimiento</h2>
+      <Card className="p-4">
+        <CardHeader>
+          <CardTitle>Datos comerciales y seguimiento</CardTitle>
+        </CardHeader>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label htmlFor="tipo_comercio" className="mb-1 block text-sm font-medium text-gray-700">Tipo de comercio</label>
-            <select id="tipo_comercio" name="tipo_comercio" className={inputBase}>
-              <option value="">Sin especificar</option>
-              {TIPOS_COMERCIO.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
+          <Select id="tipo_comercio" name="tipo_comercio" label="Tipo de comercio">
+            <option value="">Sin especificar</option>
+            {TIPOS_COMERCIO.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </Select>
 
-          <div>
-            <label htmlFor="cantidad_puntos_venta" className="mb-1 block text-sm font-medium text-gray-700">Cantidad de puntos de venta</label>
-            <input id="cantidad_puntos_venta" name="cantidad_puntos_venta" type="number" min="0" step="1" className={inputBase} />
-          </div>
+          <Input id="cantidad_puntos_venta" name="cantidad_puntos_venta" type="number" min="0" step="1" label="Cantidad de puntos de venta" />
 
-          <div>
-            <label htmlFor="codigo_anuncio" className="mb-1 block text-sm font-medium text-gray-700">Código de anuncio</label>
-            <input id="codigo_anuncio" name="codigo_anuncio" type="text" maxLength={100} className={inputBase} />
-          </div>
+          <Input id="codigo_anuncio" name="codigo_anuncio" type="text" maxLength={100} label="Código de anuncio" />
 
-          <div>
-            <label htmlFor="vendedor_asignado_id" className="mb-1 block text-sm font-medium text-gray-700">Vendedor asignado</label>
-            <select id="vendedor_asignado_id" name="vendedor_asignado_id" className={inputBase}>
-              <option value="">Sin asignar</option>
-              {vendedores.map((vendedor: any) => (
-                <option key={vendedor.id} value={vendedor.id}>{vendedor.nombre}</option>
-              ))}
-            </select>
-          </div>
+          <Select id="vendedor_asignado_id" name="vendedor_asignado_id" label="Vendedor asignado">
+            <option value="">Sin asignar</option>
+            {vendedores.map((vendedor: any) => (
+              <option key={vendedor.id} value={vendedor.id}>{vendedor.nombre}</option>
+            ))}
+          </Select>
 
-          <div>
-            <label htmlFor="fecha_compra" className="mb-1 block text-sm font-medium text-gray-700">Fecha de compra</label>
-            <input id="fecha_compra" name="fecha_compra" type="date" className={inputBase} />
-          </div>
+          <Input id="fecha_compra" name="fecha_compra" type="date" label="Fecha de compra" />
 
-          <div>
-            <label htmlFor="monto_primera_compra" className="mb-1 block text-sm font-medium text-gray-700">Monto de primera compra</label>
-            <input id="monto_primera_compra" name="monto_primera_compra" type="number" min="0" step="0.01" className={inputBase} />
-          </div>
+          <Input id="monto_primera_compra" name="monto_primera_compra" type="number" min="0" step="0.01" label="Monto de primera compra" />
 
-          <div>
-            <label htmlFor="motivo_no_compra" className="mb-1 block text-sm font-medium text-gray-700">Motivo de no compra</label>
-            <select id="motivo_no_compra" name="motivo_no_compra" className={inputBase}>
-              <option value="">Sin especificar</option>
-              {MOTIVOS_NO_COMPRA.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
+          <Select id="motivo_no_compra" name="motivo_no_compra" label="Motivo de no compra">
+            <option value="">Sin especificar</option>
+            {MOTIVOS_NO_COMPRA.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </Select>
 
-          <div>
-            <label htmlFor="fecha_ultima_gestion" className="mb-1 block text-sm font-medium text-gray-700">Fecha de última gestión</label>
-            <input id="fecha_ultima_gestion" name="fecha_ultima_gestion" type="datetime-local" className={inputBase} />
-          </div>
+          <Input id="fecha_ultima_gestion" name="fecha_ultima_gestion" type="datetime-local" label="Fecha de última gestión" />
 
-          <div>
-            <label htmlFor="estado_prospecto" className="mb-1 block text-sm font-medium text-gray-700">Estado del prospecto</label>
-            <select id="estado_prospecto" name="estado_prospecto" defaultValue="nuevo" className={inputBase}>
-              {ESTADOS_PROSPECTO.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
+          <Select id="estado_prospecto" name="estado_prospecto" defaultValue="nuevo" label="Estado del prospecto">
+            {ESTADOS_PROSPECTO.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </Select>
         </div>
-      </div>
+      </Card>
 
-      <select name="por_donde_llego" className={inputBase} required>
+      <Select name="por_donde_llego" required>
         <option value="">¿Por dónde llegó?</option>
         <option value="instagram">Instagram</option>
         <option value="facebook">Facebook</option>
         <option value="googleAds">Google Ads</option>
         <option value="whatsapp">WhatsApp</option>
         <option value="email">Email</option>
-      </select>
+      </Select>
 
-      <label className="block text-sm font-medium text-gray-700 mt-3">Fecha de contacto</label>
-      <input type="date" name="fecha_contacto" className={inputBase} />
+      <Input type="date" name="fecha_contacto" label="Fecha de contacto" />
 
-      <input type="text" name="cuit" placeholder="CUIT" className={inputBase} />
-      <textarea name="anotaciones" placeholder="Anotaciones" className={`${inputBase} resize-none`} rows={3} />
+      <Input type="text" name="cuit" placeholder="CUIT" />
+      <Textarea name="anotaciones" placeholder="Anotaciones" rows={3} />
 
-      <label className="block text-sm font-medium text-gray-700 mt-3">Fecha pedido de asesoramiento</label>
-      <input type="date" name="fecha_pedido_asesoramiento" className={inputBase} />
+      <Input type="date" name="fecha_pedido_asesoramiento" label="Fecha pedido de asesoramiento" />
 
-      <input type="url" name="url" placeholder="URL seguimiento" className={inputBase} />
+      <Input type="url" name="url" placeholder="URL seguimiento" />
 
 
       {/* Selector de provincia */}
-      <select
+      <Select
         name="provincia_id"
-        className={inputBase}
         onChange={handleProvinciaChange}
         value={provinciaId}
       >
@@ -165,29 +139,25 @@ export default function CreateProspectoForm({
             {prov.nombre}
           </option>
         ))}
-      </select>
+      </Select>
 
       {/* Selector de localidad */}
-      <select name="localidad_id" className={inputBase}>
+      <Select name="localidad_id">
         <option value="">Selecciona una localidad</option>
         {localidadesFiltradas.map((loc: any) => (
           <option key={loc.id} value={loc.id}>
             {`${loc.nombre} - ${loc.codigopostal}`}
           </option>
         ))}
-      </select>
+      </Select>
 
       {/* Botón de submit */}
-      <button
-        type="submit"
-        className="mt-4 rounded bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
-        disabled={isSubmitting}
-      >
+      <Button type="submit" disabled={isSubmitting}>
         Guardar
-      </button>
+      </Button>
 
       {/* Error */}
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
     </form>
   );
 }

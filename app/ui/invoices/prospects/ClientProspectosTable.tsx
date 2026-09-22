@@ -5,7 +5,10 @@ import { TrashIcon } from '@heroicons/react/24/outline';
 import { desactivarProspecto } from '@/app/lib/actions';
 import { UpdateProspecto } from '@/app/ui/invoices/buttons';
 import { prospecto } from '@/app/lib/definitions';
-import { ESTADOS_PROSPECTO, TIPOS_COMERCIO } from '@/app/lib/prospect-options';
+import { TIPOS_COMERCIO } from '@/app/lib/prospect-options';
+import { Card } from '@/app/ui/components/Card';
+import { Button } from '@/app/ui/button';
+import { EstadoProspectoBadge } from '@/app/ui/invoices/prospects/EstadoProspectoBadge';
 
 export function ClientProspectosTable({
   initialProspectos
@@ -15,7 +18,7 @@ export function ClientProspectosTable({
 
   const prospectos: prospecto[] = initialProspectos ?? [];
   const router = useRouter();
-  
+
   const handleDelete = async (id: number) => {
     try {
       await desactivarProspecto(id);
@@ -26,53 +29,53 @@ export function ClientProspectosTable({
   };
 
   return (
-    <div className="mt-6 w-full overflow-x-auto">
-      <table className="min-w-full text-sm text-gray-900 border rounded-lg overflow-hidden">
-      <thead className="bg-gray-100 text-left font-medium">
+    <Card className="mt-6 w-full overflow-x-auto">
+      <table className="min-w-full text-sm text-slate-700">
+      <thead className="border-b border-slate-200 bg-slate-50 text-left">
             <tr>
-                <th className="px-2 py-5 font-medium">Nombre</th>
-                <th className="px-2 py-5 font-medium">Teléfono</th>
-                <th className="px-2 py-5 font-medium">Ciudad</th>
-                <th className="px-2 py-5 font-medium">Negocio</th>
-                <th className="px-2 py-5 font-medium">Tipo de comercio</th>
-                <th className="px-2 py-5 font-medium">Estado</th>
-                <th className="px-2 py-5 font-medium">Fecha Contacto</th>
-                <th className="px-2 py-5 font-medium"></th>
-                <th className="px-2 py-5 font-medium"></th>
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Nombre</th>
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Teléfono</th>
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Ciudad</th>
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Negocio</th>
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Tipo de comercio</th>
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Estado</th>
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Fecha Contacto</th>
+                <th className="px-4 py-3"></th>
+                <th className="px-4 py-3"></th>
             </tr>
         </thead>
-        <tbody className="bg-white">
+        <tbody className="divide-y divide-slate-100">
           {prospectos.map((p) => (
-            <tr key={p.id}>
-              <td className="whitespace-nowrap px-2 py-3">{p.nombre}</td>
-              <td className="whitespace-nowrap px-2 py-3">{p.telefono}</td>
-              <td className="whitespace-nowrap px-2 py-3">{p.localidad_nombre}</td>
-              <td className="whitespace-nowrap px-2 py-3">{p.negocio}</td>
-              <td className="whitespace-nowrap px-2 py-3">
+            <tr key={p.id} className="hover:bg-slate-50">
+              <td className="whitespace-nowrap px-4 py-3">{p.nombre}</td>
+              <td className="whitespace-nowrap px-4 py-3">{p.telefono}</td>
+              <td className="whitespace-nowrap px-4 py-3">{p.localidad_nombre}</td>
+              <td className="whitespace-nowrap px-4 py-3">{p.negocio}</td>
+              <td className="whitespace-nowrap px-4 py-3">
                 {TIPOS_COMERCIO.find(({ value }) => value === p.tipo_comercio)?.label || '-'}
               </td>
-              <td className="whitespace-nowrap px-2 py-3">
-                {ESTADOS_PROSPECTO.find(({ value }) => value === p.estado_prospecto)?.label || p.estado_prospecto}
+              <td className="whitespace-nowrap px-4 py-3">
+                <EstadoProspectoBadge estado={p.estado_prospecto} />
               </td>
-              <td className="whitespace-nowrap px-2 py-3">
+              <td className="whitespace-nowrap px-4 py-3">
                 {p.fecha_contacto ? new Date(p.fecha_contacto).toISOString().slice(0, 10) : ''}
               </td>
-              <td className="py-1">
+              <td className="px-2 py-1">
                 <UpdateProspecto id={p.id} />
               </td>
-              <td className="py-1">
-                <button
+              <td className="px-2 py-1">
+                <Button
+                  variant="icon"
                   onClick={() => handleDelete(p.id)}
-                  className="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-gray-100 transition"
                 >
                   <span className="sr-only">Eliminar</span>
-                  <TrashIcon className="w-5 h-5 text-gray-600" />
-                </button>
+                  <TrashIcon className="w-5 h-5" />
+                </Button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-    </div>
+    </Card>
   );
 }

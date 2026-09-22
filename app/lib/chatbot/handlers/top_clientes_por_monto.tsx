@@ -8,19 +8,20 @@ type ClienteConTotal = {
 
 export async function handleTopClientesPorMonto(
   entities: { limite: number },
-  vendedorId: number
+  vendedorId: number | null
 ): Promise<string> {
   const { limite } = entities
+  const filtrarPorVendedor = Boolean(vendedorId)
 
   const [raw] = await db.query(
     `SELECT c.id AS cliente_id, c.razon_social AS cliente_nombre, SUM(r.total) AS total_gastado
      FROM remitos r
      JOIN clientes c ON r.cliente_id = c.id
-     WHERE c.vendedor_id = ?
+     ${filtrarPorVendedor ? 'WHERE c.vendedor_id = ?' : ''}
      GROUP BY c.id
      ORDER BY total_gastado DESC
      LIMIT ?`,
-    [vendedorId, limite]
+    filtrarPorVendedor ? [vendedorId, limite] : [limite]
   )
 
   const rows = raw as ClienteConTotal[]

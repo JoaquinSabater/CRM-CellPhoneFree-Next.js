@@ -2,9 +2,10 @@ import {db} from "@/app/lib/mysql";
 
 export async function handleTopClientesPorItem(
   entities: { item: string; limite: number },
-  vendedorId: number
+  vendedorId: number | null
 ): Promise<string> {
   const { item, limite } = entities
+  const filtrarPorVendedor = Boolean(vendedorId)
 
   const sql = `
     SELECT c.id AS cliente_id, c.razon_social AS cliente_nombre, SUM(rd.cantidad) AS total
@@ -13,13 +14,16 @@ export async function handleTopClientesPorItem(
     JOIN articulos a ON rd.articulo_codigo = a.codigo_interno
     JOIN items i ON a.item_id = i.id
     JOIN clientes c ON r.cliente_id = c.id
-    WHERE i.nombre LIKE ? AND c.vendedor_id = ?
+    WHERE i.nombre LIKE ? ${filtrarPorVendedor ? 'AND c.vendedor_id = ?' : ''}
     GROUP BY c.id
     ORDER BY total DESC
     LIMIT ?
   `
 
-  const [rows]: any[] = await db.query(sql, [`%${item}%`, vendedorId, limite])
+  const [rows]: any[] = await db.query(
+    sql,
+    filtrarPorVendedor ? [`%${item}%`, vendedorId, limite] : [`%${item}%`, limite]
+  )
 
   if (!rows.length) {
     return `No encontré clientes que hayan comprado "<b>${item}</b>".`

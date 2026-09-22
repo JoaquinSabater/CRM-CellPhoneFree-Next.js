@@ -7,10 +7,12 @@ import {
   HomeIcon,
   RocketLaunchIcon,
   MapIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
+import { puedeAdministrar, puedeVerComercial } from '@/app/lib/roles';
 
 // Aca es donde puedo cambiar los inconos de los links
 // Map of links to display in the side navigation.
@@ -35,6 +37,11 @@ const commercialLinks = [
     href: '/dashboard/chatbot',
     icon: RocketLaunchIcon,
   },
+  {
+    name: 'Mensajes',
+    href: '/dashboard/mensajes',
+    icon: ChatBubbleLeftRightIcon,
+  },
 ];
 
 const administrationLinks = [
@@ -56,8 +63,8 @@ const sharedLinks = [
 export default function NavLinks({ rol }: { rol?: string | null }) {
   const pathname = usePathname();
   const links = [
-    ...(rol === 'vendedor' || rol === 'captador' ? commercialLinks : []),
-    ...(rol === 'administracion' ? administrationLinks : []),
+    ...(puedeVerComercial(rol) ? commercialLinks : []),
+    ...(puedeAdministrar(rol) ? administrationLinks : []),
     ...sharedLinks,
   ];
 
@@ -70,10 +77,10 @@ export default function NavLinks({ rol }: { rol?: string | null }) {
             key={link.name}
             href={link.href}
             className={clsx(
-              'flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors',
+              'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
               {
-                'bg-orange-700 text-white': pathname === link.href,
-                'text-white hover:bg-orange-500': pathname !== link.href,
+                'bg-brand-50 text-brand-700': pathname === link.href,
+                'text-slate-600 hover:bg-slate-100 hover:text-slate-900': pathname !== link.href,
               },
             )}
           >

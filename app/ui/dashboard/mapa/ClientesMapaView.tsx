@@ -30,7 +30,7 @@ interface Estadisticas {
   por_localidad: Record<string, number>;
 }
 
-export default function ClientesMapaView({ vendedorId }: { vendedorId: number }) {
+export default function ClientesMapaView({ vendedorId, esAdmin = false }: { vendedorId: number; esAdmin?: boolean }) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
@@ -45,10 +45,11 @@ export default function ClientesMapaView({ vendedorId }: { vendedorId: number })
 
   // Cargar clientes desde la API
   useEffect(() => {
-    const url = mostrarOtrosVendedores
+    // El super usuario siempre ve la cartera completa
+    const url = esAdmin || mostrarOtrosVendedores
       ? `/api/clientes-mapa?vendedor_id=${vendedorId}&mostrar_todos=true`
       : `/api/clientes-mapa?vendedor_id=${vendedorId}`;
-    
+
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
@@ -57,7 +58,9 @@ export default function ClientesMapaView({ vendedorId }: { vendedorId: number })
         if (Array.isArray(data)) {
           setClientes(data);
           // Solo calcular estadísticas con clientes propios
-          const clientesPropios = data.filter((c: Cliente) => c.vendedor_id === vendedorId);
+          const clientesPropios = esAdmin
+            ? data
+            : data.filter((c: Cliente) => c.vendedor_id === vendedorId);
           calcularEstadisticas(clientesPropios);
         } else {
           console.error('❌ La API no retornó un array:', data);
@@ -71,7 +74,7 @@ export default function ClientesMapaView({ vendedorId }: { vendedorId: number })
         setClientes([]);
         setLoading(false);
       });
-  }, [vendedorId, mostrarOtrosVendedores]);
+  }, [vendedorId, mostrarOtrosVendedores, esAdmin]);
 
   const calcularEstadisticas = (clientesData: Cliente[]) => {
     if (!Array.isArray(clientesData)) {
@@ -170,7 +173,7 @@ export default function ClientesMapaView({ vendedorId }: { vendedorId: number })
       if (!map.current) return;
 
       clientes.forEach((cliente) => {
-        const esPropio = cliente.vendedor_id === vendedorId;
+        const esPropio = esAdmin || cliente.vendedor_id === vendedorId;
         let color = '#10B981';
         
         if (!esPropio) {
@@ -261,7 +264,7 @@ export default function ClientesMapaView({ vendedorId }: { vendedorId: number })
     clientes.forEach((cliente) => {
       if (!map.current) return;
 
-      const esPropio = cliente.vendedor_id === vendedorId;
+      const esPropio = esAdmin || cliente.vendedor_id === vendedorId;
       let color = '#10B981';
       
       if (!esPropio) {
@@ -318,7 +321,7 @@ export default function ClientesMapaView({ vendedorId }: { vendedorId: number })
     });
 
     console.log('✅ Marcadores actualizados - Propios:', markers.current.length, 'Otros:', markersOtros.current.length);
-  }, [clientes, vendedorId]);
+  }, [clientes, vendedorId, esAdmin]);
 
   // useEffect separado ya no es necesario - se eliminó el useEffect de marcadores
 
@@ -368,8 +371,8 @@ export default function ClientesMapaView({ vendedorId }: { vendedorId: number })
             </select>
           </div>
 
-          {/* Switch para mostrar clientes de otros vendedores */}
-          <div className="mb-3 p-2 bg-purple-50 rounded border border-purple-200">
+          {/* Switch para mostrar clientes de otros vendedores (el super usuario ya los ve todos) */}
+          <div className={`mb-3 p-2 bg-purple-50 rounded border border-purple-200 ${esAdmin ? 'hidden' : ''}`}>
             <label className="flex items-center cursor-pointer">
               <input
                 type="checkbox"

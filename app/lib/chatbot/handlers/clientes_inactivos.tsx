@@ -21,20 +21,21 @@ function formatearFecha(fecha: string): string {
 
 export async function handleClientesInactivos(
   entities: { dias: number; limite: number },
-  vendedorId: number
+  vendedorId: number | null
 ): Promise<string> {
   const { dias, limite } = entities
   const fechaLimite = getFechaLimiteDesdeDias(dias)
+  const filtrarPorVendedor = Boolean(vendedorId)
 
   const sql = `
-    SELECT 
+    SELECT
       c.id AS cliente_id,
       c.razon_social AS cliente_nombre,
       MAX(p.fecha_creacion) AS ultima_compra
     FROM clientes c
     INNER JOIN pedidos p ON c.id = p.cliente_id
-    WHERE c.vendedor_id = ?
-      AND p.fecha_creacion < ?
+    WHERE ${filtrarPorVendedor ? 'c.vendedor_id = ? AND' : ''}
+      p.fecha_creacion < ?
       AND c.id NOT IN (
         SELECT cliente_id
         FROM pedidos
@@ -45,7 +46,10 @@ export async function handleClientesInactivos(
     LIMIT ?
   `
 
-  const [rows]: any[] = await db.query(sql, [vendedorId, fechaLimite, fechaLimite, limite])
+  const params: any[] = filtrarPorVendedor ? [vendedorId] : []
+  params.push(fechaLimite, fechaLimite, limite)
+
+  const [rows]: any[] = await db.query(sql, params)
 
   if (!rows.length) {
     return `No encontré clientes inactivos hace más de <b>${dias}</b> días.`

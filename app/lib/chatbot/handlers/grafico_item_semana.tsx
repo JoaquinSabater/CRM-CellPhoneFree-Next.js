@@ -3,9 +3,10 @@ import {db} from "@/app/lib/mysql";
 
 export async function handleGraficoItemPorSemana(
   entities: { item: string },
-  vendedorId: number
+  vendedorId: number | null
 ): Promise<string> {
   const { item } = entities
+  const filtrarPorVendedor = Boolean(vendedorId)
 
   const [raw] = await db.query(
     `SELECT
@@ -17,11 +18,11 @@ export async function handleGraficoItemPorSemana(
      JOIN items i ON a.item_id = i.id
      JOIN clientes c ON r.cliente_id = c.id
      WHERE i.nombre LIKE ?
-       AND c.vendedor_id = ?
+       ${filtrarPorVendedor ? 'AND c.vendedor_id = ?' : ''}
        AND r.fecha_generacion >= DATE_SUB(CURDATE(), INTERVAL 4 WEEK)
      GROUP BY semana
      ORDER BY semana`,
-    [`%${item}%`, vendedorId]
+    filtrarPorVendedor ? [`%${item}%`, vendedorId] : [`%${item}%`]
   )
 
   const rows = raw as { semana: number; total_vendido: number }[]

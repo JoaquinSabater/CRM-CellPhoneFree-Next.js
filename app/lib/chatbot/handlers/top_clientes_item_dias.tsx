@@ -4,11 +4,14 @@ import { db } from "@/app/lib/mysql";
 
 export async function handleTopClientesPorItemDias(
   entities: { item: string; limite: number; dias: number },
-  vendedorId: number
+  vendedorId: number | null
 ): Promise<string> {
   const { item, limite, dias } = entities;
+  const filtrarPorVendedor = Boolean(vendedorId);
 
-  let params: any[] = [`%${item}%`, vendedorId, dias, limite];
+  const params: any[] = filtrarPorVendedor
+    ? [`%${item}%`, vendedorId, dias, limite]
+    : [`%${item}%`, dias, limite];
 
   const sql = `
     SELECT c.id AS cliente_id, c.razon_social AS cliente_nombre, SUM(rd.cantidad) AS total
@@ -17,7 +20,7 @@ export async function handleTopClientesPorItemDias(
     JOIN articulos a ON rd.articulo_codigo = a.codigo_interno
     JOIN items i ON a.item_id = i.id
     JOIN clientes c ON r.cliente_id = c.id
-    WHERE i.nombre LIKE ? AND c.vendedor_id = ?
+    WHERE i.nombre LIKE ? ${filtrarPorVendedor ? 'AND c.vendedor_id = ?' : ''}
       AND DATE(r.fecha_generacion) >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
     GROUP BY c.id
     ORDER BY total DESC

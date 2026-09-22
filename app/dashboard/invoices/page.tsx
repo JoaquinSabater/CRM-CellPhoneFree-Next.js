@@ -1,11 +1,12 @@
 import Search from '@/app/ui/search';
 import { Suspense } from 'react';
 import Table from '@/app/ui/invoices/table';
-import LoadingSpinner from '@/app/ui/loading';
+import { TableSkeleton } from '@/app/ui/components/Spinner';
 import {CrearProspecto, CrearCliente} from '@/app/ui/invoices/buttons';
 import { auth } from '@/app/lib/auth';
 import { fetchFiltrosFijos } from '@/app/lib/data';
 import FiltrosDrawer from '@/app/ui/invoices/FiltrosPorCategoriaListbox';
+import { esSuperAdmin } from '@/app/lib/roles';
 
 
 
@@ -28,11 +29,12 @@ export default async function Page(props: { searchParams: Promise<{ query?: stri
 
   return (
     <div className="w-full">
+      <h1 className="mb-4 text-xl font-semibold text-slate-900">Prospectos y Clientes</h1>
       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8 mb-4">
         <Search placeholder="Buscar Clientes..." />
         <div className="flex gap-2">
-          {rol === 'captador' && <CrearProspecto />}
-          {rol === 'vendedor' && <CrearCliente />}
+          {(rol === 'captador' || esSuperAdmin(rol)) && <CrearProspecto />}
+          {(rol === 'vendedor' || esSuperAdmin(rol)) && <CrearCliente />}
         </div>
       </div>
       <div className="flex flex-row items-start justify-between mb-6 gap-4">
@@ -40,7 +42,7 @@ export default async function Page(props: { searchParams: Promise<{ query?: stri
           <FiltrosDrawer filtros={filtrosFijos} />
         </div>
       </div>
-      <Suspense fallback={<LoadingSpinner />}>
+      <Suspense fallback={<TableSkeleton />}>
         <Table query={query} filtrosSeleccionados={filtrosSeleccionados}/>
       </Suspense>
     </div>

@@ -72,6 +72,7 @@ export type cliente = {
   cuenta_corriente: boolean;
   monto: number;
   moroso: boolean;
+  vendedor_nombre?: string | null;
 };
 
 export type prospecto = {

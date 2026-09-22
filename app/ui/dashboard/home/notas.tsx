@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-export default function NotasPersonales({ userId }: { userId: number }) {
+export default function NotasPersonales({ userId }: { userId: string | number }) {
   const [nota, setNota] = useState('');
 
   const storageKey = `notas_usuario_${userId}`;

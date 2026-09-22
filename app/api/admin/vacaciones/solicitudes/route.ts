@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/lib/auth';
 import { db } from '@/app/lib/mysql';
+import { puedeAdministrar } from '@/app/lib/roles';
 import { jsonError, mapRequest, type VacationRequest } from '@/app/lib/vacaciones';
 
 export async function GET() {
@@ -10,7 +11,7 @@ export async function GET() {
     return jsonError('No autenticado', 401);
   }
 
-  if (session.user.rol !== 'administracion') {
+  if (!puedeAdministrar(session.user.rol)) {
     return jsonError('No autorizado', 403);
   }
 

@@ -1,10 +1,11 @@
 import { db } from "@/app/lib/mysql";
+import { esSuperAdmin } from "@/app/lib/roles";
 
 export async function handleProvinciaTopClientes(
   entities: { provincia: string },
   rol: string
 ): Promise<string> {
-  if (rol !== "captador") {
+  if (rol !== "captador" && !esSuperAdmin(rol)) {
     return "⚠️ Esta consulta solo está disponible para vendedores captadores.";
   }
 
