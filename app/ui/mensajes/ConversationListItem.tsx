@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import type { Conversacion } from '@/app/lib/mensajes';
+import { Badge } from '@/app/ui/components/Badge';
 import { EstadoChatBadge } from '@/app/ui/mensajes/EstadoChatBadge';
 import { formatRelativeTime } from '@/app/ui/mensajes/formatRelativeTime';
 
@@ -47,8 +48,9 @@ export function ConversationListItem({
             <span className="h-2 w-2 flex-none rounded-full bg-brand-600" title="Último mensaje del prospecto" />
           )}
         </div>
-        <div className="mt-1.5">
+        <div className="mt-1.5 flex items-center gap-1.5">
           <EstadoChatBadge estado={conversacion.estado} />
+          {conversacion.modo_atencion === 'humano' && <Badge tone="brand">Humano</Badge>}
         </div>
       </div>
     </button>

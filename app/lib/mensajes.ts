@@ -1,7 +1,11 @@
 import { db } from '@/app/lib/mysql';
-import { RowDataPacket } from 'mysql2';
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
 
+// 'vendedor' es el turno "Humano:" del transcript: lo que respondio un empleado desde el CRM.
 export type RemitenteTipo = 'prospecto' | 'bot' | 'vendedor';
+
+export const MODOS_ATENCION = ['bot', 'humano'] as const;
+export type ModoAtencion = (typeof MODOS_ATENCION)[number];
 
 export type Mensaje = {
   id: string;
@@ -18,6 +22,7 @@ export type Conversacion = {
   telefono: string;
   nombre: string;
   estado: string;
+  modo_atencion: ModoAtencion;
   localidad: string | null;
   observaciones: string | null;
   prospecto_id: number | null;
@@ -31,6 +36,7 @@ type ChatbotRow = RowDataPacket & {
   name: string | null;
   mensaje: string | null;
   estado: string | null;
+  modo_atencion: string | null;
   respuesta_json: unknown;
   created_at: Date;
   updated_at: Date;
@@ -39,18 +45,23 @@ type ChatbotRow = RowDataPacket & {
 
 type Turno = { remitente_tipo: RemitenteTipo; contenido: string };
 
-const MARCA_TURNO = /^(Cliente|Bot)\s*:\s?(.*)$/;
+const MARCA_TURNO = /^(Cliente|Bot|Humano)\s*:\s?(.*)$/;
+const REMITENTE_POR_MARCA: Record<string, RemitenteTipo> = {
+  Cliente: 'prospecto',
+  Bot: 'bot',
+  Humano: 'vendedor',
+};
 const MAX_SNAPSHOTS = 50;
 
 // El bot acumula toda la charla en la columna `mensaje`: arranca con el mensaje con el que
-// escribió el prospecto y despues agrega bloques "Cliente: ... / Bot: ...".
+// escribió el prospecto y despues agrega bloques "Cliente: ... / Bot: ... / Humano: ...".
 function parsearTranscripcion(texto: string): Turno[] {
   const turnos: { remitente_tipo: RemitenteTipo; lineas: string[] }[] = [];
 
   for (const linea of texto.split('\n')) {
     const marca = MARCA_TURNO.exec(linea);
     if (marca) {
-      turnos.push({ remitente_tipo: marca[1] === 'Bot' ? 'bot' : 'prospecto', lineas: [marca[2]] });
+      turnos.push({ remitente_tipo: REMITENTE_POR_MARCA[marca[1]], lineas: [marca[2]] });
       continue;
     }
     // Lo que viene antes del primer "Cliente:" es el mensaje inicial del prospecto.
@@ -136,6 +147,7 @@ function mapearConversacion(row: ChatbotRow): Conversacion {
     telefono: row.phone,
     nombre: textoONull(row.name) ?? row.phone,
     estado: textoONull(row.estado) ?? 'nuevo',
+    modo_atencion: row.modo_atencion === 'humano' ? 'humano' : 'bot',
     localidad: textoONull(json?.localidad),
     observaciones: textoONull(json?.observaciones),
     prospecto_id: row.prospecto_id ?? null,
@@ -145,26 +157,56 @@ function mapearConversacion(row: ChatbotRow): Conversacion {
   };
 }
 
+const SELECT_CONVERSACIONES = `
+  SELECT
+    c.phone,
+    c.name,
+    c.mensaje,
+    c.estado,
+    c.modo_atencion,
+    c.respuesta_json,
+    c.created_at,
+    c.updated_at,
+    (
+      SELECT p.id
+      FROM prospectos p
+      WHERE REGEXP_REPLACE(p.telefono, '[^0-9]', '') = c.phone
+      ORDER BY p.id DESC
+      LIMIT 1
+    ) AS prospecto_id
+  FROM chatbot_whatsapp c
+`;
+
 export async function getConversaciones(): Promise<Conversacion[]> {
-  const [rows] = await db.query<ChatbotRow[]>(`
-    SELECT
-      c.phone,
-      c.name,
-      c.mensaje,
-      c.estado,
-      c.respuesta_json,
-      c.created_at,
-      c.updated_at,
-      (
-        SELECT p.id
-        FROM prospectos p
-        WHERE REGEXP_REPLACE(p.telefono, '[^0-9]', '') = c.phone
-        ORDER BY p.id DESC
-        LIMIT 1
-      ) AS prospecto_id
-    FROM chatbot_whatsapp c
-    ORDER BY c.updated_at DESC
-  `);
+  const [rows] = await db.query<ChatbotRow[]>(`${SELECT_CONVERSACIONES} ORDER BY c.updated_at DESC`);
 
   return rows.map(mapearConversacion);
+}
+
+export async function getConversacion(phone: string): Promise<Conversacion | null> {
+  const [rows] = await db.query<ChatbotRow[]>(`${SELECT_CONVERSACIONES} WHERE c.phone = ? LIMIT 1`, [phone]);
+
+  return rows[0] ? mapearConversacion(rows[0]) : null;
+}
+
+export async function getModoAtencion(phone: string): Promise<ModoAtencion | null> {
+  const [rows] = await db.query<(RowDataPacket & { modo_atencion: string })[]>(
+    'SELECT modo_atencion FROM chatbot_whatsapp WHERE phone = ? LIMIT 1',
+    [phone],
+  );
+
+  if (!rows[0]) return null;
+  return rows[0].modo_atencion === 'humano' ? 'humano' : 'bot';
+}
+
+// Devuelve false cuando no existe una conversacion con ese telefono.
+// updated_at tiene ON UPDATE CURRENT_TIMESTAMP y se usa para ordenar y fechar los mensajes:
+// se reasigna a si mismo para que cambiar de modo no cuente como actividad de la charla.
+export async function actualizarModoAtencion(phone: string, modo: ModoAtencion): Promise<boolean> {
+  const [resultado] = await db.query<ResultSetHeader>(
+    'UPDATE chatbot_whatsapp SET modo_atencion = ?, updated_at = updated_at WHERE phone = ?',
+    [modo, phone],
+  );
+
+  return resultado.affectedRows > 0;
 }
