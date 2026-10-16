@@ -11,8 +11,9 @@ import { useSearchParams } from 'next/navigation';
 import ProductosPorMarca from './ProductoPorMarca';
 import { useRef, useState  } from 'react';
 import MapPicker from '@/app/ui/map-picker';
+import CuentaCorrienteCliente from './CuentaCorrienteCliente';
 
-export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas, provincias, localidades, condicionesIVA, condicionesIIBB, transportes, direccionesExistentes }: any) {
+export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas, provincias, localidades, condicionesIVA, condicionesIIBB, transportes, direccionesExistentes, cuentaCorriente }: any) {
   const formRef = useRef<HTMLFormElement>(null);
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
@@ -204,6 +205,8 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
             </select>
           </div>
         </div>
+
+        <CuentaCorrienteCliente clienteId={cliente.id} solicitud={cuentaCorriente} />
 
         {/* UBICACIÓN - Ahora editable con mapa */}
         <h3 className="text-lg font-semibold text-gray-800 mb-4 mt-8">📍 Ubicación</h3>

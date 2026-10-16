@@ -22,6 +22,13 @@ export function puedeAdministrar(rol?: string | null): boolean {
   return rol === ROL_ADMINISTRACION || esSuperAdmin(rol);
 }
 
+/** Líder de ventas: aprueba las cuentas corrientes que piden los demás vendedores. */
+export const LIDER_VENTAS_USUARIO_ID = 2;
+
+export function esLiderVentas(userId?: string | number | null, rol?: string | null): boolean {
+  return Number(userId) === LIDER_VENTAS_USUARIO_ID || esSuperAdmin(rol);
+}
+
 /** Ve la cartera completa, sin filtrar por vendedor ni captador. */
 export function veTodaLaCartera(rol?: string | null): boolean {
   return esSuperAdmin(rol);

@@ -7,6 +7,8 @@ import VentasMensualesPorVendedor from '@/app/ui/dashboard/estadisticas/SalesPro
 import VentasMesActualChart from '@/app/ui/dashboard/estadisticas/VentasMesActualChart';
 import ClientesPorCaerEnDesgracia from '@/app/ui/dashboard/home/ClientesPorCaerEnDesgracia';
 import PedidosPreliminares from '@/app/ui/dashboard/home/PedidosPreliminares';
+import SolicitudesCuentaCorriente from '@/app/ui/dashboard/home/SolicitudesCuentaCorriente';
+import { esLiderVentas } from '@/app/lib/roles';
 
 export default async function Page() {
   const session = await auth();
@@ -35,6 +37,10 @@ export default async function Page() {
       </div>
 
       <div className="max-w-7xl mx-auto mt-8 space-y-8">
+        {esLiderVentas(userId, rol) && (
+          <SolicitudesCuentaCorriente />
+        )}
+
         {userId && (
           <NotasPersonales userId={userId} />
         )}

@@ -3,6 +3,7 @@ import { fetchClienteById, getPedidosByCliente, fetchFiltrosFijos, getFiltrosDel
 import { Suspense } from 'react';
 import LoadingSpinner from '@/app/ui/loading';
 import { auth } from '@/app/lib/auth';
+import { getCuentaCorrienteCliente } from '@/app/lib/cuenta-corriente';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -11,7 +12,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const session = await auth();
 
-  const [cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas, provincias, localidades, condicionesIVA, condicionesIIBB, transportes, direccionesExistentes] = await Promise.all([
+  const [cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas, provincias, localidades, condicionesIVA, condicionesIIBB, transportes, direccionesExistentes, cuentaCorriente] = await Promise.all([
     fetchClienteById(id),
     getPedidosByCliente(id),
     fetchFiltrosFijos(),
@@ -24,6 +25,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     getCondicionesIIBB(),
     getTransportes(),
     getDireccionesCliente(id),
+    getCuentaCorrienteCliente(id),
   ]);
 
   if (!cliente) {
@@ -46,6 +48,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           condicionesIIBB={condicionesIIBB}
           transportes={transportes}
           direccionesExistentes={direccionesExistentes}
+          cuentaCorriente={cuentaCorriente}
         />
       </Suspense>
     </main>
