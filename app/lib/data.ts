@@ -2,6 +2,7 @@ import { vendedor } from '@/app/lib/definitions';
 import { cliente } from './definitions';
 import {db} from "../lib/mysql";
 import { RowDataPacket } from 'mysql2';
+import type { ContactoCliente } from './cliente-contactos';
 
 // En todas estas funciones, pasar null en vendedorId / captadorId significa
 // "sin filtrar": es lo que usa el super usuario para ver toda la cartera.
@@ -659,6 +660,16 @@ export async function getDireccionesCliente(clienteId: string) {
   `;
   const [rows] = await db.query(sql, [clienteId]);
   return rows;
+}
+
+export async function getContactosCliente(clienteId: string): Promise<ContactoCliente[]> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT tipo, telefono, nombre
+     FROM cliente_contactos
+     WHERE cliente_id = ?`,
+    [clienteId],
+  );
+  return rows.map((r) => ({ tipo: r.tipo, telefono: r.telefono, nombre: r.nombre }));
 }
 
 // Aliases para compatibilidad

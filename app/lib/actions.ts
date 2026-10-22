@@ -8,8 +8,29 @@ import { auth } from '@/app/lib/auth';
 import {db} from "../lib/mysql";
 import bcrypt from 'bcryptjs';
 import { ESTADOS_PROSPECTO, MOTIVOS_NO_COMPRA, TIPOS_COMERCIO } from './prospect-options';
+import { TIPOS_CONTACTO, type TipoContacto } from './cliente-contactos';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+
+// Guarda los teléfonos de ventas y pagos: si el teléfono queda vacío se borra el contacto
+async function guardarContactosCliente(clienteId: number | string, formData: FormData) {
+  for (const tipo of Object.keys(TIPOS_CONTACTO) as TipoContacto[]) {
+    const telefono = String(formData.get(`contacto_${tipo}_telefono`) ?? '').trim().slice(0, 30);
+    const nombre = String(formData.get(`contacto_${tipo}_nombre`) ?? '').trim().slice(0, 100) || null;
+
+    if (!telefono) {
+      await db.query('DELETE FROM cliente_contactos WHERE cliente_id = ? AND tipo = ?', [clienteId, tipo]);
+      continue;
+    }
+
+    await db.query(
+      `INSERT INTO cliente_contactos (cliente_id, tipo, telefono, nombre)
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE telefono = VALUES(telefono), nombre = VALUES(nombre)`,
+      [clienteId, tipo, telefono, nombre],
+    );
+  }
+}
 
 // Nueva función para crear clientes
 export async function createCliente(formData: FormData) {
@@ -72,6 +93,8 @@ export async function createCliente(formData: FormData) {
 
     const clienteId = result.insertId;
     console.log(`✅ Cliente creado con ID: ${clienteId}`);
+
+    await guardarContactosCliente(clienteId, formData);
 
     // Procesar direcciones adicionales
     const direccionesJSON = formData.get('direcciones') as string;
@@ -404,6 +427,8 @@ export async function updateCliente(id: string, formData: FormData, filtrosDispo
       affectedRows: result.affectedRows,
       changedRows: result.changedRows
     });
+
+    await guardarContactosCliente(id, formData);
 
     // 🔒 ACTUALIZAR CONTRASEÑA SI SE PROPORCIONÓ
     if (nuevaPassword) {

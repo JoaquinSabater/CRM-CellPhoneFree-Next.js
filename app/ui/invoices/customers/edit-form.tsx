@@ -12,8 +12,9 @@ import ProductosPorMarca from './ProductoPorMarca';
 import { useRef, useState  } from 'react';
 import MapPicker from '@/app/ui/map-picker';
 import CuentaCorrienteCliente from './CuentaCorrienteCliente';
+import ContactosClienteFields from './ContactosClienteFields';
 
-export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas, provincias, localidades, condicionesIVA, condicionesIIBB, transportes, direccionesExistentes, cuentaCorriente }: any) {
+export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, filtrosCliente, topArticulos, marcas, provincias, localidades, condicionesIVA, condicionesIIBB, transportes, direccionesExistentes, cuentaCorriente, contactos }: any) {
   const formRef = useRef<HTMLFormElement>(null);
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
@@ -178,6 +179,8 @@ export default function EditClienteForm({ cliente, pedidos, filtrosDisponibles, 
             <input id="cuit_dni" name="cuit_dni" type="text" defaultValue={cliente.cuit_dni} className={inputBase} />
           </div>
         </div>
+
+        <ContactosClienteFields contactos={contactos} inputBase={inputBase} />
 
         <h3 className="text-lg font-semibold text-gray-800 mb-4 mt-8">💼 Condiciones Fiscales</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">

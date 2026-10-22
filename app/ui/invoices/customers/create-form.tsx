@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/app/ui/button';
 import MapPicker from '@/app/ui/map-picker';
 import { createCliente } from '@/app/lib/actions';
+import ContactosClienteFields from './ContactosClienteFields';
 
 interface CreateClienteFormProps {
   provincias: { id: number; nombre: string }[];
@@ -175,6 +176,8 @@ export default function CreateClienteForm({
             </select>
           </div>
         </div>
+
+        <ContactosClienteFields inputBase={inputBase} />
 
         {/* CONDICIONES FISCALES */}
         <h3 className="text-lg font-semibold text-gray-800 mb-4 mt-8">💼 Condiciones Fiscales</h3>
