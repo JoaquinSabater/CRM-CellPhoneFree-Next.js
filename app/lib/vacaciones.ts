@@ -31,6 +31,32 @@ export interface VacationRequest extends RowDataPacket {
   rol?: string | null;
 }
 
+/** Saldo de un usuario en la vista de administración. Sin fila de saldo, los días vienen en NULL. */
+export interface VacationBalanceAdminRow extends RowDataPacket {
+  usuario_id: number;
+  username: string;
+  rol: string | null;
+  saldo_id: number | null;
+  dias_totales: number | null;
+  dias_usados: number | null;
+  dias_pendientes: number | null;
+  dias_restantes: number | null;
+}
+
+/**
+ * Hay usuarios con más de una fila de saldo para el mismo año.
+ * Todo el sistema usa la de menor id, así que administración edita esa misma.
+ */
+export const SALDO_DEL_ANIO_SQL = `SELECT id, usuario_id, anio, dias_totales, dias_usados, dias_pendientes, dias_restantes
+  FROM usuario_vacaciones_saldo
+  WHERE usuario_id = ? AND anio = ?
+  ORDER BY id
+  LIMIT 1`;
+
+export function isNonNegativeInteger(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0;
+}
+
 export function jsonError(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });
 }

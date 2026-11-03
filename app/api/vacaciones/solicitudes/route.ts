@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/lib/auth';
 import { db } from '@/app/lib/mysql';
+import { getUsuarioIdSesion } from '@/app/lib/roles';
 import {
   countVacationDays,
   getVacationYear,
@@ -11,7 +12,7 @@ import {
 
 export async function POST(request: NextRequest) {
   const session = await auth();
-  const userId = Number(session?.user?.id);
+  const userId = session?.user?.id ? getUsuarioIdSesion(session.user.id, session.user.rol) : 0;
 
   if (!userId) {
     return jsonError('No autenticado', 401);
@@ -58,6 +59,7 @@ export async function POST(request: NextRequest) {
       `SELECT id, dias_restantes
        FROM usuario_vacaciones_saldo
        WHERE usuario_id = ? AND anio = ?
+       ORDER BY id
        LIMIT 1
        FOR UPDATE`,
       [userId, anio],

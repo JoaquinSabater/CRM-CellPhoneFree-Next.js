@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/lib/auth';
 import { db } from '@/app/lib/mysql';
-import { puedeAdministrar } from '@/app/lib/roles';
+import { getAprobadorVacaciones, getUsuarioIdSesion, puedeVerPanelAdministracion } from '@/app/lib/roles';
 import { jsonError, mapRequest, type VacationRequest } from '@/app/lib/vacaciones';
 
 export async function GET() {
@@ -11,9 +11,11 @@ export async function GET() {
     return jsonError('No autenticado', 401);
   }
 
-  if (!puedeAdministrar(session.user.rol)) {
+  if (!puedeVerPanelAdministracion(session.user.id, session.user.rol)) {
     return jsonError('No autorizado', 403);
   }
+
+  const aprobadorId = getUsuarioIdSesion(session.user.id, session.user.rol);
 
   try {
     const [rows] = await db.query<VacationRequest[]>(
@@ -28,7 +30,11 @@ export async function GET() {
        ORDER BY s.fecha_solicitud DESC`,
     );
 
-    return NextResponse.json({ solicitudes: rows.map(mapRequest) });
+    const solicitudes = rows.filter(
+      (row) => getAprobadorVacaciones(row.usuario_id, row.rol) === aprobadorId,
+    );
+
+    return NextResponse.json({ solicitudes: solicitudes.map(mapRequest) });
   } catch (error) {
     console.error('[admin/vacaciones/solicitudes] Error:', error);
     return jsonError('No se pudieron obtener las solicitudes.', 500);

@@ -10,5 +10,5 @@ export default async function SideNav() {
     await signOut({ redirectTo: '/' });
   }
 
-  return <Sidebar rol={rol} signOutAction={signOutAction} />;
+  return <Sidebar rol={rol} userId={session?.user?.id} signOutAction={signOutAction} />;
 }

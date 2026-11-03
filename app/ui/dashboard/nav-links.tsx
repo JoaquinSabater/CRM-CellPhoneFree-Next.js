@@ -12,7 +12,7 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { puedeAdministrar, puedeVerComercial } from '@/app/lib/roles';
+import { puedeVerComercial, puedeVerPanelAdministracion } from '@/app/lib/roles';
 
 // Aca es donde puedo cambiar los inconos de los links
 // Map of links to display in the side navigation.
@@ -60,11 +60,11 @@ const sharedLinks = [
   },
 ];
 
-export default function NavLinks({ rol }: { rol?: string | null }) {
+export default function NavLinks({ rol, userId }: { rol?: string | null; userId?: string | null }) {
   const pathname = usePathname();
   const links = [
     ...(puedeVerComercial(rol) ? commercialLinks : []),
-    ...(puedeAdministrar(rol) ? administrationLinks : []),
+    ...(puedeVerPanelAdministracion(userId, rol) ? administrationLinks : []),
     ...sharedLinks,
   ];
 

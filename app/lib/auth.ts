@@ -20,11 +20,7 @@ const superAdminUser = {
   captador_id: null,
 };
 
-/**
- * Valida la contraseña del super usuario contra el entorno.
- * Se usa ADMIN_PASSWORD_HASH (bcrypt) y, si no está, ADMIN_PASSWORD (texto plano).
- * Sin ninguna de las dos configuradas el login de 'admin' queda deshabilitado.
- */
+
 async function validarSuperAdmin(password: string): Promise<boolean> {
   const hash = process.env.ADMIN_PASSWORD_HASH?.trim();
 

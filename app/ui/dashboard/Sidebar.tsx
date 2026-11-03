@@ -19,10 +19,12 @@ function LogoutForm({ signOutAction }: { signOutAction: () => Promise<void> }) {
 
 function SidebarContent({
   rol,
+  userId,
   signOutAction,
   onNavigate,
 }: {
   rol?: string | null;
+  userId?: string | null;
   signOutAction: () => Promise<void>;
   onNavigate?: () => void;
 }) {
@@ -34,7 +36,7 @@ function SidebarContent({
         </div>
       </Link>
       <nav className="flex-1 space-y-1 overflow-y-auto px-3" onClick={onNavigate}>
-        <NavLinks rol={rol} />
+        <NavLinks rol={rol} userId={userId} />
       </nav>
       <div className="border-t border-slate-200 px-3 py-3">
         <LogoutForm signOutAction={signOutAction} />
@@ -45,9 +47,11 @@ function SidebarContent({
 
 export default function Sidebar({
   rol,
+  userId,
   signOutAction,
 }: {
   rol?: string | null;
+  userId?: string | null;
   signOutAction: () => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
@@ -85,13 +89,13 @@ export default function Sidebar({
                 <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
-            <SidebarContent rol={rol} signOutAction={signOutAction} onNavigate={() => setOpen(false)} />
+            <SidebarContent rol={rol} userId={userId} signOutAction={signOutAction} onNavigate={() => setOpen(false)} />
           </div>
         </div>
       )}
 
       <div className="hidden md:flex md:w-64 md:flex-none md:flex-col md:border-r md:border-slate-200 md:bg-white">
-        <SidebarContent rol={rol} signOutAction={signOutAction} />
+        <SidebarContent rol={rol} userId={userId} signOutAction={signOutAction} />
       </div>
     </>
   );

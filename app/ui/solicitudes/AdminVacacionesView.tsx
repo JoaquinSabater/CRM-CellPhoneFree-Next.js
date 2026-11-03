@@ -9,6 +9,7 @@ import {
   UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import GestionVacaciones from '@/app/ui/solicitudes/GestionVacaciones';
 
 type VacationStatus = 'pendiente' | 'aprobada' | 'rechazada' | 'cancelada';
 
@@ -88,7 +89,7 @@ async function readApiError(response: Response) {
   }
 }
 
-export default function AdminVacacionesView() {
+export default function AdminVacacionesView({ puedeGestionar = false }: { puedeGestionar?: boolean }) {
   const [requests, setRequests] = useState<VacationRequest[]>([]);
   const [activeVacations, setActiveVacations] = useState<VacationRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -371,6 +372,8 @@ export default function AdminVacacionesView() {
             </table>
           </div>
         </section>
+
+        {puedeGestionar && <GestionVacaciones onChange={() => void loadAdminData()} />}
 
         <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-start gap-3">

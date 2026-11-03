@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/lib/auth';
 import { db } from '@/app/lib/mysql';
-import { puedeAdministrar } from '@/app/lib/roles';
+import {
+  getAprobadorVacaciones,
+  getUsuarioIdSesion,
+  puedeAdministrar,
+  puedeVerPanelAdministracion,
+} from '@/app/lib/roles';
 import { jsonError, mapRequest, type VacationRequest } from '@/app/lib/vacaciones';
 
 export async function GET() {
@@ -11,9 +16,11 @@ export async function GET() {
     return jsonError('No autenticado', 401);
   }
 
-  if (!puedeAdministrar(session.user.rol)) {
+  if (!puedeVerPanelAdministracion(session.user.id, session.user.rol)) {
     return jsonError('No autorizado', 403);
   }
+
+  const aprobadorId = getUsuarioIdSesion(session.user.id, session.user.rol);
 
   try {
     const [rows] = await db.query<VacationRequest[]>(
@@ -30,7 +37,12 @@ export async function GET() {
        ORDER BY s.fecha_desde ASC`,
     );
 
-    return NextResponse.json({ vacaciones: rows.map(mapRequest) });
+    // Administración y el super usuario siguen viendo a todos; cada líder ve solo a su equipo
+    const vacaciones = puedeAdministrar(session.user.rol)
+      ? rows
+      : rows.filter((row) => getAprobadorVacaciones(row.usuario_id, row.rol) === aprobadorId);
+
+    return NextResponse.json({ vacaciones: vacaciones.map(mapRequest) });
   } catch (error) {
     console.error('[admin/vacaciones/activas] Error:', error);
     return jsonError('No se pudieron obtener las vacaciones activas.', 500);

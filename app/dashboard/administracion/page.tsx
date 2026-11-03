@@ -3,13 +3,18 @@ import AdminVacacionesView from '@/app/ui/solicitudes/AdminVacacionesView';
 import AdminPermisosView from '@/app/ui/solicitudes/AdminPermisosView';
 import SolicitudTabs, { parseSolicitudTab } from '@/app/ui/solicitudes/SolicitudTabs';
 import { auth } from '@/app/lib/auth';
-import { puedeAdministrar } from '@/app/lib/roles';
+import { puedeAdministrar, puedeVerPanelAdministracion } from '@/app/lib/roles';
 
 export default async function AdministracionPage(props: { searchParams: Promise<{ tab?: string }> }) {
   const session = await auth();
 
-  if (!puedeAdministrar(session?.user?.rol)) {
+  if (!puedeVerPanelAdministracion(session?.user?.id, session?.user?.rol)) {
     redirect('/dashboard');
+  }
+
+  // Los líderes de área solo aprueban vacaciones: los permisos siguen en administración
+  if (!puedeAdministrar(session?.user?.rol)) {
+    return <AdminVacacionesView />;
   }
 
   const tab = parseSolicitudTab((await props.searchParams).tab);
@@ -17,7 +22,7 @@ export default async function AdministracionPage(props: { searchParams: Promise<
   return (
     <>
       <SolicitudTabs basePath="/dashboard/administracion" active={tab} />
-      {tab === 'permisos' ? <AdminPermisosView /> : <AdminVacacionesView />}
+      {tab === 'permisos' ? <AdminPermisosView /> : <AdminVacacionesView puedeGestionar />}
     </>
   );
 }

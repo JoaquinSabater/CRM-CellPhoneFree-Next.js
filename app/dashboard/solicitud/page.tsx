@@ -7,14 +7,9 @@ import { esSuperAdmin } from '@/app/lib/roles';
 export default async function SolicitudPage(props: { searchParams: Promise<{ tab?: string }> }) {
   const session = await auth();
 
-  // El super usuario no es un empleado de la base: no tiene vacaciones ni permisos propios
+  // El super usuario pide vacaciones como usuario 1, pero no tiene permisos de salida propios
   if (esSuperAdmin(session?.user?.rol)) {
-    return (
-      <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-600">
-        El super usuario no tiene vacaciones ni permisos propios. Las solicitudes de todo el equipo se
-        gestionan desde <span className="font-medium text-slate-900">Administración</span>.
-      </div>
-    );
+    return <SolicitudVacacionesView />;
   }
 
   const tab = parseSolicitudTab((await props.searchParams).tab);

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/lib/auth';
 import { db } from '@/app/lib/mysql';
-import { puedeAdministrar } from '@/app/lib/roles';
+import { getAprobadorVacaciones, getUsuarioIdSesion } from '@/app/lib/roles';
 import { jsonError, type VacationBalance, type VacationRequest } from '@/app/lib/vacaciones';
 
 export async function PATCH(
@@ -9,17 +9,12 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  // El super usuario no existe en la tabla usuarios: se registra como NULL
-  const adminId = Number.isInteger(Number(session?.user?.id)) ? Number(session?.user?.id) : null;
 
   if (!session?.user?.id) {
     return jsonError('No autenticado', 401);
   }
 
-  if (!puedeAdministrar(session?.user?.rol)) {
-    return jsonError('No autorizado', 403);
-  }
-
+  const aprobadorId = getUsuarioIdSesion(session.user.id, session.user.rol);
   const { id } = await context.params;
   const solicitudId = Number(id);
 
@@ -33,11 +28,12 @@ export async function PATCH(
     await connection.beginTransaction();
 
     const [requestRows] = await connection.query<VacationRequest[]>(
-      `SELECT id, usuario_id, cantidad_dias, estado, YEAR(fecha_desde) AS anio
-       FROM usuario_solicitud_vacaciones
-       WHERE id = ?
+      `SELECT s.id, s.usuario_id, s.cantidad_dias, s.estado, YEAR(s.fecha_desde) AS anio, u.rol
+       FROM usuario_solicitud_vacaciones s
+       INNER JOIN usuarios u ON u.id = s.usuario_id
+       WHERE s.id = ?
        LIMIT 1
-       FOR UPDATE`,
+       FOR UPDATE OF s`,
       [solicitudId],
     );
 
@@ -46,6 +42,11 @@ export async function PATCH(
     if (!solicitud) {
       await connection.rollback();
       return jsonError('Solicitud no encontrada.', 404);
+    }
+
+    if (getAprobadorVacaciones(solicitud.usuario_id, solicitud.rol) !== aprobadorId) {
+      await connection.rollback();
+      return jsonError('No autorizado', 403);
     }
 
     if (solicitud.estado !== 'pendiente') {
@@ -57,6 +58,7 @@ export async function PATCH(
       `SELECT id, dias_pendientes
        FROM usuario_vacaciones_saldo
        WHERE usuario_id = ? AND anio = ?
+       ORDER BY id
        LIMIT 1
        FOR UPDATE`,
       [solicitud.usuario_id, solicitud.anio],
@@ -76,7 +78,7 @@ export async function PATCH(
            fecha_aprobacion = NOW(),
            motivo_rechazo = NULL
        WHERE id = ?`,
-      [adminId, solicitudId],
+      [aprobadorId, solicitudId],
     );
 
     await connection.query(

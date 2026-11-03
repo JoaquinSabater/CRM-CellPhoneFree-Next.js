@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/lib/auth';
 import { db } from '@/app/lib/mysql';
+import { getUsuarioIdSesion } from '@/app/lib/roles';
 import {
   mapBalance,
   mapRequest,
@@ -10,7 +11,7 @@ import {
 
 export async function GET() {
   const session = await auth();
-  const userId = Number(session?.user?.id);
+  const userId = session?.user?.id ? getUsuarioIdSesion(session.user.id, session.user.rol) : 0;
 
   if (!userId) {
     return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
@@ -22,6 +23,7 @@ export async function GET() {
       `SELECT id, usuario_id, anio, dias_totales, dias_usados, dias_pendientes, dias_restantes
        FROM usuario_vacaciones_saldo
        WHERE usuario_id = ? AND anio = ?
+       ORDER BY id
        LIMIT 1`,
       [userId, currentYear],
     );
